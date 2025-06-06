@@ -116,7 +116,7 @@ export default function Header({ onMenuClick, isMobile }: HeaderProps) {
         {/* Right Section */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           {isMobile && (
-            <Button variant="ghost" size="sm">
+            <Button variant="ghost\" size="sm">
               <Search size={20} />
             </Button>
           )}
