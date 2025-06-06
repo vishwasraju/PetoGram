@@ -175,6 +175,19 @@ export default function Home() {
 
   const renderSidebar = () => (
     <div className={`sidebar ${isMobile ? 'mobile-sidebar' : ''} ${isMobile && !sidebarOpen ? 'hidden-sidebar' : ''}`}>
+      {/* Mobile Close Button */}
+      {isMobile && (
+        <div className="mobile-sidebar-header">
+          <h2 className="mobile-sidebar-title">Menu</h2>
+          <button 
+            className="close-sidebar-button"
+            onClick={() => setSidebarOpen(false)}
+          >
+            <X size={24} />
+          </button>
+        </div>
+      )}
+
       {/* User Profile Section */}
       <div className="user-section">
         <img 
@@ -242,14 +255,16 @@ export default function Home() {
       <h1 className="logo">PetoGram</h1>
       
       <div className="header-actions">
-        <div className="search-container">
-          <Search size={20} className="search-icon" />
-          <input
-            type="text"
-            className="search-input"
-            placeholder="Search..."
-          />
-        </div>
+        {!isMobile && (
+          <div className="search-container">
+            <Search size={20} className="search-icon" />
+            <input
+              type="text"
+              className="search-input"
+              placeholder="Search..."
+            />
+          </div>
+        )}
         
         <button className="header-button">
           <MessageCircle size={20} />
@@ -263,7 +278,7 @@ export default function Home() {
         </button>
         
         <button className="user-button">
-          <span className="user-button-text">John</span>
+          {!isMobile && <span className="user-button-text">John</span>}
           <img 
             src="https://images.pexels.com/photos/1036622/pexels-photo-1036622.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2"
             alt="User Avatar"
@@ -476,10 +491,42 @@ export default function Home() {
           z-index: 1000;
           box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
           transition: transform 0.3s ease;
+          width: 280px;
         }
 
         .hidden-sidebar {
           transform: translateX(-280px);
+        }
+
+        .mobile-sidebar-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 16px 0 24px 0;
+          border-bottom: 1px solid #f1f1f1;
+          margin-bottom: 24px;
+        }
+
+        .mobile-sidebar-title {
+          font-size: 20px;
+          font-weight: 700;
+          color: #111827;
+          margin: 0;
+          font-family: 'Poppins', sans-serif;
+        }
+
+        .close-sidebar-button {
+          padding: 8px;
+          background: none;
+          border: none;
+          cursor: pointer;
+          color: #6B7280;
+          border-radius: 8px;
+          transition: background-color 0.2s ease;
+        }
+
+        .close-sidebar-button:hover {
+          background-color: #F3F4F6;
         }
 
         .overlay {
@@ -614,6 +661,12 @@ export default function Home() {
           border: none;
           cursor: pointer;
           color: #111827;
+          border-radius: 8px;
+          transition: background-color 0.2s ease;
+        }
+
+        .menu-button:hover {
+          background-color: #F3F4F6;
         }
 
         .logo {
@@ -666,10 +719,12 @@ export default function Home() {
           cursor: pointer;
           color: #6B7280;
           transition: color 0.2s ease;
+          border-radius: 8px;
         }
 
         .header-button:hover {
           color: #111827;
+          background-color: #F3F4F6;
         }
 
         .notification-button {
@@ -704,6 +759,13 @@ export default function Home() {
           border: none;
           cursor: pointer;
           color: #111827;
+          padding: 8px;
+          border-radius: 8px;
+          transition: background-color 0.2s ease;
+        }
+
+        .user-button:hover {
+          background-color: #F3F4F6;
         }
 
         .user-button-text {
@@ -732,7 +794,7 @@ export default function Home() {
           display: flex;
           align-items: flex-start;
           background-color: #F9FAFB;
-          margin: 24px;
+          margin: 16px;
           padding: 16px;
           border-radius: 16px;
           gap: 12px;
@@ -762,9 +824,9 @@ export default function Home() {
 
         .post-actions-container {
           display: flex;
-          padding: 0 24px;
-          margin-bottom: 24px;
-          gap: 12px;
+          padding: 0 16px;
+          margin-bottom: 16px;
+          gap: 8px;
         }
 
         .post-action-button {
@@ -786,10 +848,10 @@ export default function Home() {
         }
 
         .feed-container {
-          padding: 0 24px;
+          padding: 0 16px;
           display: flex;
           flex-direction: column;
-          gap: 24px;
+          gap: 16px;
         }
 
         .post-container {
@@ -860,6 +922,12 @@ export default function Home() {
           border: none;
           cursor: pointer;
           color: #6B7280;
+          border-radius: 8px;
+          transition: background-color 0.2s ease;
+        }
+
+        .post-more-button:hover {
+          background-color: #F3F4F6;
         }
 
         .post-caption {
@@ -889,7 +957,7 @@ export default function Home() {
 
         .post-image {
           width: 100%;
-          height: 400px;
+          height: 300px;
           border-radius: 12px;
           object-fit: cover;
         }
@@ -978,10 +1046,12 @@ export default function Home() {
           color: #6B7280;
           font-family: 'Inter', sans-serif;
           transition: color 0.2s ease;
+          border-radius: 8px;
         }
 
         .engagement-button:hover {
           color: #111827;
+          background-color: #F9FAFB;
         }
 
         .comment-section {
@@ -1030,46 +1100,147 @@ export default function Home() {
           background-color: #7C3AED;
         }
 
+        /* Mobile Optimizations */
         @media (max-width: 768px) {
-          .search-container {
-            min-width: 200px;
-          }
-
-          .header-actions {
-            gap: 8px;
-          }
-
-          .user-button-text {
+          .sidebar {
             display: none;
           }
 
-          .create-post-container,
-          .feed-container {
-            margin: 16px;
-            padding: 0 8px;
-          }
-
-          .post-actions-container {
-            padding: 0 16px;
-          }
-        }
-
-        @media (max-width: 480px) {
-          .search-container {
-            display: none;
+          .main-content {
+            width: 100%;
           }
 
           .header {
             padding: 12px 16px;
           }
 
-          .create-post-container,
-          .feed-container {
+          .header-actions {
+            gap: 8px;
+          }
+
+          .logo {
+            font-size: 20px;
+          }
+
+          .create-post-container {
             margin: 12px;
+            padding: 12px;
           }
 
           .post-actions-container {
             padding: 0 12px;
+            margin-bottom: 12px;
+          }
+
+          .feed-container {
+            padding: 0 12px;
+            gap: 12px;
+          }
+
+          .post-container {
+            padding: 12px;
+          }
+
+          .post-image {
+            height: 250px;
+          }
+
+          .post-caption {
+            font-size: 15px;
+          }
+
+          .hashtag {
+            font-size: 15px;
+          }
+
+          .engagement-button {
+            font-size: 13px;
+            padding: 6px;
+          }
+
+          .comment-input {
+            font-size: 14px;
+            padding: 8px 12px;
+          }
+
+          .post-comment-button {
+            padding: 8px 12px;
+            font-size: 13px;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .header {
+            padding: 10px 12px;
+          }
+
+          .logo {
+            font-size: 18px;
+          }
+
+          .create-post-container {
+            margin: 8px;
+            padding: 10px;
+          }
+
+          .post-actions-container {
+            padding: 0 8px;
+            gap: 6px;
+          }
+
+          .post-action-button {
+            padding: 10px 8px;
+            font-size: 13px;
+          }
+
+          .feed-container {
+            padding: 0 8px;
+            gap: 10px;
+          }
+
+          .post-container {
+            padding: 10px;
+          }
+
+          .post-image {
+            height: 220px;
+          }
+
+          .post-caption {
+            font-size: 14px;
+          }
+
+          .hashtag {
+            font-size: 14px;
+          }
+
+          .engagement-button {
+            font-size: 12px;
+            gap: 4px;
+          }
+
+          .engagement-button span {
+            display: none;
+          }
+
+          .comment-section {
+            gap: 8px;
+          }
+
+          .comment-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 14px;
+          }
+
+          .comment-input {
+            font-size: 13px;
+            padding: 6px 12px;
+          }
+
+          .post-comment-button {
+            padding: 6px 10px;
+            font-size: 12px;
           }
         }
       `}</style>
