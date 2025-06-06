@@ -74,12 +74,6 @@ export default function EnhancedCreatePost() {
       icon: Users, 
       color: designTokens.colors.primary[500] 
     },
-    { 
-      id: 'event', 
-      name: 'Create Event', 
-      icon: Calendar, 
-      color: designTokens.colors.success[500] 
-    },
   ]
 
   const handlePost = () => {
@@ -167,7 +161,7 @@ export default function EnhancedCreatePost() {
           />
           
           <div style={{ flex: 1 }}>
-            <textarea
+            {/* <textarea
               placeholder="What's new with your pets? Share a moment, story, or update..."
               value={postText}
               onChange={(e) => setPostText(e.target.value)}
@@ -186,7 +180,7 @@ export default function EnhancedCreatePost() {
                 transition: `min-height ${designTokens.animation.duration.normal} ${designTokens.animation.easing.ease}`,
               }}
               rows={isExpanded ? 3 : 1}
-            />
+            /> */}
             
             {isExpanded && (
               <div style={{ 

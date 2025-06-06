@@ -17,7 +17,8 @@ import {
   Bookmark,
   TrendingUp,
   Calendar,
-  Users
+  Users,
+  Hospital
 } from 'lucide-react'
 import Avatar from '../ui/Avatar'
 import Badge from '../ui/Badge'
@@ -31,69 +32,29 @@ interface SidebarProps {
 
 const navigationItems = [
   { 
-    id: 'home', 
-    name: 'Home', 
-    icon: Home, 
-    path: '/',
+    id: 'book-appointment', 
+    name: 'Book Appointment', 
+    icon: Hospital,
+    path: '/book-appointment',
     badge: null,
-    description: 'Your personalized feed'
+    description: 'Schedule an appointment'
   },
   { 
-    id: 'explore', 
-    name: 'Explore', 
-    icon: Compass, 
-    path: '/explore',
+    id: 'events', 
+    name: 'Events', 
+    icon: Calendar, 
+    path: '/events',
     badge: null,
-    description: 'Discover new content'
+    description: 'Join/Create event'
   },
-  { 
-    id: 'search', 
-    name: 'Search', 
-    icon: Search, 
-    path: '/search',
+  {
+    id: 'profile',
+    name: 'Profile',
+    icon: User,
+    path: '/profile',
     badge: null,
-    description: 'Find pets and people'
-  },
-  { 
-    id: 'messages', 
-    name: 'Messages', 
-    icon: MessageCircle, 
-    path: '/messages',
-    badge: { count: 2, variant: 'primary' as const },
-    description: 'Chat with friends'
-  },
-  { 
-    id: 'notifications', 
-    name: 'Notifications', 
-    icon: Bell, 
-    path: '/notifications',
-    badge: { count: 5, variant: 'error' as const },
-    description: 'Stay updated'
-  },
-  { 
-    id: 'create', 
-    name: 'Create', 
-    icon: PlusSquare, 
-    path: '/create',
-    badge: null,
-    description: 'Share your moments'
-  },
-  { 
-    id: 'reels', 
-    name: 'Reels', 
-    icon: Video, 
-    path: '/reels',
-    badge: { count: 'NEW', variant: 'success' as const },
-    description: 'Short pet videos'
-  },
-  { 
-    id: 'saved', 
-    name: 'Saved', 
-    icon: Bookmark, 
-    path: '/saved',
-    badge: null,
-    description: 'Your saved posts'
-  },
+    description: 'View your profile'
+  }
 ]
 
 const quickActions = [
@@ -243,7 +204,7 @@ export default function EnhancedSidebar({ isOpen, onClose, isMobile }: SidebarPr
           backgroundClip: 'text',
           margin: 0,
         }}>
-          PetoGram
+          <Hospital size={32} color={designTokens.colors.primary[600]} />
         </h1>
         
         {isMobile && (
@@ -363,17 +324,6 @@ export default function EnhancedSidebar({ isOpen, onClose, isMobile }: SidebarPr
           padding: designTokens.spacing[4],
           paddingBottom: designTokens.spacing[2],
         }}>
-          <div style={{
-            fontSize: designTokens.typography.fontSize.xs,
-            fontWeight: designTokens.typography.fontWeight.semibold,
-            color: designTokens.colors.gray[500],
-            textTransform: 'uppercase',
-            letterSpacing: '0.05em',
-            marginBottom: designTokens.spacing[3],
-          }}>
-            Main Menu
-          </div>
-          
           {navigationItems.map((item) => (
             <NavItem 
               key={item.id} 
@@ -383,31 +333,6 @@ export default function EnhancedSidebar({ isOpen, onClose, isMobile }: SidebarPr
             />
           ))}
         </nav>
-
-        {/* Quick Actions */}
-        <div style={{ 
-          padding: `${designTokens.spacing[2]} ${designTokens.spacing[4]}`,
-          borderTop: `1px solid ${designTokens.colors.gray[100]}`,
-        }}>
-          <div style={{
-            fontSize: designTokens.typography.fontSize.xs,
-            fontWeight: designTokens.typography.fontWeight.semibold,
-            color: designTokens.colors.gray[500],
-            textTransform: 'uppercase',
-            letterSpacing: '0.05em',
-            marginBottom: designTokens.spacing[3],
-          }}>
-            Quick Actions
-          </div>
-          
-          {quickActions.map((item) => (
-            <NavItem 
-              key={item.id} 
-              item={item} 
-              isActive={location.pathname === item.path}
-            />
-          ))}
-        </div>
 
         {/* Bottom Section */}
         <div style={{ 
@@ -441,11 +366,9 @@ export default function EnhancedSidebar({ isOpen, onClose, isMobile }: SidebarPr
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.backgroundColor = designTokens.colors.error[50]
-            e.currentTarget.style.transform = 'translateX(4px)'
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.backgroundColor = 'transparent'
-            e.currentTarget.style.transform = 'translateX(0)'
           }}>
             <div style={{
               padding: designTokens.spacing[2],

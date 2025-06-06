@@ -289,7 +289,7 @@ export default function EnhancedHome() {
           width: '100%',
         }}>
           {/* Create Post */}
-          <EnhancedCreatePost />
+          {/* <EnhancedCreatePost /> */}
 
           {/* Posts Feed */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: designTokens.spacing[6] }}>
@@ -346,71 +346,6 @@ export default function EnhancedHome() {
             flexDirection: 'column',
             gap: designTokens.spacing[6],
           }}>
-            {/* Suggested Friends */}
-            <Card>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                marginBottom: designTokens.spacing[4],
-              }}>
-                <h3 style={{
-                  fontWeight: designTokens.typography.fontWeight.semibold,
-                  color: designTokens.colors.gray[900],
-                  margin: 0,
-                  fontSize: designTokens.typography.fontSize.lg,
-                }}>
-                  Suggested for you
-                </h3>
-                <Badge variant="primary" size="sm">
-                  {suggestedUsers.length}
-                </Badge>
-              </div>
-              
-              <div style={{ display: 'flex', flexDirection: 'column', gap: designTokens.spacing[4] }}>
-                {suggestedUsers.map((user, index) => (
-                  <div key={index} style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                  }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: designTokens.spacing[3] }}>
-                      <Avatar 
-                        src={user.avatar}
-                        alt={user.name}
-                        size="md"
-                        verified={user.verified}
-                      />
-                      <div>
-                        <div style={{
-                          fontWeight: designTokens.typography.fontWeight.medium,
-                          color: designTokens.colors.gray[900],
-                          fontSize: designTokens.typography.fontSize.sm,
-                        }}>
-                          {user.name}
-                        </div>
-                        <div style={{
-                          fontSize: designTokens.typography.fontSize.xs,
-                          color: designTokens.colors.gray[500],
-                        }}>
-                          {user.pets}
-                        </div>
-                        <div style={{
-                          fontSize: designTokens.typography.fontSize.xs,
-                          color: designTokens.colors.gray[400],
-                        }}>
-                          {user.mutualFriends} mutual friends
-                        </div>
-                      </div>
-                    </div>
-                    <Button variant="primary" size="sm">
-                      Follow
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            </Card>
-
             {/* Trending Hashtags */}
             <Card>
               <div style={{
@@ -431,7 +366,7 @@ export default function EnhancedHome() {
               </div>
               
               <div style={{ display: 'flex', flexDirection: 'column', gap: designTokens.spacing[3] }}>
-                {trendingHashtags.map((item, index) => (
+                {trendingHashtags.slice(0, 3).map((item, index) => (
                   <div key={index} style={{
                     display: 'flex',
                     justifyContent: 'space-between',

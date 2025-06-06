@@ -89,31 +89,6 @@ export default function EnhancedHeader({ onMenuClick, isMobile }: HeaderProps) {
             {!isMobile && <span>Create</span>}
           </Button>
           
-          {/* Notifications */}
-          <div style={{ position: 'relative' }}>
-            <Button variant="ghost" size="sm">
-              <Heart size={20} />
-            </Button>
-            <div style={{
-              position: 'absolute',
-              top: '-2px',
-              right: '-2px',
-              width: '20px',
-              height: '20px',
-              backgroundColor: designTokens.colors.error[500],
-              color: designTokens.colors.white,
-              fontSize: designTokens.typography.fontSize.xs,
-              borderRadius: designTokens.borderRadius.full,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontWeight: designTokens.typography.fontWeight.bold,
-              border: `2px solid ${designTokens.colors.white}`,
-            }}>
-              5
-            </div>
-          </div>
-          
           {/* Messages */}
           <div style={{ position: 'relative' }}>
             <Button variant="ghost" size="sm">
@@ -138,15 +113,31 @@ export default function EnhancedHeader({ onMenuClick, isMobile }: HeaderProps) {
               2
             </div>
           </div>
-          
-          {/* Notification Settings - Desktop Only */}
-          {!isMobile && (
-            <Dropdown
-              options={notificationOptions}
-              placeholder="Notifications"
-              onChange={(value) => console.log('Selected:', value)}
-            />
-          )}
+
+          {/* Notifications */}
+          <div style={{ position: 'relative' }}>
+            <Button variant="ghost" size="sm">
+              <Bell size={20} />
+            </Button>
+            <div style={{
+              position: 'absolute',
+              top: '-2px',
+              right: '-2px',
+              width: '20px',
+              height: '20px',
+              backgroundColor: designTokens.colors.error[500],
+              color: designTokens.colors.white,
+              fontSize: designTokens.typography.fontSize.xs,
+              borderRadius: designTokens.borderRadius.full,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontWeight: designTokens.typography.fontWeight.bold,
+              border: `2px solid ${designTokens.colors.white}`,
+            }}>
+              5
+            </div>
+          </div>
           
           {/* Profile Avatar */}
           <div style={{ marginLeft: designTokens.spacing[2] }}>

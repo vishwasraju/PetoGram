@@ -12,7 +12,8 @@ import {
   LogOut,
   Compass,
   Video,
-  X
+  X,
+  Bookmark
 } from 'lucide-react'
 import Avatar from '../ui/Avatar'
 
@@ -23,14 +24,7 @@ interface SidebarProps {
 }
 
 const navigationItems = [
-  { id: 'home', name: 'Home', icon: Home, path: '/' },
-  { id: 'explore', name: 'Explore', icon: Compass, path: '/explore' },
-  { id: 'search', name: 'Search', icon: Search, path: '/search' },
-  { id: 'messages', name: 'Messages', icon: MessageCircle, path: '/messages' },
-  { id: 'notifications', name: 'Notifications', icon: Heart, path: '/notifications' },
-  { id: 'create', name: 'Create', icon: PlusSquare, path: '/create' },
-  { id: 'reels', name: 'Reels', icon: Video, path: '/reels' },
-  { id: 'profile', name: 'Profile', icon: User, path: '/profile' },
+  { id: 'saved', name: '', icon: Bookmark, path: '/saved' },
 ]
 
 const bottomItems = [
