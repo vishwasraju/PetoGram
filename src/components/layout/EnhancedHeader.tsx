@@ -25,8 +25,7 @@ export default function EnhancedHeader({ onMenuClick, isMobile }: HeaderProps) {
   return (
     <header style={{
       padding: `${designTokens.spacing[3]} ${designTokens.spacing[4]}`,
-      backgroundColor: 'rgba(255, 255, 255, 0.95)',
-      backdropFilter: 'blur(20px)',
+      backgroundColor: designTokens.colors.white,
       borderBottom: `1px solid ${designTokens.colors.gray[100]}`,
       position: 'relative',
       zIndex: designTokens.zIndex.sticky,
@@ -36,7 +35,7 @@ export default function EnhancedHeader({ onMenuClick, isMobile }: HeaderProps) {
         {/* Left Section */}
         <div style={{ display: 'flex', alignItems: 'center', gap: designTokens.spacing[4] }}>
           {isMobile && (
-            <Button variant="ghost\" size="sm\" onClick={onMenuClick}>
+            <Button variant="ghost" size="sm" onClick={onMenuClick}>
               <Menu size={24} />
             </Button>
           )}
