@@ -116,7 +116,8 @@ export default function Sidebar({ isOpen, onClose, isMobile }: SidebarProps) {
         borderBottom: '1px solid #F3F4F6',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'space-between'
+        justifyContent: 'space-between',
+        flexShrink: 0
       }}>
         <h1 style={{
           fontSize: '24px',
@@ -162,7 +163,8 @@ export default function Sidebar({ isOpen, onClose, isMobile }: SidebarProps) {
       {/* User Profile */}
       <div style={{ 
         padding: '24px', 
-        borderBottom: '1px solid #F3F4F6' 
+        borderBottom: '1px solid #F3F4F6',
+        flexShrink: 0
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <Avatar 
@@ -218,74 +220,79 @@ export default function Sidebar({ isOpen, onClose, isMobile }: SidebarProps) {
         </div>
       </div>
 
-      {/* Navigation */}
-      <nav style={{ 
+      {/* Scrollable Navigation Container */}
+      <div style={{ 
         flex: 1, 
-        padding: '16px', 
         overflowY: 'auto',
         display: 'flex',
-        flexDirection: 'column'
+        flexDirection: 'column',
+        minHeight: 0
       }}>
-        {navigationItems.map((item) => (
-          <NavItem 
-            key={item.id} 
-            item={item} 
-            isActive={location.pathname === item.path}
-          />
-        ))}
-      </nav>
-
-      {/* Bottom Section */}
-      <div style={{ 
-        padding: '16px', 
-        borderTop: '1px solid #F3F4F6',
-        display: 'flex',
-        flexDirection: 'column'
-      }}>
-        {bottomItems.map((item) => (
-          <NavItem 
-            key={item.id} 
-            item={item} 
-            isActive={location.pathname === item.path}
-          />
-        ))}
-        
-        <button style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '16px',
-          padding: '12px 16px',
-          color: '#EF4444',
-          backgroundColor: 'transparent',
-          border: 'none',
-          borderRadius: '12px',
-          cursor: 'pointer',
-          transition: 'background-color 150ms ease',
-          fontWeight: '500',
-          width: '100%',
-          fontSize: '16px',
-          margin: '2px 0'
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = '#FEF2F2'
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.backgroundColor = 'transparent'
+        {/* Main Navigation */}
+        <nav style={{ 
+          padding: '16px',
+          paddingBottom: '8px'
         }}>
-          <div style={{
-            padding: '8px',
-            color: '#EF4444',
-            backgroundColor: '#FEE2E2',
-            borderRadius: '8px',
-            transition: 'background-color 150ms ease',
+          {navigationItems.map((item) => (
+            <NavItem 
+              key={item.id} 
+              item={item} 
+              isActive={location.pathname === item.path}
+            />
+          ))}
+        </nav>
+
+        {/* Bottom Section - Now inside scrollable area */}
+        <div style={{ 
+          padding: '8px 16px 16px 16px',
+          borderTop: '1px solid #F3F4F6',
+          marginTop: 'auto'
+        }}>
+          {bottomItems.map((item) => (
+            <NavItem 
+              key={item.id} 
+              item={item} 
+              isActive={location.pathname === item.path}
+            />
+          ))}
+          
+          <button style={{
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center'
+            gap: '16px',
+            padding: '12px 16px',
+            color: '#EF4444',
+            backgroundColor: 'transparent',
+            border: 'none',
+            borderRadius: '12px',
+            cursor: 'pointer',
+            transition: 'background-color 150ms ease',
+            fontWeight: '500',
+            width: '100%',
+            fontSize: '16px',
+            margin: '2px 0'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = '#FEF2F2'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = 'transparent'
           }}>
-            <LogOut size={20} strokeWidth={2.5} />
-          </div>
-          <span>Log Out</span>
-        </button>
+            <div style={{
+              padding: '8px',
+              color: '#EF4444',
+              backgroundColor: '#FEE2E2',
+              borderRadius: '8px',
+              transition: 'background-color 150ms ease',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <LogOut size={20} strokeWidth={2.5} />
+            </div>
+            <span>Log Out</span>
+          </button>
+        </div>
       </div>
     </aside>
   )
