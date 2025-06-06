@@ -222,14 +222,14 @@ export default function EnhancedHome() {
       backgroundColor: designTokens.colors.gray[50],
       position: 'relative',
     }}>
-      {/* Mobile Overlay */}
+      {/* Mobile Overlay with Blur Effect */}
       {isMobile && sidebarOpen && (
         <div 
           style={{
             position: 'fixed',
             inset: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
-            backdropFilter: 'blur(4px)',
+            backgroundColor: 'rgba(0, 0, 0, 0.3)',
+            backdropFilter: 'blur(8px)',
             zIndex: designTokens.zIndex.overlay,
             opacity: sidebarOpen ? 1 : 0,
             visibility: sidebarOpen ? 'visible' : 'hidden',
@@ -239,14 +239,14 @@ export default function EnhancedHome() {
         />
       )}
 
-      {/* Sidebar */}
+      {/* Sidebar - Always Clear */}
       <div style={{
         width: isMobile ? '320px' : '320px',
         height: '100vh',
         position: 'fixed',
         top: 0,
         left: 0,
-        zIndex: designTokens.zIndex.docked,
+        zIndex: designTokens.zIndex.modal, // Higher z-index to stay above blur
         transform: isMobile && !sidebarOpen ? 'translateX(-100%)' : 'translateX(0)',
         transition: `transform ${designTokens.animation.duration.normal} ${designTokens.animation.easing.ease}`,
       }}>
@@ -257,7 +257,7 @@ export default function EnhancedHome() {
         />
       </div>
 
-      {/* Main Content Area */}
+      {/* Main Content Area with Conditional Blur */}
       <div style={{
         flex: 1,
         marginLeft: isMobile ? 0 : '320px',
@@ -265,6 +265,9 @@ export default function EnhancedHome() {
         minHeight: '100vh',
         display: 'flex',
         flexDirection: 'column',
+        filter: isMobile && sidebarOpen ? 'blur(4px)' : 'none',
+        transition: `filter ${designTokens.animation.duration.normal} ${designTokens.animation.easing.ease}`,
+        pointerEvents: isMobile && sidebarOpen ? 'none' : 'auto',
       }}>
         {/* Header */}
         <div style={{
@@ -321,7 +324,7 @@ export default function EnhancedHome() {
         </div>
       </div>
 
-      {/* Right Sidebar - Desktop Only */}
+      {/* Right Sidebar - Desktop Only with Conditional Blur */}
       {!isMobile && (
         <div style={{
           width: '320px',
@@ -333,6 +336,8 @@ export default function EnhancedHome() {
           overflowY: 'auto',
           backgroundColor: designTokens.colors.gray[50],
           borderLeft: `1px solid ${designTokens.colors.gray[100]}`,
+          filter: isMobile && sidebarOpen ? 'blur(4px)' : 'none',
+          transition: `filter ${designTokens.animation.duration.normal} ${designTokens.animation.easing.ease}`,
         }}>
           <div style={{
             position: 'sticky',
