@@ -17,44 +17,90 @@ export default function Avatar({
   verified = false,
   className = '' 
 }: AvatarProps) {
-  const sizes = {
-    xs: 'w-6 h-6',
-    sm: 'w-8 h-8',
-    md: 'w-10 h-10',
-    lg: 'w-12 h-12',
-    xl: 'w-16 h-16',
-    '2xl': 'w-20 h-20'
+  const getSizes = () => {
+    const sizes = {
+      xs: { width: '24px', height: '24px' },
+      sm: { width: '32px', height: '32px' },
+      md: { width: '40px', height: '40px' },
+      lg: { width: '48px', height: '48px' },
+      xl: { width: '64px', height: '64px' },
+      '2xl': { width: '80px', height: '80px' }
+    }
+    return sizes[size]
   }
 
-  const statusColors = {
-    online: 'bg-green-500',
-    offline: 'bg-gray-400',
-    away: 'bg-yellow-500',
-    busy: 'bg-red-500'
+  const getStatusColor = () => {
+    const colors = {
+      online: '#10B981',
+      offline: '#9CA3AF',
+      away: '#F59E0B',
+      busy: '#EF4444'
+    }
+    return colors[status || 'offline']
   }
 
-  const statusSizes = {
-    xs: 'w-1.5 h-1.5',
-    sm: 'w-2 h-2',
-    md: 'w-2.5 h-2.5',
-    lg: 'w-3 h-3',
-    xl: 'w-4 h-4',
-    '2xl': 'w-5 h-5'
+  const getStatusSize = () => {
+    const sizes = {
+      xs: { width: '6px', height: '6px' },
+      sm: { width: '8px', height: '8px' },
+      md: { width: '10px', height: '10px' },
+      lg: { width: '12px', height: '12px' },
+      xl: { width: '16px', height: '16px' },
+      '2xl': { width: '20px', height: '20px' }
+    }
+    return sizes[size]
   }
+
+  const avatarSize = getSizes()
+  const statusSize = getStatusSize()
 
   return (
-    <div className={`relative inline-block ${className}`}>
-      <div className={`${sizes[size]} rounded-full overflow-hidden bg-gray-200 ring-2 ring-white shadow-sm`}>
+    <div 
+      style={{ 
+        position: 'relative', 
+        display: 'inline-block' 
+      }} 
+      className={className}
+    >
+      <div 
+        style={{
+          ...avatarSize,
+          borderRadius: '50%',
+          overflow: 'hidden',
+          backgroundColor: '#E5E7EB',
+          border: '2px solid #ffffff',
+          boxShadow: '0 1px 2px 0 rgb(0 0 0 / 0.05)',
+        }}
+      >
         {src ? (
           <img 
             src={src} 
             alt={alt}
-            className="w-full h-full object-cover"
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+            }}
             loading="lazy"
           />
         ) : (
-          <div className="w-full h-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center">
-            <span className="text-white font-semibold text-sm">
+          <div 
+            style={{
+              width: '100%',
+              height: '100%',
+              background: 'linear-gradient(135deg, #8B5CF6, #7C3AED)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <span 
+              style={{
+                color: '#ffffff',
+                fontWeight: '600',
+                fontSize: '14px',
+              }}
+            >
               {alt.charAt(0).toUpperCase()}
             </span>
           </div>
@@ -62,16 +108,45 @@ export default function Avatar({
       </div>
       
       {status && (
-        <div className={`
-          absolute bottom-0 right-0 ${statusSizes[size]} ${statusColors[status]}
-          rounded-full ring-2 ring-white
-        `} />
+        <div 
+          style={{
+            position: 'absolute',
+            bottom: '0',
+            right: '0',
+            ...statusSize,
+            backgroundColor: getStatusColor(),
+            borderRadius: '50%',
+            border: '2px solid #ffffff',
+          }} 
+        />
       )}
       
       {verified && (
-        <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-purple-600 rounded-full flex items-center justify-center ring-2 ring-white">
-          <svg className="w-3 h-3 text-white\" fill="currentColor\" viewBox="0 0 20 20">
-            <path fillRule="evenodd\" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z\" clipRule="evenodd" />
+        <div 
+          style={{
+            position: 'absolute',
+            bottom: '-4px',
+            right: '-4px',
+            width: '20px',
+            height: '20px',
+            backgroundColor: '#8B5CF6',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            border: '2px solid #ffffff',
+          }}
+        >
+          <svg 
+            style={{ width: '12px', height: '12px', color: '#ffffff' }} 
+            fill="currentColor" 
+            viewBox="0 0 20 20"
+          >
+            <path 
+              fillRule="evenodd" 
+              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" 
+              clipRule="evenodd" 
+            />
           </svg>
         </div>
       )}

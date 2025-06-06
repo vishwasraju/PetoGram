@@ -16,51 +16,110 @@ export default function Button({
   children, 
   className = '',
   disabled,
+  style,
   ...props 
 }: ButtonProps) {
-  const baseClasses = `
-    inline-flex items-center justify-center font-medium transition-all duration-150
-    focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed
-    ${fullWidth ? 'w-full' : ''}
-  `
+  const getButtonStyles = () => {
+    const baseStyles = {
+      display: 'inline-flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontWeight: '500',
+      transition: 'all 150ms cubic-bezier(0.4, 0, 0.2, 1)',
+      cursor: disabled || loading ? 'not-allowed' : 'pointer',
+      opacity: disabled || loading ? 0.5 : 1,
+      width: fullWidth ? '100%' : 'auto',
+    }
 
-  const variants = {
-    primary: `
-      bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800
-      text-white shadow-md hover:shadow-lg focus:ring-purple-500
-      active:transform active:scale-95
-    `,
-    secondary: `
-      bg-gray-100 hover:bg-gray-200 text-gray-900 
-      border border-gray-200 hover:border-gray-300
-      focus:ring-gray-500
-    `,
-    ghost: `
-      text-gray-600 hover:text-gray-900 hover:bg-gray-50
-      focus:ring-gray-500
-    `,
-    danger: `
-      bg-red-500 hover:bg-red-600 text-white shadow-md hover:shadow-lg
-      focus:ring-red-500 active:transform active:scale-95
-    `
+    const variants = {
+      primary: {
+        background: 'linear-gradient(to right, #8B5CF6, #7C3AED)',
+        color: '#ffffff',
+        boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
+        border: 'none',
+      },
+      secondary: {
+        backgroundColor: '#F3F4F6',
+        color: '#374151',
+        border: '1px solid #E5E7EB',
+      },
+      ghost: {
+        backgroundColor: 'transparent',
+        color: '#6B7280',
+        border: 'none',
+      },
+      danger: {
+        backgroundColor: '#EF4444',
+        color: '#ffffff',
+        boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
+        border: 'none',
+      }
+    }
+
+    const sizes = {
+      sm: {
+        padding: '6px 12px',
+        fontSize: '14px',
+        borderRadius: '8px',
+        gap: '6px',
+      },
+      md: {
+        padding: '8px 16px',
+        fontSize: '14px',
+        borderRadius: '12px',
+        gap: '8px',
+      },
+      lg: {
+        padding: '12px 24px',
+        fontSize: '16px',
+        borderRadius: '12px',
+        gap: '8px',
+      }
+    }
+
+    return {
+      ...baseStyles,
+      ...variants[variant],
+      ...sizes[size],
+    }
   }
 
-  const sizes = {
-    sm: 'px-3 py-1.5 text-sm rounded-lg gap-1.5',
-    md: 'px-4 py-2 text-sm rounded-xl gap-2',
-    lg: 'px-6 py-3 text-base rounded-xl gap-2'
+  const buttonStyle = {
+    ...getButtonStyles(),
+    ...style,
   }
 
   return (
     <button
-      className={`${baseClasses} ${variants[variant]} ${sizes[size]} ${className}`}
+      style={buttonStyle}
       disabled={disabled || loading}
+      className={className}
       {...props}
     >
       {loading && (
-        <svg className="animate-spin -ml-1 mr-2 h-4 w-4\" fill="none\" viewBox="0 0 24 24">
-          <circle className="opacity-25\" cx="12\" cy="12\" r="10\" stroke="currentColor\" strokeWidth="4" />
-          <path className="opacity-75\" fill="currentColor\" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+        <svg 
+          style={{ 
+            animation: 'spin 1s linear infinite',
+            marginRight: '8px',
+            width: '16px',
+            height: '16px'
+          }} 
+          fill="none" 
+          viewBox="0 0 24 24"
+        >
+          <circle 
+            style={{ opacity: 0.25 }} 
+            cx="12" 
+            cy="12" 
+            r="10" 
+            stroke="currentColor" 
+            strokeWidth="4" 
+          />
+          <path 
+            style={{ opacity: 0.75 }} 
+            fill="currentColor" 
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" 
+          />
         </svg>
       )}
       {children}
