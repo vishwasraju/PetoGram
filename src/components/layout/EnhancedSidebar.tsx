@@ -18,7 +18,7 @@ import {
   TrendingUp,
   Calendar,
   Users,
-  Hospital
+  Stethoscope
 } from 'lucide-react'
 import Avatar from '../ui/Avatar'
 import Badge from '../ui/Badge'
@@ -34,7 +34,7 @@ const navigationItems = [
   { 
     id: 'book-appointment', 
     name: 'Book Appointment', 
-    icon: Hospital,
+    icon: Stethoscope,
     path: '/book-appointment',
     badge: null,
     description: 'Schedule an appointment'
@@ -204,7 +204,7 @@ export default function EnhancedSidebar({ isOpen, onClose, isMobile }: SidebarPr
           backgroundClip: 'text',
           margin: 0,
         }}>
-          <Hospital size={32} color={designTokens.colors.primary[600]} />
+          <Stethoscope size={32} color={designTokens.colors.primary[600]} />
         </h1>
         
         {isMobile && (
