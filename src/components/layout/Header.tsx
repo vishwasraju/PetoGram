@@ -11,18 +11,15 @@ interface HeaderProps {
 export default function Header({ onMenuClick, isMobile }: HeaderProps) {
   const [searchQuery, setSearchQuery] = useState('')
 
-  const headerStyle: React.CSSProperties = {
-    position: 'sticky',
-    top: 0,
-    zIndex: 30,
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
-    backdropFilter: 'blur(24px)',
-    borderBottom: '1px solid #F3F4F6',
-    padding: '12px 16px'
-  }
-
   return (
-    <header style={headerStyle}>
+    <header style={{
+      padding: '12px 16px',
+      backgroundColor: 'rgba(255, 255, 255, 0.95)',
+      backdropFilter: 'blur(20px)',
+      borderBottom: '1px solid #F3F4F6',
+      position: 'relative',
+      zIndex: 100
+    }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         {/* Left Section */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
@@ -36,7 +33,10 @@ export default function Header({ onMenuClick, isMobile }: HeaderProps) {
                 border: 'none',
                 borderRadius: '12px',
                 cursor: 'pointer',
-                transition: 'all 150ms ease'
+                transition: 'all 150ms ease',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.color = '#111827'
@@ -116,7 +116,7 @@ export default function Header({ onMenuClick, isMobile }: HeaderProps) {
         {/* Right Section */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           {isMobile && (
-            <Button variant="ghost\" size="sm">
+            <Button variant="ghost" size="sm">
               <Search size={20} />
             </Button>
           )}

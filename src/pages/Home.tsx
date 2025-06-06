@@ -151,34 +151,33 @@ export default function Home() {
   }
 
   return (
-    <div className="app-container">
-      {/* Desktop Sidebar */}
-      {!isMobile && (
-        <div className="sidebar-container">
-          <Sidebar 
-            isOpen={true} 
-            onClose={() => {}} 
-            isMobile={false}
-          />
-        </div>
+    <div className="app-layout">
+      {/* Mobile Overlay */}
+      {isMobile && sidebarOpen && (
+        <div 
+          className={`mobile-overlay ${sidebarOpen ? 'active' : ''}`}
+          onClick={() => setSidebarOpen(false)}
+        />
       )}
-      
-      {/* Mobile Sidebar */}
-      {isMobile && (
+
+      {/* Sidebar */}
+      <div className={`sidebar-container ${isMobile && sidebarOpen ? 'mobile-open' : ''}`}>
         <Sidebar 
           isOpen={sidebarOpen} 
           onClose={() => setSidebarOpen(false)} 
-          isMobile={true}
+          isMobile={isMobile}
         />
-      )}
+      </div>
 
       {/* Main Content Area */}
       <div className="main-content">
         {/* Header */}
-        <Header 
-          onMenuClick={() => setSidebarOpen(true)}
-          isMobile={isMobile}
-        />
+        <div className="header-container">
+          <Header 
+            onMenuClick={() => setSidebarOpen(true)}
+            isMobile={isMobile}
+          />
+        </div>
 
         {/* Feed Content */}
         <div className="content-area">
