@@ -39,12 +39,17 @@
   --font-display: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
 }
 
+html, body {
+  height: 100%;
+  overflow-x: hidden;
+}
+
 body {
   font-family: var(--font-sans);
   font-size: 14px;
   line-height: 1.5;
   color: var(--gray-900);
-  background-color: #ffffff;
+  background-color: var(--gray-50);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
@@ -53,6 +58,63 @@ body {
 #root {
   min-height: 100vh;
   width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Layout Classes */
+.app-container {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--gray-50);
+}
+
+.sidebar-container {
+  flex-shrink: 0;
+  width: 320px;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.main-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.content-area {
+  flex: 1;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 0 16px;
+  width: 100%;
+}
+
+.right-sidebar {
+  flex-shrink: 0;
+  width: 320px;
+  padding: 24px;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+/* Mobile Layout */
+@media (max-width: 1024px) {
+  .sidebar-container {
+    display: none;
+  }
+  
+  .right-sidebar {
+    display: none;
+  }
+  
+  .content-area {
+    max-width: 100%;
+    padding: 0 12px;
+  }
 }
 
 /* Utility Classes */
@@ -77,6 +139,7 @@ body {
 .flex { display: flex; }
 .flex-1 { flex: 1; }
 .flex-shrink-0 { flex-shrink: 0; }
+.flex-col { flex-direction: column; }
 .items-center { align-items: center; }
 .justify-between { justify-content: space-between; }
 .justify-center { justify-content: center; }
@@ -123,12 +186,14 @@ body {
 .space-y-6 > * + * { margin-top: 1.5rem; }
 
 .sticky { position: sticky; }
+.top-0 { top: 0; }
 .top-24 { top: 6rem; }
 .relative { position: relative; }
 .fixed { position: fixed; }
 .absolute { position: absolute; }
 .inset-0 { top: 0; right: 0; bottom: 0; left: 0; }
 
+.z-10 { z-index: 10; }
 .z-30 { z-index: 30; }
 .z-40 { z-index: 40; }
 .z-50 { z-index: 50; }
@@ -279,6 +344,7 @@ img {
 /* Mobile Responsive */
 @media (max-width: 1024px) {
   .lg\:hidden { display: none; }
+  .lg\:block { display: block; }
 }
 
 @media (max-width: 768px) {
@@ -290,4 +356,28 @@ img {
   .sm\:hidden { display: none; }
   .sm\:block { display: block; }
   .sm\:text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+}
+
+/* Prevent layout shifts */
+.layout-stable {
+  contain: layout style;
+}
+
+/* Ensure proper stacking context */
+.sidebar-fixed {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  z-index: 1000;
+}
+
+.main-offset {
+  margin-left: 320px;
+}
+
+@media (max-width: 1024px) {
+  .main-offset {
+    margin-left: 0;
+  }
 }

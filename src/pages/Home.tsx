@@ -151,38 +151,38 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="flex">
-        {/* Sidebar */}
-        {!isMobile && (
-          <div className="w-80 flex-shrink-0">
-            <Sidebar 
-              isOpen={true} 
-              onClose={() => {}} 
-              isMobile={false}
-            />
-          </div>
-        )}
-        
-        {/* Mobile Sidebar */}
-        {isMobile && (
+    <div className="app-container">
+      {/* Desktop Sidebar */}
+      {!isMobile && (
+        <div className="sidebar-container">
           <Sidebar 
-            isOpen={sidebarOpen} 
-            onClose={() => setSidebarOpen(false)} 
-            isMobile={true}
+            isOpen={true} 
+            onClose={() => {}} 
+            isMobile={false}
           />
-        )}
+        </div>
+      )}
+      
+      {/* Mobile Sidebar */}
+      {isMobile && (
+        <Sidebar 
+          isOpen={sidebarOpen} 
+          onClose={() => setSidebarOpen(false)} 
+          isMobile={true}
+        />
+      )}
 
-        {/* Main Content */}
-        <div className="flex-1 min-h-screen">
-          {/* Header */}
-          <Header 
-            onMenuClick={() => setSidebarOpen(true)}
-            isMobile={isMobile}
-          />
+      {/* Main Content Area */}
+      <div className="main-content">
+        {/* Header */}
+        <Header 
+          onMenuClick={() => setSidebarOpen(true)}
+          isMobile={isMobile}
+        />
 
-          {/* Feed */}
-          <main className="max-w-2xl mx-auto px-4 py-6">
+        {/* Feed Content */}
+        <div className="content-area">
+          <div style={{ paddingTop: '24px', paddingBottom: '24px' }}>
             {/* Create Post */}
             <CreatePost />
 
@@ -199,70 +199,115 @@ export default function Home() {
             </div>
 
             {/* Load More */}
-            <div className="text-center py-8">
-              <button className="px-6 py-3 bg-white border border-gray-200 rounded-xl text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-colors font-medium">
+            <div className="text-center" style={{ paddingTop: '32px', paddingBottom: '32px' }}>
+              <button 
+                style={{
+                  padding: '12px 24px',
+                  backgroundColor: '#ffffff',
+                  border: '1px solid #E5E7EB',
+                  borderRadius: '12px',
+                  color: '#6B7280',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  transition: 'all 150ms ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = '#F9FAFB'
+                  e.currentTarget.style.borderColor = '#D1D5DB'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = '#ffffff'
+                  e.currentTarget.style.borderColor = '#E5E7EB'
+                }}
+              >
                 Load More Posts
               </button>
             </div>
-          </main>
+          </div>
         </div>
+      </div>
 
-        {/* Right Sidebar - Desktop Only */}
-        {!isMobile && (
-          <div className="w-80 flex-shrink-0 p-6">
-            <div className="sticky top-24 space-y-6">
-              {/* Suggested Friends */}
-              <div className="bg-white rounded-2xl p-6 border border-gray-100">
-                <h3 className="font-semibold text-gray-900 mb-4">Suggested for you</h3>
-                <div className="space-y-4">
-                  {[
-                    { name: 'Emma Wilson', pets: 'with Charlie', avatar: 'https://images.pexels.com/photos/733872/pexels-photo-733872.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2' },
-                    { name: 'David Kim', pets: 'with Milo & Coco', avatar: 'https://images.pexels.com/photos/1212984/pexels-photo-1212984.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2' },
-                    { name: 'Lisa Garcia', pets: 'with Buddy', avatar: 'https://images.pexels.com/photos/1036622/pexels-photo-1036622.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2' },
-                  ].map((user, index) => (
-                    <div key={index} className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <img 
-                          src={user.avatar}
-                          alt={user.name}
-                          className="w-10 h-10 rounded-full object-cover"
-                        />
-                        <div>
-                          <div className="font-medium text-gray-900">{user.name}</div>
-                          <div className="text-sm text-gray-500">{user.pets}</div>
-                        </div>
-                      </div>
-                      <button className="px-4 py-1.5 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition-colors">
-                        Follow
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Trending Hashtags */}
-              <div className="bg-white rounded-2xl p-6 border border-gray-100">
-                <h3 className="font-semibold text-gray-900 mb-4">Trending</h3>
-                <div className="space-y-3">
-                  {[
-                    { tag: '#PuppyLove', posts: '45.2K posts' },
-                    { tag: '#CatsOfInstagram', posts: '38.9K posts' },
-                    { tag: '#DogTraining', posts: '23.1K posts' },
-                    { tag: '#PetPhotography', posts: '19.8K posts' },
-                  ].map((item, index) => (
-                    <div key={index} className="flex justify-between items-center">
+      {/* Right Sidebar - Desktop Only */}
+      {!isMobile && (
+        <div className="right-sidebar">
+          <div className="sticky top-24 space-y-6">
+            {/* Suggested Friends */}
+            <div style={{
+              backgroundColor: '#ffffff',
+              borderRadius: '16px',
+              padding: '24px',
+              border: '1px solid #F3F4F6',
+              boxShadow: '0 1px 2px 0 rgb(0 0 0 / 0.05)'
+            }}>
+              <h3 style={{ fontWeight: '600', color: '#111827', marginBottom: '16px' }}>
+                Suggested for you
+              </h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {[
+                  { name: 'Emma Wilson', pets: 'with Charlie', avatar: 'https://images.pexels.com/photos/733872/pexels-photo-733872.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2' },
+                  { name: 'David Kim', pets: 'with Milo & Coco', avatar: 'https://images.pexels.com/photos/1212984/pexels-photo-1212984.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2' },
+                  { name: 'Lisa Garcia', pets: 'with Buddy', avatar: 'https://images.pexels.com/photos/1036622/pexels-photo-1036622.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2' },
+                ].map((user, index) => (
+                  <div key={index} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <img 
+                        src={user.avatar}
+                        alt={user.name}
+                        style={{ width: '40px', height: '40px', borderRadius: '20px', objectFit: 'cover' }}
+                      />
                       <div>
-                        <div className="font-medium text-purple-600">{item.tag}</div>
-                        <div className="text-sm text-gray-500">{item.posts}</div>
+                        <div style={{ fontWeight: '500', color: '#111827' }}>{user.name}</div>
+                        <div style={{ fontSize: '14px', color: '#6B7280' }}>{user.pets}</div>
                       </div>
                     </div>
-                  ))}
-                </div>
+                    <button style={{
+                      padding: '6px 16px',
+                      backgroundColor: '#8B5CF6',
+                      color: '#ffffff',
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      borderRadius: '8px',
+                      border: 'none',
+                      cursor: 'pointer',
+                      transition: 'background-color 150ms ease'
+                    }}>
+                      Follow
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Trending Hashtags */}
+            <div style={{
+              backgroundColor: '#ffffff',
+              borderRadius: '16px',
+              padding: '24px',
+              border: '1px solid #F3F4F6',
+              boxShadow: '0 1px 2px 0 rgb(0 0 0 / 0.05)'
+            }}>
+              <h3 style={{ fontWeight: '600', color: '#111827', marginBottom: '16px' }}>
+                Trending
+              </h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {[
+                  { tag: '#PuppyLove', posts: '45.2K posts' },
+                  { tag: '#CatsOfInstagram', posts: '38.9K posts' },
+                  { tag: '#DogTraining', posts: '23.1K posts' },
+                  { tag: '#PetPhotography', posts: '19.8K posts' },
+                ].map((item, index) => (
+                  <div key={index} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <div style={{ fontWeight: '500', color: '#8B5CF6' }}>{item.tag}</div>
+                      <div style={{ fontSize: '14px', color: '#6B7280' }}>{item.posts}</div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   )
 }

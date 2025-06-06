@@ -14,7 +14,6 @@ import {
   Video
 } from 'lucide-react'
 import Avatar from '../ui/Avatar'
-import Button from '../ui/Button'
 
 interface SidebarProps {
   isOpen: boolean
@@ -48,31 +47,68 @@ export default function Sidebar({ isOpen, onClose, isMobile }: SidebarProps) {
       <Link
         to={item.path}
         onClick={isMobile ? onClose : undefined}
-        className={`
-          group flex items-center gap-4 px-3 py-3 rounded-xl transition-all duration-200
-          ${isActive 
-            ? 'bg-gradient-to-r from-purple-50 to-purple-100 text-purple-700 shadow-sm' 
-            : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '16px',
+          padding: '12px',
+          borderRadius: '12px',
+          textDecoration: 'none',
+          transition: 'all 200ms ease',
+          backgroundColor: isActive ? '#F5F3FF' : 'transparent',
+          color: isActive ? '#7C3AED' : '#374151',
+          fontWeight: isActive ? '600' : '500'
+        }}
+        onMouseEnter={(e) => {
+          if (!isActive) {
+            e.currentTarget.style.backgroundColor = '#F9FAFB'
+            e.currentTarget.style.color = '#111827'
           }
-        `}
+        }}
+        onMouseLeave={(e) => {
+          if (!isActive) {
+            e.currentTarget.style.backgroundColor = 'transparent'
+            e.currentTarget.style.color = '#374151'
+          }
+        }}
       >
-        <div className={`
-          p-2 rounded-lg transition-all duration-200
-          ${isActive 
-            ? 'bg-purple-600 text-white shadow-md' 
-            : 'text-gray-500 group-hover:text-gray-700 group-hover:bg-gray-100'
-          }
-        `}>
+        <div style={{
+          padding: '8px',
+          borderRadius: '8px',
+          backgroundColor: isActive ? '#8B5CF6' : '#F3F4F6',
+          color: isActive ? '#ffffff' : '#6B7280',
+          transition: 'all 200ms ease'
+        }}>
           <IconComponent size={20} strokeWidth={2.5} />
         </div>
-        <span className={`font-medium ${isActive ? 'font-semibold' : ''}`}>
-          {item.name}
-        </span>
+        <span>{item.name}</span>
         {isActive && (
-          <div className="ml-auto w-1 h-8 bg-purple-600 rounded-full" />
+          <div style={{
+            marginLeft: 'auto',
+            width: '4px',
+            height: '32px',
+            backgroundColor: '#8B5CF6',
+            borderRadius: '2px'
+          }} />
         )}
       </Link>
     )
+  }
+
+  const sidebarStyle: React.CSSProperties = {
+    position: isMobile ? 'fixed' : 'sticky',
+    top: 0,
+    left: 0,
+    height: '100vh',
+    width: '320px',
+    backgroundColor: '#ffffff',
+    borderRight: '1px solid #F3F4F6',
+    boxShadow: isMobile ? '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)' : 'none',
+    transform: isMobile ? (isOpen ? 'translateX(0)' : 'translateX(-100%)') : 'translateX(0)',
+    transition: 'transform 300ms ease-out',
+    zIndex: isMobile ? 1000 : 10,
+    display: 'flex',
+    flexDirection: 'column'
   }
 
   return (
@@ -80,99 +116,193 @@ export default function Sidebar({ isOpen, onClose, isMobile }: SidebarProps) {
       {/* Mobile Overlay */}
       {isMobile && isOpen && (
         <div 
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 transition-opacity duration-300"
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            backdropFilter: 'blur(4px)',
+            zIndex: 999,
+            transition: 'opacity 300ms ease'
+          }}
           onClick={onClose}
         />
       )}
 
       {/* Sidebar */}
-      <aside className={`
-        ${isMobile ? 'fixed top-0 left-0 z-50' : 'relative'} 
-        h-full w-80 bg-white border-r border-gray-100
-        transform transition-transform duration-300 ease-out
-        ${isMobile ? (isOpen ? 'translate-x-0' : '-translate-x-full') : 'translate-x-0'}
-        shadow-xl
-      `}>
-        <div className="flex flex-col h-full">
-          {/* Header */}
-          <div className="p-6 border-b border-gray-100">
-            <div className="flex items-center justify-between">
-              <h1 className="text-2xl font-bold font-display bg-gradient-to-r from-purple-600 to-purple-700 bg-clip-text text-transparent">
-                PetoGram
-              </h1>
-              {isMobile && (
-                <button
-                  onClick={onClose}
-                  className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              )}
+      <aside style={sidebarStyle}>
+        {/* Header */}
+        <div style={{ 
+          padding: '24px', 
+          borderBottom: '1px solid #F3F4F6' 
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <h1 style={{
+              fontSize: '24px',
+              fontWeight: '700',
+              fontFamily: 'Poppins, sans-serif',
+              background: 'linear-gradient(to right, #8B5CF6, #7C3AED)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              margin: 0
+            }}>
+              PetoGram
+            </h1>
+            {isMobile && (
+              <button
+                onClick={onClose}
+                style={{
+                  padding: '8px',
+                  color: '#9CA3AF',
+                  backgroundColor: 'transparent',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  transition: 'all 150ms ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = '#6B7280'
+                  e.currentTarget.style.backgroundColor = '#F3F4F6'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = '#9CA3AF'
+                  e.currentTarget.style.backgroundColor = 'transparent'
+                }}
+              >
+                <svg style={{ width: '20px', height: '20px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* User Profile */}
+        <div style={{ 
+          padding: '24px', 
+          borderBottom: '1px solid #F3F4F6' 
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <Avatar 
+              src="https://images.pexels.com/photos/1036622/pexels-photo-1036622.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2"
+              alt="John Doe"
+              size="lg"
+              status="online"
+              verified
+            />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <h3 style={{ 
+                fontWeight: '600', 
+                color: '#111827', 
+                margin: 0,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap'
+              }}>
+                John Doe
+              </h3>
+              <p style={{ 
+                fontSize: '14px', 
+                color: '#6B7280', 
+                margin: 0,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap'
+              }}>
+                @johndoe
+              </p>
             </div>
           </div>
-
-          {/* User Profile */}
-          <div className="p-6 border-b border-gray-100">
-            <div className="flex items-center gap-3">
-              <Avatar 
-                src="https://images.pexels.com/photos/1036622/pexels-photo-1036622.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2"
-                alt="John Doe"
-                size="lg"
-                status="online"
-                verified
-              />
-              <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-gray-900 truncate">John Doe</h3>
-                <p className="text-sm text-gray-500 truncate">@johndoe</p>
-              </div>
+          
+          <div style={{ 
+            marginTop: '16px', 
+            display: 'flex', 
+            gap: '16px', 
+            fontSize: '14px' 
+          }}>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontWeight: '600', color: '#111827' }}>42</div>
+              <div style={{ color: '#6B7280' }}>Posts</div>
             </div>
-            
-            <div className="mt-4 flex gap-4 text-sm">
-              <div className="text-center">
-                <div className="font-semibold text-gray-900">42</div>
-                <div className="text-gray-500">Posts</div>
-              </div>
-              <div className="text-center">
-                <div className="font-semibold text-gray-900">1.2K</div>
-                <div className="text-gray-500">Followers</div>
-              </div>
-              <div className="text-center">
-                <div className="font-semibold text-gray-900">389</div>
-                <div className="text-gray-500">Following</div>
-              </div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontWeight: '600', color: '#111827' }}>1.2K</div>
+              <div style={{ color: '#6B7280' }}>Followers</div>
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontWeight: '600', color: '#111827' }}>389</div>
+              <div style={{ color: '#6B7280' }}>Following</div>
             </div>
           </div>
+        </div>
 
-          {/* Navigation */}
-          <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-            {navigationItems.map((item) => (
-              <NavItem 
-                key={item.id} 
-                item={item} 
-                isActive={location.pathname === item.path}
-              />
-            ))}
-          </nav>
+        {/* Navigation */}
+        <nav style={{ 
+          flex: 1, 
+          padding: '16px', 
+          overflowY: 'auto',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '4px'
+        }}>
+          {navigationItems.map((item) => (
+            <NavItem 
+              key={item.id} 
+              item={item} 
+              isActive={location.pathname === item.path}
+            />
+          ))}
+        </nav>
 
-          {/* Bottom Section */}
-          <div className="p-4 border-t border-gray-100 space-y-1">
-            {bottomItems.map((item) => (
-              <NavItem 
-                key={item.id} 
-                item={item} 
-                isActive={location.pathname === item.path}
-              />
-            ))}
-            
-            <button className="w-full flex items-center gap-4 px-3 py-3 text-red-600 hover:bg-red-50 rounded-xl transition-colors">
-              <div className="p-2 text-red-500 hover:bg-red-100 rounded-lg transition-colors">
-                <LogOut size={20} strokeWidth={2.5} />
-              </div>
-              <span className="font-medium">Log Out</span>
-            </button>
-          </div>
+        {/* Bottom Section */}
+        <div style={{ 
+          padding: '16px', 
+          borderTop: '1px solid #F3F4F6',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '4px'
+        }}>
+          {bottomItems.map((item) => (
+            <NavItem 
+              key={item.id} 
+              item={item} 
+              isActive={location.pathname === item.path}
+            />
+          ))}
+          
+          <button style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '16px',
+            padding: '12px',
+            color: '#EF4444',
+            backgroundColor: 'transparent',
+            border: 'none',
+            borderRadius: '12px',
+            cursor: 'pointer',
+            transition: 'background-color 150ms ease',
+            fontWeight: '500',
+            width: '100%'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = '#FEF2F2'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = 'transparent'
+          }}>
+            <div style={{
+              padding: '8px',
+              color: '#EF4444',
+              backgroundColor: '#FEE2E2',
+              borderRadius: '8px',
+              transition: 'background-color 150ms ease'
+            }}>
+              <LogOut size={20} strokeWidth={2.5} />
+            </div>
+            <span>Log Out</span>
+          </button>
         </div>
       </aside>
     </>
