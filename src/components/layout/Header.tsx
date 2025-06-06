@@ -51,7 +51,7 @@ export default function Header({ onMenuClick, isMobile }: HeaderProps) {
         {/* Right Section */}
         <div className="flex items-center gap-2">
           {isMobile && (
-            <Button variant="ghost" size="sm">
+            <Button variant="ghost\" size="sm">
               <Search size={20} />
             </Button>
           )}
