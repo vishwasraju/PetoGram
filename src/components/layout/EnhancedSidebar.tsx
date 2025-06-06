@@ -1,0 +1,468 @@
+import React, { useState } from 'react'
+import { Link, useLocation } from 'react-router-dom'
+import { 
+  Home, 
+  Search, 
+  Heart, 
+  MessageCircle, 
+  PlusSquare,
+  User,
+  Settings,
+  HelpCircle,
+  LogOut,
+  Compass,
+  Video,
+  X,
+  Bell,
+  Bookmark,
+  TrendingUp,
+  Calendar,
+  Users
+} from 'lucide-react'
+import Avatar from '../ui/Avatar'
+import Badge from '../ui/Badge'
+import { designTokens } from '../../design-system/tokens'
+
+interface SidebarProps {
+  isOpen: boolean
+  onClose: () => void
+  isMobile: boolean
+}
+
+const navigationItems = [
+  { 
+    id: 'home', 
+    name: 'Home', 
+    icon: Home, 
+    path: '/',
+    badge: null,
+    description: 'Your personalized feed'
+  },
+  { 
+    id: 'explore', 
+    name: 'Explore', 
+    icon: Compass, 
+    path: '/explore',
+    badge: null,
+    description: 'Discover new content'
+  },
+  { 
+    id: 'search', 
+    name: 'Search', 
+    icon: Search, 
+    path: '/search',
+    badge: null,
+    description: 'Find pets and people'
+  },
+  { 
+    id: 'messages', 
+    name: 'Messages', 
+    icon: MessageCircle, 
+    path: '/messages',
+    badge: { count: 2, variant: 'primary' as const },
+    description: 'Chat with friends'
+  },
+  { 
+    id: 'notifications', 
+    name: 'Notifications', 
+    icon: Bell, 
+    path: '/notifications',
+    badge: { count: 5, variant: 'error' as const },
+    description: 'Stay updated'
+  },
+  { 
+    id: 'create', 
+    name: 'Create', 
+    icon: PlusSquare, 
+    path: '/create',
+    badge: null,
+    description: 'Share your moments'
+  },
+  { 
+    id: 'reels', 
+    name: 'Reels', 
+    icon: Video, 
+    path: '/reels',
+    badge: { count: 'NEW', variant: 'success' as const },
+    description: 'Short pet videos'
+  },
+  { 
+    id: 'saved', 
+    name: 'Saved', 
+    icon: Bookmark, 
+    path: '/saved',
+    badge: null,
+    description: 'Your saved posts'
+  },
+]
+
+const quickActions = [
+  { id: 'trending', name: 'Trending', icon: TrendingUp, path: '/trending' },
+  { id: 'events', name: 'Events', icon: Calendar, path: '/events' },
+  { id: 'groups', name: 'Groups', icon: Users, path: '/groups' },
+]
+
+const bottomItems = [
+  { id: 'settings', name: 'Settings', icon: Settings, path: '/settings' },
+  { id: 'help', name: 'Help & Support', icon: HelpCircle, path: '/help' },
+]
+
+export default function EnhancedSidebar({ isOpen, onClose, isMobile }: SidebarProps) {
+  const location = useLocation()
+  const [hoveredItem, setHoveredItem] = useState<string | null>(null)
+
+  const NavItem = ({ 
+    item, 
+    isActive, 
+    showDescription = false 
+  }: { 
+    item: any
+    isActive: boolean
+    showDescription?: boolean 
+  }) => {
+    const IconComponent = item.icon
+    
+    return (
+      <Link
+        to={item.path}
+        onClick={isMobile ? onClose : undefined}
+        onMouseEnter={() => setHoveredItem(item.id)}
+        onMouseLeave={() => setHoveredItem(null)}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: designTokens.spacing[4],
+          padding: `${designTokens.spacing[3]} ${designTokens.spacing[4]}`,
+          borderRadius: designTokens.borderRadius.xl,
+          textDecoration: 'none',
+          transition: `all ${designTokens.animation.duration.normal} ${designTokens.animation.easing.ease}`,
+          backgroundColor: isActive ? designTokens.colors.primary[50] : 'transparent',
+          color: isActive ? designTokens.colors.primary[700] : designTokens.colors.gray[600],
+          fontWeight: isActive ? designTokens.typography.fontWeight.semibold : designTokens.typography.fontWeight.medium,
+          margin: `${designTokens.spacing[1]} 0`,
+          position: 'relative',
+          transform: hoveredItem === item.id ? 'translateX(4px)' : 'translateX(0)',
+        }}
+      >
+        <div style={{
+          padding: designTokens.spacing[2],
+          borderRadius: designTokens.borderRadius.lg,
+          backgroundColor: isActive ? designTokens.colors.primary[500] : designTokens.colors.gray[100],
+          color: isActive ? designTokens.colors.white : designTokens.colors.gray[600],
+          transition: `all ${designTokens.animation.duration.fast} ${designTokens.animation.easing.ease}`,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          position: 'relative',
+        }}>
+          <IconComponent size={20} strokeWidth={2.5} />
+          
+          {item.badge && (
+            <div style={{
+              position: 'absolute',
+              top: '-6px',
+              right: '-6px',
+              minWidth: '18px',
+              height: '18px',
+              borderRadius: designTokens.borderRadius.full,
+              backgroundColor: item.badge.variant === 'primary' ? designTokens.colors.primary[500] :
+                              item.badge.variant === 'error' ? designTokens.colors.error[500] :
+                              designTokens.colors.success[500],
+              color: designTokens.colors.white,
+              fontSize: '10px',
+              fontWeight: designTokens.typography.fontWeight.bold,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '0 4px',
+            }}>
+              {typeof item.badge.count === 'number' && item.badge.count > 99 ? '99+' : item.badge.count}
+            </div>
+          )}
+        </div>
+        
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: designTokens.typography.fontSize.base }}>
+            {item.name}
+          </div>
+          {showDescription && item.description && (
+            <div style={{
+              fontSize: designTokens.typography.fontSize.xs,
+              color: designTokens.colors.gray[500],
+              marginTop: '2px',
+            }}>
+              {item.description}
+            </div>
+          )}
+        </div>
+        
+        {isActive && (
+          <div style={{
+            position: 'absolute',
+            right: 0,
+            top: '50%',
+            transform: 'translateY(-50%)',
+            width: '3px',
+            height: '24px',
+            backgroundColor: designTokens.colors.primary[500],
+            borderRadius: designTokens.borderRadius.full,
+          }} />
+        )}
+      </Link>
+    )
+  }
+
+  return (
+    <aside style={{
+      width: '100%',
+      height: '100vh',
+      backgroundColor: designTokens.colors.white,
+      display: 'flex',
+      flexDirection: 'column',
+      borderRight: `1px solid ${designTokens.colors.gray[100]}`,
+      position: 'relative',
+      boxShadow: isMobile ? designTokens.boxShadow.xl : 'none',
+    }}>
+      {/* Header */}
+      <div style={{ 
+        padding: designTokens.spacing[6], 
+        borderBottom: `1px solid ${designTokens.colors.gray[100]}`,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        flexShrink: 0,
+        background: `linear-gradient(135deg, ${designTokens.colors.primary[50]}, ${designTokens.colors.white})`,
+      }}>
+        <h1 style={{
+          fontSize: designTokens.typography.fontSize['2xl'],
+          fontWeight: designTokens.typography.fontWeight.bold,
+          fontFamily: designTokens.typography.fontFamily.display.join(', '),
+          background: `linear-gradient(135deg, ${designTokens.colors.primary[600]}, ${designTokens.colors.primary[700]})`,
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          backgroundClip: 'text',
+          margin: 0,
+        }}>
+          PetoGram
+        </h1>
+        
+        {isMobile && (
+          <button
+            onClick={onClose}
+            style={{
+              padding: designTokens.spacing[2],
+              color: designTokens.colors.gray[400],
+              backgroundColor: 'transparent',
+              border: 'none',
+              borderRadius: designTokens.borderRadius.lg,
+              cursor: 'pointer',
+              transition: `all ${designTokens.animation.duration.fast} ${designTokens.animation.easing.ease}`,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = designTokens.colors.gray[600]
+              e.currentTarget.style.backgroundColor = designTokens.colors.gray[100]
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = designTokens.colors.gray[400]
+              e.currentTarget.style.backgroundColor = 'transparent'
+            }}
+          >
+            <X size={20} />
+          </button>
+        )}
+      </div>
+
+      {/* User Profile */}
+      <div style={{ 
+        padding: designTokens.spacing[6], 
+        borderBottom: `1px solid ${designTokens.colors.gray[100]}`,
+        flexShrink: 0,
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: designTokens.spacing[3] }}>
+          <Avatar 
+            src="https://images.pexels.com/photos/1036622/pexels-photo-1036622.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2"
+            alt="John Doe"
+            size="xl"
+            status="online"
+            verified
+          />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <h3 style={{ 
+              fontWeight: designTokens.typography.fontWeight.semibold, 
+              color: designTokens.colors.gray[900], 
+              margin: 0,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+              fontSize: designTokens.typography.fontSize.lg,
+            }}>
+              John Doe
+            </h3>
+            <p style={{ 
+              fontSize: designTokens.typography.fontSize.sm, 
+              color: designTokens.colors.gray[500], 
+              margin: 0,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}>
+              @johndoe
+            </p>
+            <Badge variant="primary" size="sm" style={{ marginTop: designTokens.spacing[1] }}>
+              Pro Member
+            </Badge>
+          </div>
+        </div>
+        
+        <div style={{ 
+          marginTop: designTokens.spacing[4], 
+          display: 'flex', 
+          gap: designTokens.spacing[6], 
+          fontSize: designTokens.typography.fontSize.sm,
+        }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ 
+              fontWeight: designTokens.typography.fontWeight.bold, 
+              color: designTokens.colors.gray[900],
+              fontSize: designTokens.typography.fontSize.lg,
+            }}>42</div>
+            <div style={{ color: designTokens.colors.gray[500] }}>Posts</div>
+          </div>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ 
+              fontWeight: designTokens.typography.fontWeight.bold, 
+              color: designTokens.colors.gray[900],
+              fontSize: designTokens.typography.fontSize.lg,
+            }}>1.2K</div>
+            <div style={{ color: designTokens.colors.gray[500] }}>Followers</div>
+          </div>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ 
+              fontWeight: designTokens.typography.fontWeight.bold, 
+              color: designTokens.colors.gray[900],
+              fontSize: designTokens.typography.fontSize.lg,
+            }}>389</div>
+            <div style={{ color: designTokens.colors.gray[500] }}>Following</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Scrollable Navigation Container */}
+      <div style={{ 
+        flex: 1, 
+        overflowY: 'auto',
+        display: 'flex',
+        flexDirection: 'column',
+        minHeight: 0,
+      }}>
+        {/* Main Navigation */}
+        <nav style={{ 
+          padding: designTokens.spacing[4],
+          paddingBottom: designTokens.spacing[2],
+        }}>
+          <div style={{
+            fontSize: designTokens.typography.fontSize.xs,
+            fontWeight: designTokens.typography.fontWeight.semibold,
+            color: designTokens.colors.gray[500],
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em',
+            marginBottom: designTokens.spacing[3],
+          }}>
+            Main Menu
+          </div>
+          
+          {navigationItems.map((item) => (
+            <NavItem 
+              key={item.id} 
+              item={item} 
+              isActive={location.pathname === item.path}
+              showDescription={!isMobile}
+            />
+          ))}
+        </nav>
+
+        {/* Quick Actions */}
+        <div style={{ 
+          padding: `${designTokens.spacing[2]} ${designTokens.spacing[4]}`,
+          borderTop: `1px solid ${designTokens.colors.gray[100]}`,
+        }}>
+          <div style={{
+            fontSize: designTokens.typography.fontSize.xs,
+            fontWeight: designTokens.typography.fontWeight.semibold,
+            color: designTokens.colors.gray[500],
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em',
+            marginBottom: designTokens.spacing[3],
+          }}>
+            Quick Actions
+          </div>
+          
+          {quickActions.map((item) => (
+            <NavItem 
+              key={item.id} 
+              item={item} 
+              isActive={location.pathname === item.path}
+            />
+          ))}
+        </div>
+
+        {/* Bottom Section */}
+        <div style={{ 
+          padding: `${designTokens.spacing[2]} ${designTokens.spacing[4]} ${designTokens.spacing[4]}`,
+          borderTop: `1px solid ${designTokens.colors.gray[100]}`,
+          marginTop: 'auto',
+        }}>
+          {bottomItems.map((item) => (
+            <NavItem 
+              key={item.id} 
+              item={item} 
+              isActive={location.pathname === item.path}
+            />
+          ))}
+          
+          <button style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: designTokens.spacing[4],
+            padding: `${designTokens.spacing[3]} ${designTokens.spacing[4]}`,
+            color: designTokens.colors.error[600],
+            backgroundColor: 'transparent',
+            border: 'none',
+            borderRadius: designTokens.borderRadius.xl,
+            cursor: 'pointer',
+            transition: `all ${designTokens.animation.duration.fast} ${designTokens.animation.easing.ease}`,
+            fontWeight: designTokens.typography.fontWeight.medium,
+            width: '100%',
+            fontSize: designTokens.typography.fontSize.base,
+            margin: `${designTokens.spacing[1]} 0`,
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = designTokens.colors.error[50]
+            e.currentTarget.style.transform = 'translateX(4px)'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = 'transparent'
+            e.currentTarget.style.transform = 'translateX(0)'
+          }}>
+            <div style={{
+              padding: designTokens.spacing[2],
+              color: designTokens.colors.error[600],
+              backgroundColor: designTokens.colors.error[100],
+              borderRadius: designTokens.borderRadius.lg,
+              transition: `all ${designTokens.animation.duration.fast} ${designTokens.animation.easing.ease}`,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+              <LogOut size={20} strokeWidth={2.5} />
+            </div>
+            <span>Log Out</span>
+          </button>
+        </div>
+      </div>
+    </aside>
+  )
+}
