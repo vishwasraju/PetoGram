@@ -87,10 +87,10 @@ export default function Sidebar({ isOpen, onClose, isMobile }: SidebarProps) {
 
       {/* Sidebar */}
       <aside className={`
-        fixed top-0 left-0 h-full w-80 bg-white border-r border-gray-100 z-50
+        ${isMobile ? 'fixed top-0 left-0 z-50' : 'relative'} 
+        h-full w-80 bg-white border-r border-gray-100
         transform transition-transform duration-300 ease-out
         ${isMobile ? (isOpen ? 'translate-x-0' : '-translate-x-full') : 'translate-x-0'}
-        ${!isMobile ? 'relative' : ''}
         shadow-xl
       `}>
         <div className="flex flex-col h-full">
