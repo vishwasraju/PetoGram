@@ -25,7 +25,7 @@ export const registerUser = async (userData: {
       .from('users')
       .select('id')
       .eq('email', userData.email.toLowerCase())
-      .single()
+      .maybeSingle()
 
     if (existingUser) {
       throw new Error('User with this email already exists')
