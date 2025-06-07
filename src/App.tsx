@@ -56,25 +56,25 @@ function App() {
       />
       <Route 
         path="/login" 
-        element={isAuthenticated ? <Navigate to="/" replace /> : <LoginPage />} 
+        element={isAuthenticated ? <Navigate to="/\" replace /> : <LoginPage />} 
       />
       <Route 
         path="/signup" 
-        element={isAuthenticated ? <Navigate to="/" replace /> : <SignupPage />} 
+        element={isAuthenticated ? <Navigate to="/\" replace /> : <SignupPage />} 
       />
       <Route 
         path="/create-profile" 
-        element={isAuthenticated ? <Navigate to="/" replace /> : <CreateProfilePage />} 
+        element={isAuthenticated ? <Navigate to="/\" replace /> : <CreateProfilePage />} 
       />
       
       {/* Protected Routes */}
       <Route 
         path="/profile" 
-        element={isAuthenticated ? <Profile /> : <Navigate to="/login" replace />} 
+        element={isAuthenticated ? <Profile /> : <Navigate to="/login\" replace />} 
       />
       <Route 
         path="/messages" 
-        element={isAuthenticated ? <Messages /> : <Navigate to="/login" replace />} 
+        element={isAuthenticated ? <Messages /> : <Navigate to="/login\" replace />} 
       />
       
       {/* 404 Route */}
