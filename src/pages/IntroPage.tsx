@@ -1,18 +1,17 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { validateLogin, setAuthenticationState, registerUser } from '../utils/auth'
+import { validateLogin, setAuthenticationState } from '../utils/auth'
+import SignupModal from '../components/SignupModal'
 
 export default function IntroPage() {
   const navigate = useNavigate()
-  const [isSignupMode, setIsSignupMode] = useState(false)
   const [formData, setFormData] = useState({
-    fullName: '',
     email: '',
     password: '',
-    confirmPassword: '',
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [isLoading, setIsLoading] = useState(false)
+  const [isSignupModalOpen, setIsSignupModalOpen] = useState(false)
   const [isLogoGlowing, setIsLogoGlowing] = useState(false)
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -26,10 +25,6 @@ export default function IntroPage() {
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
 
-    if (isSignupMode && !formData.fullName.trim()) {
-      newErrors.fullName = 'Full name is required'
-    }
-
     if (!formData.email) {
       newErrors.email = 'Email is required'
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
@@ -38,14 +33,8 @@ export default function IntroPage() {
 
     if (!formData.password) {
       newErrors.password = 'Password is required'
-    } else if (isSignupMode && formData.password.length < 6) {
+    } else if (formData.password.length < 6) {
       newErrors.password = 'Password must be at least 6 characters'
-    }
-
-    if (isSignupMode && !formData.confirmPassword) {
-      newErrors.confirmPassword = 'Please confirm your password'
-    } else if (isSignupMode && formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match'
     }
 
     setErrors(newErrors)
@@ -60,70 +49,57 @@ export default function IntroPage() {
     setIsLoading(true)
     
     try {
-      if (isSignupMode) {
-        // Handle signup
-        const { user, error } = await registerUser({
-          fullName: formData.fullName,
-          email: formData.email,
-          password: formData.password
-        })
-        
-        if (error || !user) {
-          setErrors({ general: error || 'Registration failed. Please try again.' })
-          setIsLoading(false)
-          return
-        }
-        
-        // Store temporary user data for profile creation
-        localStorage.setItem('tempUserData', JSON.stringify({
-          userId: user.id,
-          fullName: formData.fullName,
-          email: formData.email,
-        }))
-        
+      const { user, error } = await validateLogin(formData.email, formData.password)
+      
+      if (error || !user) {
+        setErrors({ general: error || 'Login failed. Please try again.' })
         setIsLoading(false)
-        navigate('/create-profile')
-      } else {
-        // Handle login
-        const { user, error } = await validateLogin(formData.email, formData.password)
-        
-        if (error || !user) {
-          setErrors({ general: error || 'Login failed. Please try again.' })
-          setIsLoading(false)
-          return
-        }
-        
-        setAuthenticationState(user)
-        setIsLoading(false)
-        
-        setTimeout(() => {
-          navigate('/home', { replace: true })
-        }, 100)
+        return
       }
+      
+      setAuthenticationState(user)
+      
+      setIsLoading(false)
+      
+      // Introduce a small delay to allow App.tsx to update auth state
+      setTimeout(() => {
+        navigate('/home', { replace: true })
+      }, 100); // 100ms delay
+      
     } catch (error) {
       setIsLoading(false)
-      console.error('Auth error:', error)
-      setErrors({ general: 'An error occurred. Please try again.' })
+      console.error('Login error:', error)
+      setErrors({ general: 'An error occurred during login. Please try again.' })
     }
   }
 
-  const toggleMode = () => {
-    setIsSignupMode(!isSignupMode)
-    setFormData({ fullName: '', email: '', password: '', confirmPassword: '' })
-    setErrors({})
-    setIsLogoGlowing(!isLogoGlowing)
+  const handleSignupClick = () => {
+    setIsSignupModalOpen(true)
+    setIsLogoGlowing(true)
+  }
+
+  const handleSignupModalClose = () => {
+    setIsSignupModalOpen(false)
+    setIsLogoGlowing(false)
+  }
+
+  const handleSignupConfirm = () => {
+    setIsSignupModalOpen(false)
+    setIsLogoGlowing(false)
+    // The SignupModal will handle navigation to create-profile
+    navigate('/create-profile')
   }
 
   return (
     <div style={{
       minHeight: '100vh',
-      backgroundColor: '#000',
+      backgroundColor: '#000', // Black background
       color: '#fff',
       display: 'flex',
       flexDirection: 'column',
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
     }}>
-      {/* Header */}
+      {/* Minimal Header */}
       <header style={{
         padding: '20px 0',
         display: 'flex',
@@ -132,6 +108,7 @@ export default function IntroPage() {
       }}>
         <h1 style={{
           margin: 0,
+          // Original font family for PetoGram logo
           fontSize: '36px',
           fontWeight: 'normal',
           fontFamily: '"Billabong", cursive',
@@ -141,9 +118,9 @@ export default function IntroPage() {
             src="/images/logoo.jpg" 
             alt="PetoGram Logo" 
             style={{
-              height: '69px',
+              height: '69px', // Adjust size as needed
               width: 'auto',
-              filter: 'invert(1)',
+              filter: 'invert(1)', // To make it white on dark background if needed
               ...(isLogoGlowing && { animation: 'glow 1.5s infinite alternate' }),
             }}
           />
@@ -151,29 +128,32 @@ export default function IntroPage() {
       </header>
 
       <main style={{
-        flexGrow: 1,
+        flexGrow: 100,
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
         padding: '20px',
-        flexWrap: 'wrap',
+        flexWrap: 'wrap', // Allow items to wrap on smaller screens
       }}>
-        {/* Left Column: Image Display */}
+        {/* Left Column: Image Display Placeholder */}
         <div className="intro-image-column" style={{
-          width: '350px',
+          width: '350px', // Fixed width for desktop
           height: '350px',
           backgroundColor: '#000',
           borderRadius: '8px',
-          marginRight: '40px',
-          marginBottom: '20px',
+          marginRight: '40px', // Margin for desktop view
+          marginBottom: '20px', // Add margin-bottom for spacing when stacked
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
           fontSize: '24px',
           color: '#8e8e8e',
-          maxWidth: '100%',
+          // Responsive adjustments
+          maxWidth: '100%', // Ensure it doesn't exceed 100% width on smaller screens
           boxSizing: 'border-box',
+          
         }}>
+          {/* This will eventually be an image carousel/display */}
           <img 
             src="/images/intro.png" 
             alt="PetoGram Intro Display" 
@@ -186,16 +166,19 @@ export default function IntroPage() {
           />
         </div>
 
-        {/* Right Column: Auth Form */}
+        {/* Right Column: Login/Signup Form */}
         <div className="intro-login-column" style={{
           display: 'flex',
+          
           flexDirection: 'column',
           gap: '2px',
-          width: '300px',
-          maxWidth: 'calc(100% - 40px)',
+          width: '300px', // Fixed width for desktop
+          // Responsive adjustments
+          maxWidth: 'calc(100% - 40px)', // Ensure it doesn't exceed 100% width on smaller screens, accounting for padding
           boxSizing: 'border-box',
+          
         }}>
-          {/* Auth Box */}
+          {/* Login Box */}
           <div style={{
             backgroundColor: '#000',
             padding: '40px 30px',
@@ -207,34 +190,11 @@ export default function IntroPage() {
               margin: '0 0 20px 0',
               fontSize: '36px',
               fontWeight: 'normal',
-              fontFamily: '"Billabong", cursive',
+              fontFamily: '"Billabong", cursive', // Placeholder for Instagram-like font
               color: '#fff',
             }}>
               PetoGram
             </h1>
-
-            {/* Full Name - Only for signup */}
-            {isSignupMode && (
-              <input
-                type="text"
-                name="fullName"
-                placeholder="Full name"
-                value={formData.fullName}
-                onChange={handleInputChange}
-                style={{
-                  width: '100%',
-                  padding: '10px',
-                  marginBottom: '6px',
-                  backgroundColor: '#1a1a1a',
-                  border: '1px solid #363636',
-                  borderRadius: '3px',
-                  color: '#fff',
-                  fontSize: '12px',
-                  outline: 'none',
-                }}
-              />
-            )}
-
             <input
               type="text"
               name="email"
@@ -253,7 +213,6 @@ export default function IntroPage() {
                 outline: 'none',
               }}
             />
-
             <input
               type="password"
               name="password"
@@ -263,7 +222,7 @@ export default function IntroPage() {
               style={{
                 width: '100%',
                 padding: '10px',
-                marginBottom: isSignupMode ? '6px' : '14px',
+                marginBottom: '14px',
                 backgroundColor: '#1a1a1a',
                 border: '1px solid #363636',
                 borderRadius: '3px',
@@ -272,29 +231,6 @@ export default function IntroPage() {
                 outline: 'none',
               }}
             />
-
-            {/* Confirm Password - Only for signup */}
-            {isSignupMode && (
-              <input
-                type="password"
-                name="confirmPassword"
-                placeholder="Confirm password"
-                value={formData.confirmPassword}
-                onChange={handleInputChange}
-                style={{
-                  width: '100%',
-                  padding: '10px',
-                  marginBottom: '14px',
-                  backgroundColor: '#1a1a1a',
-                  border: '1px solid #363636',
-                  borderRadius: '3px',
-                  color: '#fff',
-                  fontSize: '12px',
-                  outline: 'none',
-                }}
-              />
-            )}
-
             <button
               onClick={handleSubmit}
               disabled={isLoading}
@@ -308,10 +244,10 @@ export default function IntroPage() {
                 fontWeight: 'bold',
                 cursor: isLoading ? 'not-allowed' : 'pointer',
                 fontSize: '14px',
-                opacity: isLoading ? 0.5 : 1,
+                opacity: isLoading ? 0.5 : 1, // Instagram-like disabled state initially
               }}
             >
-              {isLoading ? (isSignupMode ? 'Signing up...' : 'Logging in...') : (isSignupMode ? 'Sign up' : 'Log in')}
+              {isLoading ? 'Logging in...' : 'Log in'}
             </button>
 
             {errors.general && (
@@ -319,33 +255,27 @@ export default function IntroPage() {
                 color: 'red',
                 fontSize: '12px',
                 marginTop: '10px',
-                textAlign: 'center',
               }}>{errors.general}</p>
             )}
 
-            {/* Toggle between login/signup */}
+            {/* Sign Up Box */}
             <div style={{
               backgroundColor: '#000',
+              
               borderRadius: '10px',
               padding: '20px',
               textAlign: 'center',
               fontSize: '14px',
               marginTop: '10px',
             }}>
-              {isSignupMode ? "Already have an account? " : "Don't have an account? "}
-              <a 
-                href="#" 
-                onClick={(e) => { e.preventDefault(); toggleMode(); }} 
-                style={{
-                  color: '#0095f6',
-                  textDecoration: 'none',
-                  fontWeight: 'bold',
-                }}
-              >
-                {isSignupMode ? 'Log in' : 'Sign up'}
-              </a>
+              Don't have an account? <a href="#" onClick={(e) => { e.preventDefault(); handleSignupClick(); }} style={{
+                color: '#0095f6',
+                textDecoration: 'none',
+                fontWeight: 'bold',
+              }}>Sign up</a>
             </div>
 
+            {/* Add global styles for glow effect and responsive adjustments */}
             <style dangerouslySetInnerHTML={{ __html: `
                 @keyframes glow {
                   0% { box-shadow: 0 0 5px #0095f6; }
@@ -363,7 +293,7 @@ export default function IntroPage() {
                   .intro-image-column {
                     margin-right: 0 !important;
                     width: calc(100% - 20px) !important;
-                    height: 320px !important;
+                    height: 320px !important; /* Adjusted height for larger image */
                   }
                   .intro-login-column {
                     width: calc(100% - 20px) !important;
@@ -397,6 +327,13 @@ export default function IntroPage() {
         </nav>
         <p>© 2024 PetoGram from Meta</p>
       </footer>
+
+      <SignupModal 
+        isOpen={isSignupModalOpen} 
+        onClose={handleSignupModalClose} 
+        onConfirm={handleSignupConfirm}
+      />
+
     </div>
   )
 }
