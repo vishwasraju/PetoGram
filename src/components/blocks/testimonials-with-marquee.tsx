@@ -21,14 +21,12 @@ export function TestimonialsSection({
 }: TestimonialsSectionProps) {
   return (
     <section style={{
-      backgroundColor: designTokens.colors.gray[50],
-      padding: `${designTokens.spacing[20]} ${designTokens.spacing[8]}`,
+      backgroundColor: 'transparent',
+      padding: `${designTokens.spacing[20]} 0`,
       position: 'relative',
       zIndex: 10,
     }} className={className}>
       <div style={{
-        maxWidth: '1200px',
-        margin: '0 auto',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -75,7 +73,7 @@ export function TestimonialsSection({
           <div style={{
             display: 'flex',
             overflow: 'hidden',
-            padding: designTokens.spacing[2],
+            padding: '0',
             gap: designTokens.spacing[4],
             width: '100%',
           }}>
@@ -109,8 +107,8 @@ export function TestimonialsSection({
             top: 0,
             bottom: 0,
             left: 0,
-            width: '20%',
-            background: `linear-gradient(to right, ${designTokens.colors.gray[50]}, transparent)`,
+            width: '25%',
+            background: `linear-gradient(to right, rgba(0, 0, 0, 0), transparent)`,
             pointerEvents: 'none',
             zIndex: 1,
           }} />
@@ -119,8 +117,8 @@ export function TestimonialsSection({
             top: 0,
             bottom: 0,
             right: 0,
-            width: '20%',
-            background: `linear-gradient(to left, ${designTokens.colors.gray[50]}, transparent)`,
+            width: '25%',
+            background: `linear-gradient(to left, rgba(0, 0, 0, 0), transparent)`,
             pointerEvents: 'none',
             zIndex: 1,
           }} />

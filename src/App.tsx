@@ -1,13 +1,18 @@
 import React, { useState, useEffect } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import IntroPage from './pages/IntroPage'
-import LoginPage from './pages/LoginPage'
 import SignupPage from './pages/SignupPage'
 import CreateProfilePage from './pages/CreateProfilePage'
 import EnhancedHome from './pages/EnhancedHome'
 import Profile from './pages/Profile'
 import Messages from './pages/Messages'
 import NotFound from './pages/NotFound'
+import AboutPage from './pages/AboutPage'
+import CareersPage from './pages/CareersPage'
+import BlogPage from './pages/BlogPage'
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage'
+import TermsOfServicePage from './pages/TermsOfServicePage'
+import HelpCenterPage from './pages/HelpCenterPage'
 import { getCurrentUser } from './utils/auth'
 import { supabase } from './utils/supabase'
 
@@ -82,33 +87,35 @@ function App() {
       {/* Public Routes */}
       <Route 
         path="/" 
-        element={isAuth ? <Navigate to="/home\" replace /> : <IntroPage />} 
-      />
-      <Route 
-        path="/login" 
-        element={isAuth ? <Navigate to="/home\" replace /> : <LoginPage />} 
+        element={isAuth ? <Navigate to="/home" replace /> : <IntroPage />} 
       />
       <Route 
         path="/signup" 
-        element={isAuth ? <Navigate to="/home\" replace /> : <SignupPage />} 
+        element={isAuth ? <Navigate to="/home" replace /> : <SignupPage />} 
       />
       <Route 
         path="/create-profile" 
-        element={isAuth ? <Navigate to="/home\" replace /> : <CreateProfilePage />} 
+        element={isAuth ? <Navigate to="/home" replace /> : <CreateProfilePage />} 
       />
+      <Route path="/about" element={<AboutPage />} />
+      <Route path="/careers" element={<CareersPage />} />
+      <Route path="/blog" element={<BlogPage />} />
+      <Route path="/privacy" element={<PrivacyPolicyPage />} />
+      <Route path="/terms" element={<TermsOfServicePage />} />
+      <Route path="/help" element={<HelpCenterPage />} />
       
       {/* Protected Routes */}
       <Route 
         path="/home" 
-        element={isAuth ? <EnhancedHome /> : <Navigate to="/\" replace />} 
+        element={isAuth ? <EnhancedHome /> : <Navigate to="/" replace />} 
       />
       <Route 
         path="/profile" 
-        element={isAuth ? <Profile /> : <Navigate to="/\" replace />} 
+        element={isAuth ? <Profile /> : <Navigate to="/" replace />} 
       />
       <Route 
         path="/messages" 
-        element={isAuth ? <Messages /> : <Navigate to="/\" replace />} 
+        element={isAuth ? <Messages /> : <Navigate to="/" replace />} 
       />
       
       {/* 404 Route */}

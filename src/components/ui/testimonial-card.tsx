@@ -30,8 +30,9 @@ export function TestimonialCard({
         display: 'flex',
         flexDirection: 'column',
         borderRadius: designTokens.borderRadius['2xl'],
-        border: `1px solid ${designTokens.colors.gray[100]}`,
-        background: `linear-gradient(to bottom, ${designTokens.colors.white}, ${designTokens.colors.gray[50]})`,
+        border: 'none',
+        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+        backdropFilter: 'blur(8px)',
         padding: designTokens.spacing[6],
         textAlign: 'left',
         maxWidth: '320px',
@@ -40,21 +41,9 @@ export function TestimonialCard({
         cursor: href ? 'pointer' : 'default',
         textDecoration: 'none',
         color: 'inherit',
-        boxShadow: designTokens.boxShadow.sm,
+        boxShadow: '0 6px 20px rgba(0, 0, 0, 0.08)',
       }}
-      className={className}
-      onMouseEnter={(e) => {
-        if (href) {
-          e.currentTarget.style.transform = 'translateY(-4px)'
-          e.currentTarget.style.boxShadow = designTokens.boxShadow.lg
-        }
-      }}
-      onMouseLeave={(e) => {
-        if (href) {
-          e.currentTarget.style.transform = 'translateY(0)'
-          e.currentTarget.style.boxShadow = designTokens.boxShadow.sm
-        }
-      }}
+      className={`${className} testimonial-card-item`}
     >
       <div style={{
         display: 'flex',
@@ -105,3 +94,10 @@ export function TestimonialCard({
     </Card>
   )
 }
+
+<style>{`
+  .testimonial-card-item:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+  }
+`}</style>
