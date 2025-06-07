@@ -14,7 +14,6 @@ import PrivacyPolicyPage from './pages/PrivacyPolicyPage'
 import TermsOfServicePage from './pages/TermsOfServicePage'
 import HelpCenterPage from './pages/HelpCenterPage'
 import { getCurrentUser } from './utils/auth'
-import { supabase } from './utils/supabase'
 
 function App() {
   const [isAuth, setIsAuth] = useState(false)
@@ -36,23 +35,15 @@ function App() {
     
     checkAuth()
 
-    // Listen for auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setIsAuth(!!session?.user)
-        
-        if (event === 'SIGNED_OUT') {
-          // Clear any local storage when user signs out
-          localStorage.removeItem('isAuthenticated')
-          localStorage.removeItem('userEmail')
-          localStorage.removeItem('currentUserId')
-          localStorage.removeItem('userProfile')
-          localStorage.removeItem('tempUserData')
-        }
+    // Listen for auth state changes via localStorage
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'isAuthenticated') {
+        setIsAuth(e.newValue === 'true')
       }
-    )
+    }
 
-    return () => subscription.unsubscribe()
+    window.addEventListener('storage', handleStorageChange)
+    return () => window.removeEventListener('storage', handleStorageChange)
   }, [])
 
   if (isLoading) {

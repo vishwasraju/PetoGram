@@ -8,16 +8,17 @@ A beautiful, responsive web application for pet lovers to share photos, videos, 
 - **Social Feed**: Share and view pet photos and videos
 - **Interactive Features**: Like, comment, and share posts
 - **User Profiles**: Customizable profiles with pet information
-- **Real-time Updates**: Live engagement tracking
 - **Modern UI**: Clean, Instagram-inspired design
+- **Mock Authentication**: Demo authentication system for testing
 
 ## Tech Stack
 
-- **Framework**: Expo Router (Web)
-- **Language**: TypeScript
-- **Styling**: React Native StyleSheet
-- **Icons**: Lucide React Native
+- **Framework**: React with TypeScript
+- **Routing**: React Router
+- **Styling**: CSS-in-JS with design tokens
+- **Icons**: Lucide React
 - **Fonts**: Inter & Poppins (Google Fonts)
+- **State Management**: Local state with localStorage
 
 ## Getting Started
 
@@ -33,16 +34,27 @@ A beautiful, responsive web application for pet lovers to share photos, videos, 
 
 3. Open your browser and navigate to the provided URL
 
+## Demo Credentials
+
+For testing the authentication system, you can use:
+- **Email**: john@example.com
+- **Password**: Any password (demo mode)
+
+Or create a new account through the signup flow.
+
 ## Project Structure
 
 ```
-app/
-├── _layout.tsx          # Root layout with navigation
-├── index.tsx            # Main home feed
-└── +not-found.tsx       # 404 page
-
-components/              # Reusable components
-hooks/                   # Custom hooks
+src/
+├── components/          # Reusable UI components
+│   ├── ui/             # Basic UI components
+│   ├── blocks/         # Complex component blocks
+│   ├── feed/           # Feed-related components
+│   └── layout/         # Layout components
+├── pages/              # Page components
+├── utils/              # Utility functions
+├── design-system/      # Design tokens and system
+└── lib/                # Library utilities
 ```
 
 ## Features Implemented
@@ -56,12 +68,20 @@ hooks/                   # Custom hooks
 - ✅ Search functionality
 - ✅ Mobile-responsive design
 - ✅ Create post interface
+- ✅ Mock authentication system
+- ✅ Profile creation flow
+- ✅ Pet management
+
+## Development Notes
+
+This is a demo application with mock authentication and data storage using localStorage. In a production environment, you would integrate with a real backend service and database.
 
 ## Future Enhancements
 
-- User authentication
+- Real backend integration
 - Real-time messaging
 - Pet service booking
 - Advanced search and filters
 - Push notifications
 - Video upload and processing
+- Social features (following, followers)
