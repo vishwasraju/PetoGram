@@ -92,13 +92,10 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
             fullName: formData.username,
             email: formData.email,
             username: formData.username,
-            selectedPetType,
-            petName: formData.petName,
-            petPhoto: uploadedImage,
-            aboutPet: formData.aboutPet
           }));
 
           setIsLoading(false);
+          // Move to step 2 after successful registration
           setStep(2);
         } catch (error) {
           setIsLoading(false);
@@ -174,13 +171,14 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
         backgroundColor: '#000',
         borderRadius: '16px',
         width: '100%',
-        maxWidth: '420px',
+        maxWidth: step === 1 ? '380px' : '450px', // Slightly wider for step 2
         maxHeight: '90vh',
         overflowY: 'auto',
         padding: '20px',
         position: 'relative',
         color: '#fff',
         boxSizing: 'border-box',
+        transition: 'max-width 0.3s ease',
       }}>
         <button 
           onClick={onClose}
@@ -198,11 +196,54 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
           <X size={20} />
         </button>
         
+        {/* Step Indicator */}
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          gap: '10px',
+          marginBottom: '20px',
+          marginTop: '15px',
+        }}>
+          <div style={{
+            width: '30px',
+            height: '30px',
+            borderRadius: '50%',
+            backgroundColor: step >= 1 ? '#0095f6' : '#363636',
+            color: '#fff',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '12px',
+            fontWeight: 'bold',
+          }}>
+            1
+          </div>
+          <div style={{
+            width: '40px',
+            height: '2px',
+            backgroundColor: step >= 2 ? '#0095f6' : '#363636',
+          }} />
+          <div style={{
+            width: '30px',
+            height: '30px',
+            borderRadius: '50%',
+            backgroundColor: step >= 2 ? '#0095f6' : '#363636',
+            color: '#fff',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '12px',
+            fontWeight: 'bold',
+          }}>
+            2
+          </div>
+        </div>
+
         {/* Header */}
         <div style={{
           textAlign: 'center',
           marginBottom: '20px',
-          marginTop: '15px',
         }}>
           <h2 style={{
             fontSize: '20px',
@@ -211,6 +252,13 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
           }}>
             {step === 1 ? 'Create your account' : 'Tell us about your pet'}
           </h2>
+          <p style={{
+            fontSize: '12px',
+            color: '#8e8e8e',
+            margin: '5px 0 0 0',
+          }}>
+            {step === 1 ? 'Step 1 of 2' : 'Step 2 of 2'}
+          </p>
         </div>
 
         {/* Error Message */}
@@ -245,12 +293,12 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
                 onChange={handleInputChange}
                 style={{
                   width: '100%',
-                  padding: '8px',
+                  padding: '10px',
                   backgroundColor: '#1a1a1a',
                   border: `1px solid ${errors.username ? '#ff4444' : '#363636'}`,
                   borderRadius: '4px',
                   color: '#fff',
-                  fontSize: '12px',
+                  fontSize: '14px',
                   outline: 'none',
                   boxSizing: 'border-box',
                 }}
@@ -275,12 +323,12 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
                 onChange={handleInputChange}
                 style={{
                   width: '100%',
-                  padding: '8px',
+                  padding: '10px',
                   backgroundColor: '#1a1a1a',
                   border: `1px solid ${errors.email ? '#ff4444' : '#363636'}`,
                   borderRadius: '4px',
                   color: '#fff',
-                  fontSize: '12px',
+                  fontSize: '14px',
                   outline: 'none',
                   boxSizing: 'border-box',
                 }}
@@ -305,12 +353,12 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
                 onChange={handleInputChange}
                 style={{
                   width: '100%',
-                  padding: '8px',
+                  padding: '10px',
                   backgroundColor: '#1a1a1a',
                   border: `1px solid ${errors.password ? '#ff4444' : '#363636'}`,
                   borderRadius: '4px',
                   color: '#fff',
-                  fontSize: '12px',
+                  fontSize: '14px',
                   outline: 'none',
                   boxSizing: 'border-box',
                 }}
@@ -335,12 +383,12 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
                 onChange={handleInputChange}
                 style={{
                   width: '100%',
-                  padding: '8px',
+                  padding: '10px',
                   backgroundColor: '#1a1a1a',
                   border: `1px solid ${errors.confirmPassword ? '#ff4444' : '#363636'}`,
                   borderRadius: '4px',
                   color: '#fff',
-                  fontSize: '12px',
+                  fontSize: '14px',
                   outline: 'none',
                   boxSizing: 'border-box',
                 }}
@@ -358,12 +406,12 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
               disabled={isLoading}
               style={{
                 width: '100%',
-                padding: '10px 15px',
+                padding: '12px 15px',
                 backgroundColor: isLoading ? '#666' : '#0095f6',
                 color: '#fff',
                 border: 'none',
                 borderRadius: '9999px',
-                fontSize: '12px',
+                fontSize: '14px',
                 fontWeight: 'bold',
                 cursor: isLoading ? 'not-allowed' : 'pointer',
               }}
@@ -378,15 +426,15 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
             <div style={{
               border: '1px solid #363636',
               borderRadius: '8px',
-              padding: '6px 10px',
-              marginBottom: '12px',
+              padding: '8px 12px',
+              marginBottom: '15px',
               backgroundColor: '#1a1a1a',
             }}>
               <h3 style={{
                 textAlign: 'center',
                 width: '100%',
                 color: '#e0e0e0',
-                fontSize: '14px',
+                fontSize: '16px',
                 fontWeight: 'bold',
                 margin: 0,
               }}>
@@ -395,7 +443,7 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
             </div>
 
             <div style={{
-              marginBottom: '12px',
+              marginBottom: '15px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
@@ -413,24 +461,24 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
                   padding: '5px',
                 }}
               >
-                <ChevronLeft size={24} />
+                <ChevronLeft size={30} />
               </button>
 
               <div style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(3, 1fr)',
-                gap: '8px',
+                gap: '10px',
                 justifyItems: 'center',
                 flexGrow: 1,
-                margin: '0 8px',
+                margin: '0 10px',
               }}>
                 {currentPets.map((petType) => (
                   <div
                     key={petType}
                     onClick={() => handlePetTypeSelect(petType)}
                     style={{
-                      width: '60px',
-                      height: '60px',
+                      width: '80px',
+                      height: '80px',
                       borderRadius: '50%',
                       backgroundColor: selectedPetType === petType ? '#0095f6' : '#1a1a1a',
                       border: `2px solid ${selectedPetType === petType ? '#0095f6' : '#363636'}`,
@@ -440,15 +488,15 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
                       cursor: 'pointer',
                       overflow: 'hidden',
                       transition: 'all 0.2s ease',
-                      boxShadow: selectedPetType === petType ? '0 0 10px rgba(0, 149, 246, 0.5)' : 'none',
+                      boxShadow: selectedPetType === petType ? '0 0 15px rgba(0, 149, 246, 0.5)' : 'none',
                     }}
                   >
                     <img 
                       src={`/images/pets/${petType}.png`}
                       alt={petType}
                       style={{
-                        width: '45px',
-                        height: '45px',
+                        width: '60px',
+                        height: '60px',
                         objectFit: 'contain',
                       }}
                     />
@@ -469,14 +517,14 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
                   padding: '5px',
                 }}
               >
-                <ChevronRight size={24} />
+                <ChevronRight size={30} />
               </button>
             </div>
 
             <div style={{
-              marginBottom: '12px',
+              marginBottom: '15px',
             }}>
-              <label htmlFor="petName" style={{ display: 'block', color: '#e0e0e0', marginBottom: '4px', fontSize: '12px' }}>Pet Name</label>
+              <label htmlFor="petName" style={{ display: 'block', color: '#e0e0e0', marginBottom: '5px', fontSize: '12px' }}>Pet Name</label>
               <input 
                 type="text" 
                 id="petName" 
@@ -486,12 +534,12 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
                 onChange={handleInputChange}
                 style={{
                   width: '100%',
-                  padding: '8px',
+                  padding: '12px',
                   backgroundColor: '#1a1a1a',
                   border: '1px solid #363636',
                   borderRadius: '4px',
                   color: '#fff',
-                  fontSize: '12px',
+                  fontSize: '16px',
                   outline: 'none',
                   boxSizing: 'border-box',
                 }}
@@ -500,15 +548,15 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
 
             <div style={{
               display: 'flex',
-              gap: '12px',
-              marginBottom: '20px',
+              gap: '20px',
+              marginBottom: '30px',
               alignItems: 'flex-start',
             }}>
               <div 
                 style={{
                   flexShrink: 0,
-                  width: '80px',
-                  height: '80px',
+                  width: '120px',
+                  height: '120px',
                   borderRadius: '50%',
                   backgroundColor: uploadedImage ? 'transparent' : '#363636',
                   display: 'flex',
@@ -518,6 +566,7 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
                   border: '2px dashed #8e8e8e',
                   overflow: 'hidden',
                   transition: 'background-color 0.2s ease, border-color 0.2s ease',
+                  marginTop: '30px',
                 }}
                 onClick={handleUploadClick}
               >
@@ -533,7 +582,7 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
                     }}
                   />
                 ) : (
-                  <span style={{ color: '#8e8e8e', fontSize: '10px', textAlign: 'center', padding: '5px' }}>Upload pet pic</span>
+                  <span style={{ color: '#8e8e8e', fontSize: '14px', textAlign: 'center' }}>Upload your pet pic</span>
                 )}
                 <input 
                   type="file" 
@@ -548,22 +597,22 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
               <div style={{
                 flexGrow: 1,
               }}>
-                <label htmlFor="aboutPet" style={{ display: 'block', color: '#e0e0e0', marginBottom: '4px', fontSize: '12px' }}>About pet</label>
+                <label htmlFor="aboutPet" style={{ display: 'block', color: '#e0e0e0', marginBottom: '5px', fontSize: '12px' }}>About pet</label>
                 <textarea 
                   id="aboutPet" 
                   name="aboutPet"
-                  placeholder="Tell us about your pet..." 
-                  rows={4}
+                  placeholder="Tell us something about your pet..." 
+                  rows={5}
                   value={formData.aboutPet}
                   onChange={handleInputChange}
                   style={{
                     width: '100%',
-                    padding: '8px',
+                    padding: '12px',
                     backgroundColor: '#1a1a1a',
                     border: '1px solid #363636',
                     borderRadius: '4px',
                     color: '#fff',
-                    fontSize: '12px',
+                    fontSize: '16px',
                     outline: 'none',
                     resize: 'vertical',
                     boxSizing: 'border-box',
@@ -577,12 +626,12 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
               onClick={handleConfirm}
               style={{
                 width: '100%',
-                padding: '10px 15px',
+                padding: '12px 20px',
                 backgroundColor: '#0095f6',
                 color: '#fff',
                 border: 'none',
                 borderRadius: '9999px',
-                fontSize: '12px',
+                fontSize: '16px',
                 fontWeight: 'bold',
                 cursor: 'pointer',
               }}
