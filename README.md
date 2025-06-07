@@ -12,7 +12,7 @@ A beautiful, responsive web application for pet lovers to share photos, videos, 
 - **Mock Authentication**: Demo authentication system for testing
 
 ## Tech Stack
-
+ 
 - **Framework**: React with TypeScript
 - **Routing**: React Router
 - **Styling**: CSS-in-JS with design tokens
