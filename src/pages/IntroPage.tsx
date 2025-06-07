@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Heart, Users, Camera, Star, ArrowRight, Play } from 'lucide-react'
 import Button from '../components/ui/Button'
+import { TestimonialsSection } from '../components/blocks/testimonials-with-marquee'
 import { designTokens } from '../design-system/tokens'
 
 const features = [
@@ -33,35 +34,67 @@ const features = [
 
 const testimonials = [
   {
-    name: 'Sarah Johnson',
-    avatar: 'https://images.pexels.com/photos/733872/pexels-photo-733872.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2',
+    author: {
+      name: 'Sarah Johnson',
+      handle: '@sarahpets',
+      avatar: 'https://images.pexels.com/photos/733872/pexels-photo-733872.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2',
+      pets: 'with Max & Luna',
+    },
     text: 'PetoGram helped me connect with amazing pet parents in my area. My dog Max has made so many new friends!',
-    pets: 'with Max & Luna',
+    href: 'https://twitter.com/sarahpets'
   },
   {
-    name: 'Mike Chen',
-    avatar: 'https://images.pexels.com/photos/1212984/pexels-photo-1212984.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2',
+    author: {
+      name: 'Mike Chen',
+      handle: '@mikeandbuddy',
+      avatar: 'https://images.pexels.com/photos/1212984/pexels-photo-1212984.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2',
+      pets: 'with Buddy',
+    },
     text: 'The expert tips and community support have been invaluable for training my rescue puppy. Highly recommend!',
-    pets: 'with Buddy',
+    href: 'https://twitter.com/mikeandbuddy'
   },
   {
-    name: 'Emma Wilson',
-    avatar: 'https://images.pexels.com/photos/1036622/pexels-photo-1036622.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2',
-    text: 'I love sharing my cats\' adventures here. The photography tips helped me capture their personalities perfectly!',
-    pets: 'with Whiskers & Shadow',
+    author: {
+      name: 'Emma Wilson',
+      handle: '@emmacats',
+      avatar: 'https://images.pexels.com/photos/1036622/pexels-photo-1036622.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2',
+      pets: 'with Whiskers & Shadow',
+    },
+    text: 'I love sharing my cats\' adventures here. The photography tips helped me capture their personalities perfectly!'
   },
+  {
+    author: {
+      name: 'David Rodriguez',
+      handle: '@davidpets',
+      avatar: 'https://images.pexels.com/photos/1040880/pexels-photo-1040880.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2',
+      pets: 'with Charlie & Bella',
+    },
+    text: 'Amazing community of pet lovers! Found the best vet in my area through recommendations here.',
+    href: 'https://twitter.com/davidpets'
+  },
+  {
+    author: {
+      name: 'Lisa Garcia',
+      handle: '@lisaandpets',
+      avatar: 'https://images.pexels.com/photos/1130626/pexels-photo-1130626.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2',
+      pets: 'with Milo & Coco',
+    },
+    text: 'The pet care resources and expert advice have been a game-changer for our family. Love this platform!'
+  },
+  {
+    author: {
+      name: 'Alex Thompson',
+      handle: '@alexvetlife',
+      avatar: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2',
+      pets: 'with Luna & Oscar',
+    },
+    text: 'As a veterinarian, I appreciate how this platform connects pet owners with reliable, expert information.',
+    href: 'https://twitter.com/alexvetlife'
+  }
 ]
 
 export default function IntroPage() {
   const navigate = useNavigate()
-  const [currentTestimonial, setCurrentTestimonial] = useState(0)
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentTestimonial((prev) => (prev + 1) % testimonials.length)
-    }, 4000)
-    return () => clearInterval(interval)
-  }, [])
 
   return (
     <div style={{
@@ -354,109 +387,11 @@ export default function IntroPage() {
       </section>
 
       {/* Testimonials Section */}
-      <section style={{
-        padding: `${designTokens.spacing[20]} ${designTokens.spacing[8]}`,
-        backgroundColor: designTokens.colors.gray[50],
-        position: 'relative',
-        zIndex: 10,
-      }}>
-        <div style={{ maxWidth: '800px', margin: '0 auto', textAlign: 'center' }}>
-          <h3 style={{
-            margin: `0 0 ${designTokens.spacing[16]} 0`,
-            fontSize: designTokens.typography.fontSize['4xl'],
-            fontWeight: designTokens.typography.fontWeight.bold,
-            color: designTokens.colors.gray[900],
-            fontFamily: designTokens.typography.fontFamily.display.join(', '),
-          }}>
-            Loved by Pet Parents Everywhere
-          </h3>
-
-          <div style={{
-            backgroundColor: designTokens.colors.white,
-            borderRadius: designTokens.borderRadius['3xl'],
-            padding: designTokens.spacing[12],
-            boxShadow: designTokens.boxShadow.xl,
-            position: 'relative',
-            overflow: 'hidden',
-          }}>
-            {testimonials.map((testimonial, index) => (
-              <div key={index} style={{
-                opacity: index === currentTestimonial ? 1 : 0,
-                transform: index === currentTestimonial ? 'translateX(0)' : 'translateX(100%)',
-                transition: `all ${designTokens.animation.duration.slow} ${designTokens.animation.easing.ease}`,
-                position: index === currentTestimonial ? 'relative' : 'absolute',
-                top: index === currentTestimonial ? 'auto' : 0,
-                left: index === currentTestimonial ? 'auto' : 0,
-                right: index === currentTestimonial ? 'auto' : 0,
-              }}>
-                <img 
-                  src={testimonial.avatar}
-                  alt={testimonial.name}
-                  style={{
-                    width: '80px',
-                    height: '80px',
-                    borderRadius: '50%',
-                    objectFit: 'cover',
-                    margin: `0 auto ${designTokens.spacing[6]}`,
-                    border: `4px solid ${designTokens.colors.primary[100]}`,
-                  }}
-                />
-                <p style={{
-                  margin: `0 0 ${designTokens.spacing[6]} 0`,
-                  fontSize: designTokens.typography.fontSize.xl,
-                  color: designTokens.colors.gray[700],
-                  lineHeight: designTokens.typography.lineHeight.relaxed,
-                  fontStyle: 'italic',
-                }}>
-                  "{testimonial.text}"
-                </p>
-                <div>
-                  <div style={{
-                    fontSize: designTokens.typography.fontSize.lg,
-                    fontWeight: designTokens.typography.fontWeight.semibold,
-                    color: designTokens.colors.gray[900],
-                    marginBottom: designTokens.spacing[1],
-                  }}>
-                    {testimonial.name}
-                  </div>
-                  <div style={{
-                    fontSize: designTokens.typography.fontSize.sm,
-                    color: designTokens.colors.gray[500],
-                  }}>
-                    {testimonial.pets}
-                  </div>
-                </div>
-              </div>
-            ))}
-
-            {/* Testimonial Indicators */}
-            <div style={{
-              display: 'flex',
-              justifyContent: 'center',
-              gap: designTokens.spacing[2],
-              marginTop: designTokens.spacing[8],
-            }}>
-              {testimonials.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => setCurrentTestimonial(index)}
-                  style={{
-                    width: '12px',
-                    height: '12px',
-                    borderRadius: '50%',
-                    border: 'none',
-                    backgroundColor: index === currentTestimonial 
-                      ? designTokens.colors.primary[500] 
-                      : designTokens.colors.gray[300],
-                    cursor: 'pointer',
-                    transition: `background-color ${designTokens.animation.duration.fast} ${designTokens.animation.easing.ease}`,
-                  }}
-                />
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
+      <TestimonialsSection
+        title="Loved by Pet Parents Everywhere"
+        description="Join thousands of pet lovers who are already sharing their stories and connecting with our amazing community"
+        testimonials={testimonials}
+      />
 
       {/* CTA Section */}
       <section style={{
