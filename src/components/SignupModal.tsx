@@ -63,16 +63,19 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
       justifyContent: 'center',
       alignItems: 'center',
       zIndex: 1000,
+      padding: '20px',
     }}>
       <div style={{
         backgroundColor: '#000',
         borderRadius: '16px',
-        width: '350px',
-        maxHeight: '85vh',
-        overflowY: 'hidden',
-        padding: '20px 30px',
+        width: '100%',
+        maxWidth: '420px',
+        maxHeight: '90vh',
+        overflowY: 'auto',
+        padding: '20px',
         position: 'relative',
         color: '#fff',
+        boxSizing: 'border-box',
       }}>
         <button 
           onClick={onClose}
@@ -84,6 +87,7 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
             border: 'none',
             cursor: 'pointer',
             color: '#fff',
+            zIndex: 10,
           }}
         >
           <X size={20} />
@@ -96,9 +100,8 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
             marginBottom: '20px',
             marginTop: '15px',
           }}>
-            {/* Placeholder for X icon if needed, or remove if only close icon is desired */}
             <h2 style={{
-              fontSize: '24px',
+              fontSize: '20px',
               fontWeight: 'bold',
               margin: '0',
             }}>
@@ -114,7 +117,7 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
               marginBottom: '8px',
               marginTop: '10px',
             }}>
-              <label htmlFor="username" style={{ display: 'block', color: '#e0e0e0', marginBottom: '3px' }}>Username</label>
+              <label htmlFor="username" style={{ display: 'block', color: '#e0e0e0', marginBottom: '3px', fontSize: '12px' }}>Username</label>
               <input 
                 type="text" 
                 id="username" 
@@ -122,13 +125,14 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
                 maxLength={50}
                 style={{
                   width: '100%',
-                  padding: '10px',
+                  padding: '8px',
                   backgroundColor: '#1a1a1a',
                   border: '1px solid #363636',
                   borderRadius: '4px',
                   color: '#fff',
-                  fontSize: '14px',
+                  fontSize: '12px',
                   outline: 'none',
+                  boxSizing: 'border-box',
                 }}
               />
               <div style={{ textAlign: 'right', fontSize: '10px', color: '#8e8e8e', marginTop: '3px' }}>0 / 50</div>
@@ -137,20 +141,21 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
             <div style={{
               marginBottom: '8px',
             }}>
-              <label htmlFor="email" style={{ display: 'block', color: '#e0e0e0', marginBottom: '3px' }}>Email</label>
+              <label htmlFor="email" style={{ display: 'block', color: '#e0e0e0', marginBottom: '3px', fontSize: '12px' }}>Email</label>
               <input 
                 type="email" 
                 id="email" 
                 placeholder="Email" 
                 style={{
                   width: '100%',
-                  padding: '10px',
+                  padding: '8px',
                   backgroundColor: '#1a1a1a',
                   border: '1px solid #363636',
                   borderRadius: '4px',
                   color: '#fff',
-                  fontSize: '14px',
+                  fontSize: '12px',
                   outline: 'none',
+                  boxSizing: 'border-box',
                 }}
               />
             </div>
@@ -158,20 +163,21 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
             <div style={{
               marginBottom: '8px',
             }}>
-              <label htmlFor="password" style={{ display: 'block', color: '#e0e0e0', marginBottom: '3px' }}>Password</label>
+              <label htmlFor="password" style={{ display: 'block', color: '#e0e0e0', marginBottom: '3px', fontSize: '12px' }}>Password</label>
               <input 
                 type="password" 
                 id="password" 
                 placeholder="Password" 
                 style={{
                   width: '100%',
-                  padding: '10px',
+                  padding: '8px',
                   backgroundColor: '#1a1a1a',
                   border: '1px solid #363636',
                   borderRadius: '4px',
                   color: '#fff',
-                  fontSize: '14px',
+                  fontSize: '12px',
                   outline: 'none',
+                  boxSizing: 'border-box',
                 }}
               />
             </div>
@@ -179,20 +185,21 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
             <div style={{
               marginBottom: '12px',
             }}>
-              <label htmlFor="confirmPassword" style={{ display: 'block', color: '#e0e0e0', marginBottom: '3px' }}>Confirm Password</label>
+              <label htmlFor="confirmPassword" style={{ display: 'block', color: '#e0e0e0', marginBottom: '3px', fontSize: '12px' }}>Confirm Password</label>
               <input 
                 type="password" 
                 id="confirmPassword" 
                 placeholder="Confirm Password" 
                 style={{
                   width: '100%',
-                  padding: '10px',
+                  padding: '8px',
                   backgroundColor: '#1a1a1a',
                   border: '1px solid #363636',
                   borderRadius: '4px',
                   color: '#fff',
-                  fontSize: '14px',
+                  fontSize: '12px',
                   outline: 'none',
+                  boxSizing: 'border-box',
                 }}
               />
             </div>
@@ -207,7 +214,7 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
                 color: '#000',
                 border: 'none',
                 borderRadius: '9999px',
-                fontSize: '14px',
+                fontSize: '12px',
                 fontWeight: 'bold',
                 cursor: 'pointer',
               }}
@@ -220,9 +227,9 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
         {step === 2 && (
           <div>
             <h2 style={{
-              fontSize: '24px',
+              fontSize: '20px',
               fontWeight: 'bold',
-              margin: '0 0 20px 0',
+              margin: '0 0 15px 0',
               textAlign: 'center',
             }}>
               Tell us about your pet
@@ -231,15 +238,15 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
             <div style={{
               border: '1px solid #363636',
               borderRadius: '8px',
-              padding: '8px 12px',
-              marginBottom: '15px',
+              padding: '6px 10px',
+              marginBottom: '12px',
               backgroundColor: '#1a1a1a',
             }}>
               <h3 style={{
                 textAlign: 'center',
                 width: '100%',
                 color: '#e0e0e0',
-                fontSize: '16px',
+                fontSize: '14px',
                 fontWeight: 'bold',
                 margin: 0,
               }}>
@@ -248,7 +255,7 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
             </div>
 
             <div style={{
-              marginBottom: '15px',
+              marginBottom: '12px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
@@ -263,26 +270,27 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
                   color: '#8e8e8e',
                   opacity: currentPage === 0 ? 0.5 : 1,
                   transition: 'opacity 0.2s ease',
+                  padding: '5px',
                 }}
               >
-                <ChevronLeft size={30} />
+                <ChevronLeft size={24} />
               </button>
 
               <div style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(3, 1fr)',
-                gap: '10px',
+                gap: '8px',
                 justifyItems: 'center',
                 flexGrow: 1,
-                margin: '0 10px',
+                margin: '0 8px',
               }}>
                 {currentPets.map((petType) => (
                   <div
                     key={petType}
                     onClick={() => handlePetTypeSelect(petType)}
                     style={{
-                      width: '80px',
-                      height: '80px',
+                      width: '60px',
+                      height: '60px',
                       borderRadius: '50%',
                       backgroundColor: selectedPetType === petType ? '#0095f6' : '#1a1a1a',
                       border: `2px solid ${selectedPetType === petType ? '#0095f6' : '#363636'}`,
@@ -292,15 +300,15 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
                       cursor: 'pointer',
                       overflow: 'hidden',
                       transition: 'all 0.2s ease',
-                      boxShadow: selectedPetType === petType ? '0 0 15px rgba(0, 149, 246, 0.5)' : 'none',
+                      boxShadow: selectedPetType === petType ? '0 0 10px rgba(0, 149, 246, 0.5)' : 'none',
                     }}
                   >
                     <img 
                       src={`/images/pets/${petType}.png`}
                       alt={petType}
                       style={{
-                        width: '60px',
-                        height: '60px',
+                        width: '45px',
+                        height: '45px',
                         objectFit: 'contain',
                       }}
                     />
@@ -318,44 +326,46 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
                   color: '#8e8e8e',
                   opacity: currentPage === Math.ceil(petTypes.length / itemsPerPage) - 1 ? 0.5 : 1,
                   transition: 'opacity 0.2s ease',
+                  padding: '5px',
                 }}
               >
-                <ChevronRight size={30} />
+                <ChevronRight size={24} />
               </button>
             </div>
 
             <div style={{
-              marginBottom: '15px',
+              marginBottom: '12px',
             }}>
-              <label htmlFor="petName" style={{ display: 'block', color: '#e0e0e0', marginBottom: '5px' }}>Pet Name</label>
+              <label htmlFor="petName" style={{ display: 'block', color: '#e0e0e0', marginBottom: '4px', fontSize: '12px' }}>Pet Name</label>
               <input 
                 type="text" 
                 id="petName" 
                 placeholder="Pet's Name" 
                 style={{
                   width: '100%',
-                  padding: '12px',
+                  padding: '8px',
                   backgroundColor: '#1a1a1a',
                   border: '1px solid #363636',
                   borderRadius: '4px',
                   color: '#fff',
-                  fontSize: '16px',
+                  fontSize: '12px',
                   outline: 'none',
+                  boxSizing: 'border-box',
                 }}
               />
             </div>
 
             <div style={{
               display: 'flex',
-              gap: '20px',
-              marginBottom: '30px',
+              gap: '12px',
+              marginBottom: '20px',
               alignItems: 'flex-start',
             }}>
               <div 
                 style={{
                   flexShrink: 0,
-                  width: '120px',
-                  height: '120px',
+                  width: '80px',
+                  height: '80px',
                   borderRadius: '50%',
                   backgroundColor: uploadedImage ? 'transparent' : '#363636',
                   display: 'flex',
@@ -365,7 +375,6 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
                   border: '2px dashed #8e8e8e',
                   overflow: 'hidden',
                   transition: 'background-color 0.2s ease, border-color 0.2s ease',
-                  marginTop: '30px',
                 }}
                 onClick={handleUploadClick}
               >
@@ -381,7 +390,7 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
                     }}
                   />
                 ) : (
-                  <span style={{ color: '#8e8e8e', fontSize: '14px', textAlign: 'center' }}>Upload your pet pic</span>
+                  <span style={{ color: '#8e8e8e', fontSize: '10px', textAlign: 'center', padding: '5px' }}>Upload pet pic</span>
                 )}
                 <input 
                   type="file" 
@@ -396,21 +405,22 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
               <div style={{
                 flexGrow: 1,
               }}>
-                <label htmlFor="aboutPet" style={{ display: 'block', color: '#e0e0e0', marginBottom: '5px' }}>About pet</label>
+                <label htmlFor="aboutPet" style={{ display: 'block', color: '#e0e0e0', marginBottom: '4px', fontSize: '12px' }}>About pet</label>
                 <textarea 
                   id="aboutPet" 
-                  placeholder="Tell us something about your pet..." 
-                  rows={5}
+                  placeholder="Tell us about your pet..." 
+                  rows={4}
                   style={{
                     width: '100%',
-                    padding: '12px',
+                    padding: '8px',
                     backgroundColor: '#1a1a1a',
                     border: '1px solid #363636',
                     borderRadius: '4px',
                     color: '#fff',
-                    fontSize: '16px',
+                    fontSize: '12px',
                     outline: 'none',
                     resize: 'vertical',
+                    boxSizing: 'border-box',
                   }}
                 />
               </div>
@@ -421,12 +431,12 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
               onClick={onConfirm}
               style={{
                 width: '100%',
-                padding: '12px 20px',
+                padding: '10px 15px',
                 backgroundColor: '#0095f6',
                 color: '#fff',
                 border: 'none',
                 borderRadius: '9999px',
-                fontSize: '16px',
+                fontSize: '12px',
                 fontWeight: 'bold',
                 cursor: 'pointer',
               }}
@@ -440,4 +450,4 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
   );
 };
 
-export default SignupModal; 
+export default SignupModal;
