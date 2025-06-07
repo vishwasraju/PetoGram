@@ -183,10 +183,9 @@ export default function CreateProfilePage() {
       setAuthenticationState({
         id: userData.userId,
         email: userData.email,
-        full_name: userData.fullName,
-        password_hash: '', // Not needed for auth state
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+        user_metadata: {
+          full_name: userData.fullName,
+        },
       })
       
       // Clean up temp data

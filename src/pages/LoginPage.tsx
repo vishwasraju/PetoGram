@@ -53,10 +53,10 @@ export default function LoginPage() {
     
     try {
       // Validate login credentials with Supabase
-      const user = await validateLogin(formData.email, formData.password)
+      const { user, error } = await validateLogin(formData.email, formData.password)
       
-      if (!user) {
-        setErrors({ general: 'Invalid email or password. Please try again.' })
+      if (error || !user) {
+        setErrors({ general: error || 'Login failed. Please try again.' })
         setIsLoading(false)
         return
       }
@@ -71,6 +71,7 @@ export default function LoginPage() {
       
     } catch (error) {
       setIsLoading(false)
+      console.error('Login error:', error)
       setErrors({ general: 'An error occurred during login. Please try again.' })
     }
   }
@@ -343,84 +344,6 @@ export default function LoginPage() {
               {isLoading ? 'Signing In...' : 'Sign In'}
             </Button>
           </form>
-
-          {/* Divider */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: designTokens.spacing[4],
-            margin: `${designTokens.spacing[8]} 0`,
-          }}>
-            <div style={{
-              flex: 1,
-              height: '1px',
-              backgroundColor: designTokens.colors.gray[200],
-            }} />
-            <span style={{
-              fontSize: designTokens.typography.fontSize.sm,
-              color: designTokens.colors.gray[500],
-              fontWeight: designTokens.typography.fontWeight.medium,
-            }}>
-              OR
-            </span>
-            <div style={{
-              flex: 1,
-              height: '1px',
-              backgroundColor: designTokens.colors.gray[200],
-            }} />
-          </div>
-
-          {/* Social Login */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: designTokens.spacing[3] }}>
-            <Button
-              variant="secondary"
-              size="lg"
-              fullWidth
-              style={{
-                padding: designTokens.spacing[4],
-                fontSize: designTokens.typography.fontSize.base,
-                fontWeight: designTokens.typography.fontWeight.medium,
-                border: `1px solid ${designTokens.colors.gray[200]}`,
-              }}
-            >
-              <img 
-                src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAyMCAyMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEwIDIwQzE1LjUyMjggMjAgMjAgMTUuNTIyOCAyMCAxMEMyMCA0LjQ3NzE1IDE1LjUyMjggMCAxMCAwQzQuNDc3MTUgMCAwIDQuNDc3MTUgMCAxMEMwIDE1LjUyMjggNC40NzcxNSAyMCAxMCAyMFoiIGZpbGw9IiM0Mjg1RjQiLz4KPHBhdGggZD0iTTE2LjMwNzYgMTAuMjI3MkMxNi4zMDc2IDkuNTE4MTYgMTYuMjUgOC44NDA4OCAxNi4xNDc2IDguMTgxODFIMTBWMTIuMDQ1NEgxMy42NTIyQzEzLjQ3MjYgMTMuMDY4MSAxMi45MjM5IDEzLjg5NzYgMTIuMDk3NiAxNC40MzE4VjE2LjY5MDlIMTQuMjg0MUMxNS4zOTc2IDE1LjY1OTEgMTYuMzA3NiAxMy4wNzk1IDE2LjMwNzYgMTAuMjI3MloiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ik0xMCAxOC45OTk5QzEyLjY5NzYgMTguOTk5OSAxNC45NjU5IDE4LjEwMjIgMTYuMjE1OSAxNi42OTA5TDE0LjAyOTUgMTQuNDMxOEMxMy4zNjM2IDE0Ljg2MzYgMTIuNDc3MiAxNS4xMzYzIDEwIDE1LjEzNjNDNy4zOTc3MiAxNS4xMzYzIDUuMTkzMTggMTQuMDkwOSA0LjQwNDU0IDEyLjUwMDFIMi4xNTkwOVYxNC44NDA5QzMuNDMxODEgMTcuMzc3MiA2LjQ3NzI2IDE4Ljk5OTkgMTAgMTguOTk5OVoiIGZpbGw9IiMzNEE4NTMiLz4KPHBhdGggZD0iTTQuNDA0NTQgMTIuNTAwMUM0LjIyNzI2IDEyLjA2ODIgNC4xMjUgMTEuNTkwOSA0LjEyNSAxMC45OTk5QzQuMTI1IDEwLjQwODkgNC4yMjcyNiA5LjkzMTc5IDQuNDA0NTQgOS40OTk5OFY3LjE1OTA4SDIuMTU5MDlDMS41NjgxOCA4LjM0MDg4IDEuMjUgOS42MzYzNSAxLjI1IDEwLjk5OTlDMS4yNSAxMi4zNjM1IDEuNTY4MTggMTMuNjU5IDIuMTU5MDkgMTQuODQwOUw0LjQwNDU0IDEyLjUwMDFaIiBmaWxsPSIjRkJCQzA0Ii8+CjxwYXRoIGQ9Ik0xMCA1Ljg2MzYzQzExLjY5MzEgNS44NjM2MyAxMy4yMDQ1IDYuNDc3MjYgMTQuMzk3NiA3LjU2ODE2TDE2LjMwNzYgNS42NTkwOEMxNC45NjU5IDQuNDMxODEgMTIuNjk3NiAzLjc1IDEwIDMuNzVDNi40NzcyNiAzLjc1IDMuNDMxODEgNS4zNzI3MiAyLjE1OTA5IDcuOTA5MDhMNC40MDQ1NCA5LjQ5OTk4QzUuMTkzMTggNy45MDkwOCA3LjM5NzcyIDUuODYzNjMgMTAgNS44NjM2M1oiIGZpbGw9IiNFQTQzMzUiLz4KPC9zdmc+"
-                alt="Google"
-                style={{ width: '20px', height: '20px' }}
-              />
-              Continue with Google
-            </Button>
-            
-            <Button
-              variant="secondary"
-              size="lg"
-              fullWidth
-              style={{
-                padding: designTokens.spacing[4],
-                fontSize: designTokens.typography.fontSize.base,
-                fontWeight: designTokens.typography.fontWeight.medium,
-                border: `1px solid ${designTokens.colors.gray[200]}`,
-                backgroundColor: '#1877F2',
-                color: designTokens.colors.white,
-              }}
-            >
-              <span style={{
-                width: '20px',
-                height: '20px',
-                backgroundColor: designTokens.colors.white,
-                borderRadius: '4px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '14px',
-                fontWeight: 'bold',
-                color: '#1877F2',
-              }}>
-                f
-              </span>
-              Continue with Facebook
-            </Button>
-          </div>
 
           {/* Sign Up Link */}
           <div style={{

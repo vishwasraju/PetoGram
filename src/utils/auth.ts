@@ -1,14 +1,13 @@
 import { supabase } from './supabase'
-import type { User, UserProfile, UserPet } from './supabase'
+import type { UserProfile, UserPet, AuthUser } from './supabase'
 
 // Register a new user using Supabase Auth
 export const registerUser = async (userData: {
   fullName: string
   email: string
   password: string
-}): Promise<{ user: any; error: any }> => {
+}): Promise<{ user: AuthUser | null; error: string | null }> => {
   try {
-    // Use Supabase Auth to create user
     const { data, error } = await supabase.auth.signUp({
       email: userData.email.toLowerCase(),
       password: userData.password,
@@ -20,20 +19,22 @@ export const registerUser = async (userData: {
     })
 
     if (error) {
-      throw new Error(error.message)
-    }
-
-    return { user: data.user, error: null }
-  } catch (error) {
-    if (error instanceof Error) {
       return { user: null, error: error.message }
     }
+
+    if (!data.user) {
+      return { user: null, error: 'Failed to create user account' }
+    }
+
+    return { user: data.user as AuthUser, error: null }
+  } catch (error) {
+    console.error('Registration error:', error)
     return { user: null, error: 'An error occurred during registration' }
   }
 }
 
 // Login user using Supabase Auth
-export const validateLogin = async (email: string, password: string): Promise<{ user: any; error: any }> => {
+export const validateLogin = async (email: string, password: string): Promise<{ user: AuthUser | null; error: string | null }> => {
   try {
     const { data, error } = await supabase.auth.signInWithPassword({
       email: email.toLowerCase(),
@@ -44,7 +45,11 @@ export const validateLogin = async (email: string, password: string): Promise<{ 
       return { user: null, error: error.message }
     }
 
-    return { user: data.user, error: null }
+    if (!data.user) {
+      return { user: null, error: 'Login failed' }
+    }
+
+    return { user: data.user as AuthUser, error: null }
   } catch (error) {
     console.error('Login validation error:', error)
     return { user: null, error: 'An error occurred during login' }
@@ -52,7 +57,7 @@ export const validateLogin = async (email: string, password: string): Promise<{ 
 }
 
 // Get current authenticated user from Supabase Auth
-export const getCurrentUser = async (): Promise<any> => {
+export const getCurrentUser = async (): Promise<AuthUser | null> => {
   try {
     const { data: { user }, error } = await supabase.auth.getUser()
 
@@ -60,17 +65,15 @@ export const getCurrentUser = async (): Promise<any> => {
       return null
     }
 
-    return user
+    return user as AuthUser
   } catch (error) {
     console.error('Get current user error:', error)
     return null
   }
 }
 
-// Set authentication state (now handled by Supabase Auth automatically)
-export const setAuthenticationState = (user: any): void => {
-  // Supabase Auth handles session management automatically
-  // We can still store some user info in localStorage if needed
+// Set authentication state
+export const setAuthenticationState = (user: AuthUser): void => {
   localStorage.setItem('isAuthenticated', 'true')
   localStorage.setItem('userEmail', user.email)
   localStorage.setItem('currentUserId', user.id)
@@ -111,6 +114,7 @@ export const createUserProfile = async (profileData: Omit<UserProfile, 'id' | 'c
 
     return profile
   } catch (error) {
+    console.error('Create profile error:', error)
     if (error instanceof Error) {
       throw error
     }
@@ -150,8 +154,9 @@ export const createUserPets = async (pets: Omit<UserPet, 'id' | 'created_at' | '
       throw new Error(error.message)
     }
 
-    return createdPets
+    return createdPets || []
   } catch (error) {
+    console.error('Create pets error:', error)
     if (error instanceof Error) {
       throw error
     }

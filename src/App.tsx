@@ -8,43 +8,46 @@ import EnhancedHome from './pages/EnhancedHome'
 import Profile from './pages/Profile'
 import Messages from './pages/Messages'
 import NotFound from './pages/NotFound'
-import { isAuthenticated } from './utils/auth'
+import { getCurrentUser } from './utils/auth'
+import { supabase } from './utils/supabase'
 
 function App() {
   const [isAuth, setIsAuth] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    // Check authentication status
-    const checkAuth = () => {
-      const authStatus = isAuthenticated()
-      setIsAuth(authStatus)
-      setIsLoading(false)
+    // Check initial authentication status
+    const checkAuth = async () => {
+      try {
+        const user = await getCurrentUser()
+        setIsAuth(!!user)
+      } catch (error) {
+        console.error('Auth check error:', error)
+        setIsAuth(false)
+      } finally {
+        setIsLoading(false)
+      }
     }
     
     checkAuth()
-  }, [])
 
-  // Listen for authentication changes
-  useEffect(() => {
-    const handleStorageChange = () => {
-      const authStatus = isAuthenticated()
-      setIsAuth(authStatus)
-    }
+    // Listen for auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        setIsAuth(!!session?.user)
+        
+        if (event === 'SIGNED_OUT') {
+          // Clear any local storage when user signs out
+          localStorage.removeItem('isAuthenticated')
+          localStorage.removeItem('userEmail')
+          localStorage.removeItem('currentUserId')
+          localStorage.removeItem('userProfile')
+          localStorage.removeItem('tempUserData')
+        }
+      }
+    )
 
-    // Listen for storage changes (for logout functionality)
-    window.addEventListener('storage', handleStorageChange)
-    
-    // Also check periodically for changes within the same tab
-    const interval = setInterval(() => {
-      const authStatus = isAuthenticated()
-      setIsAuth(authStatus)
-    }, 1000)
-
-    return () => {
-      window.removeEventListener('storage', handleStorageChange)
-      clearInterval(interval)
-    }
+    return () => subscription.unsubscribe()
   }, [])
 
   if (isLoading) {
@@ -79,33 +82,33 @@ function App() {
       {/* Public Routes */}
       <Route 
         path="/" 
-        element={isAuth ? <Navigate to="/home\" replace /> : <IntroPage />} 
+        element={isAuth ? <Navigate to="/home" replace /> : <IntroPage />} 
       />
       <Route 
         path="/login" 
-        element={isAuth ? <Navigate to="/home\" replace /> : <LoginPage />} 
+        element={isAuth ? <Navigate to="/home" replace /> : <LoginPage />} 
       />
       <Route 
         path="/signup" 
-        element={isAuth ? <Navigate to="/home\" replace /> : <SignupPage />} 
+        element={isAuth ? <Navigate to="/home" replace /> : <SignupPage />} 
       />
       <Route 
         path="/create-profile" 
-        element={isAuth ? <Navigate to="/home\" replace /> : <CreateProfilePage />} 
+        element={isAuth ? <Navigate to="/home" replace /> : <CreateProfilePage />} 
       />
       
       {/* Protected Routes */}
       <Route 
         path="/home" 
-        element={isAuth ? <EnhancedHome /> : <Navigate to="/\" replace />} 
+        element={isAuth ? <EnhancedHome /> : <Navigate to="/" replace />} 
       />
       <Route 
         path="/profile" 
-        element={isAuth ? <Profile /> : <Navigate to="/\" replace />} 
+        element={isAuth ? <Profile /> : <Navigate to="/" replace />} 
       />
       <Route 
         path="/messages" 
-        element={isAuth ? <Messages /> : <Navigate to="/\" replace />} 
+        element={isAuth ? <Messages /> : <Navigate to="/" replace />} 
       />
       
       {/* 404 Route */}
