@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { 
   Home, 
   Search, 
@@ -70,7 +70,24 @@ const bottomItems = [
 
 export default function EnhancedSidebar({ isOpen, onClose, isMobile }: SidebarProps) {
   const location = useLocation()
+  const navigate = useNavigate()
   const [hoveredItem, setHoveredItem] = useState<string | null>(null)
+
+  const handleLogout = () => {
+    // Clear authentication data
+    localStorage.removeItem('isAuthenticated')
+    localStorage.removeItem('userEmail')
+    localStorage.removeItem('userProfile')
+    localStorage.removeItem('tempUserData')
+    
+    // Close sidebar if mobile
+    if (isMobile) {
+      onClose()
+    }
+    
+    // Redirect to intro page
+    navigate('/')
+  }
 
   const NavItem = ({ 
     item, 
@@ -348,28 +365,31 @@ export default function EnhancedSidebar({ isOpen, onClose, isMobile }: SidebarPr
             />
           ))}
           
-          <button style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: designTokens.spacing[4],
-            padding: `${designTokens.spacing[3]} ${designTokens.spacing[4]}`,
-            color: designTokens.colors.error[600],
-            backgroundColor: 'transparent',
-            border: 'none',
-            borderRadius: designTokens.borderRadius.xl,
-            cursor: 'pointer',
-            transition: `all ${designTokens.animation.duration.fast} ${designTokens.animation.easing.ease}`,
-            fontWeight: designTokens.typography.fontWeight.medium,
-            width: '100%',
-            fontSize: designTokens.typography.fontSize.base,
-            margin: `${designTokens.spacing[1]} 0`,
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = designTokens.colors.error[50]
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = 'transparent'
-          }}>
+          <button 
+            onClick={handleLogout}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: designTokens.spacing[4],
+              padding: `${designTokens.spacing[3]} ${designTokens.spacing[4]}`,
+              color: designTokens.colors.error[600],
+              backgroundColor: 'transparent',
+              border: 'none',
+              borderRadius: designTokens.borderRadius.xl,
+              cursor: 'pointer',
+              transition: `all ${designTokens.animation.duration.fast} ${designTokens.animation.easing.ease}`,
+              fontWeight: designTokens.typography.fontWeight.medium,
+              width: '100%',
+              fontSize: designTokens.typography.fontSize.base,
+              margin: `${designTokens.spacing[1]} 0`,
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = designTokens.colors.error[50]
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'transparent'
+            }}
+          >
             <div style={{
               padding: designTokens.spacing[2],
               color: designTokens.colors.error[600],

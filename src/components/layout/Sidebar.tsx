@@ -1,5 +1,5 @@
 import React from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { 
   Home, 
   Search, 
@@ -34,6 +34,23 @@ const bottomItems = [
 
 export default function Sidebar({ isOpen, onClose, isMobile }: SidebarProps) {
   const location = useLocation()
+  const navigate = useNavigate()
+
+  const handleLogout = () => {
+    // Clear authentication data
+    localStorage.removeItem('isAuthenticated')
+    localStorage.removeItem('userEmail')
+    localStorage.removeItem('userProfile')
+    localStorage.removeItem('tempUserData')
+    
+    // Close sidebar if mobile
+    if (isMobile) {
+      onClose()
+    }
+    
+    // Redirect to intro page
+    navigate('/')
+  }
 
   const NavItem = ({ item, isActive }: { item: any, isActive: boolean }) => {
     const IconComponent = item.icon
@@ -250,28 +267,31 @@ export default function Sidebar({ isOpen, onClose, isMobile }: SidebarProps) {
             />
           ))}
           
-          <button style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '16px',
-            padding: '12px 16px',
-            color: '#EF4444',
-            backgroundColor: 'transparent',
-            border: 'none',
-            borderRadius: '12px',
-            cursor: 'pointer',
-            transition: 'background-color 150ms ease',
-            fontWeight: '500',
-            width: '100%',
-            fontSize: '16px',
-            margin: '2px 0'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = '#FEF2F2'
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = 'transparent'
-          }}>
+          <button 
+            onClick={handleLogout}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '16px',
+              padding: '12px 16px',
+              color: '#EF4444',
+              backgroundColor: 'transparent',
+              border: 'none',
+              borderRadius: '12px',
+              cursor: 'pointer',
+              transition: 'background-color 150ms ease',
+              fontWeight: '500',
+              width: '100%',
+              fontSize: '16px',
+              margin: '2px 0'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = '#FEF2F2'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'transparent'
+            }}
+          >
             <div style={{
               padding: '8px',
               color: '#EF4444',
