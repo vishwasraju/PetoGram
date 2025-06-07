@@ -26,6 +26,7 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
+  const [registeredUserId, setRegisteredUserId] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -45,6 +46,8 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
 
     if (!formData.username.trim()) {
       newErrors.username = 'Username is required';
+    } else if (formData.username.trim().length < 2) {
+      newErrors.username = 'Username must be at least 2 characters';
     }
 
     if (!formData.email) {
@@ -69,59 +72,83 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
     return Object.keys(newErrors).length === 0;
   };
 
+  const validateStep2 = () => {
+    const newErrors: Record<string, string> = {};
+
+    if (!selectedPetType) {
+      newErrors.petType = 'Please select a pet type';
+    }
+
+    if (!formData.petName.trim()) {
+      newErrors.petName = 'Pet name is required';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleNext = async () => {
-    console.log('handleNext called, current step:', step); // Debug log
+    console.log('handleNext called, current step:', step);
     
     if (step === 1) {
-      if (validateStep1()) {
-        setIsLoading(true);
-        setErrors({}); // Clear any previous errors
-        
-        try {
-          console.log('Attempting to register user...'); // Debug log
-          
-          const { user, error } = await registerUser({
-            fullName: formData.username,
-            email: formData.email,
-            password: formData.password
-          });
-
-          if (error || !user) {
-            console.log('Registration error:', error); // Debug log
-            setErrors({ general: error || 'Registration failed. Please try again.' });
-            setIsLoading(false);
-            return;
-          }
-
-          console.log('Registration successful, user:', user.id); // Debug log
-
-          // Store user data for profile creation
-          localStorage.setItem('tempUserData', JSON.stringify({
-            userId: user.id,
-            fullName: formData.username,
-            email: formData.email,
-            username: formData.username,
-          }));
-
-          setIsLoading(false);
-          
-          // Move to step 2 after successful registration
-          console.log('Moving to step 2...'); // Debug log
-          setStep(2);
-          
-        } catch (error) {
-          console.error('Registration error:', error); // Debug log
-          setIsLoading(false);
-          setErrors({ general: 'An error occurred during registration. Please try again.' });
-        }
-      } else {
-        console.log('Validation failed:', errors); // Debug log
+      if (!validateStep1()) {
+        console.log('Step 1 validation failed:', errors);
+        return;
       }
+
+      setIsLoading(true);
+      setErrors({});
+      
+      try {
+        console.log('Attempting to register user...');
+        
+        const { user, error } = await registerUser({
+          fullName: formData.username,
+          email: formData.email,
+          password: formData.password
+        });
+
+        if (error || !user) {
+          console.log('Registration error:', error);
+          setErrors({ general: error || 'Registration failed. Please try again.' });
+          setIsLoading(false);
+          return;
+        }
+
+        console.log('Registration successful, user:', user.id);
+        setRegisteredUserId(user.id);
+
+        // Store user data for profile creation
+        localStorage.setItem('tempUserData', JSON.stringify({
+          userId: user.id,
+          fullName: formData.username,
+          email: formData.email,
+          username: formData.username,
+        }));
+
+        setIsLoading(false);
+        
+        // Move to step 2 after successful registration
+        console.log('Moving to step 2...');
+        setStep(2);
+        
+      } catch (error) {
+        console.error('Registration error:', error);
+        setIsLoading(false);
+        setErrors({ general: 'An error occurred during registration. Please try again.' });
+      }
+    } else if (step === 2) {
+      // This shouldn't be called for step 2, but just in case
+      handleConfirm();
     }
   };
 
   const handlePetTypeSelect = (petType: string) => {
     setSelectedPetType(petType);
+    // Clear pet type error when user selects a pet
+    if (errors.petType) {
+      setErrors(prev => ({ ...prev, petType: '' }));
+    }
   };
 
   const handleNextPage = () => {
@@ -148,6 +175,13 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
   };
 
   const handleConfirm = () => {
+    if (!validateStep2()) {
+      console.log('Step 2 validation failed:', errors);
+      return;
+    }
+
+    console.log('Pet information confirmed, proceeding to profile creation...');
+    
     // Update temp data with pet information
     const tempData = localStorage.getItem('tempUserData');
     if (tempData) {
@@ -160,6 +194,7 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
         aboutPet: formData.aboutPet
       }));
     }
+    
     onConfirm();
   };
 
@@ -169,6 +204,7 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
     setSelectedPetType(null);
     setCurrentPage(0);
     setUploadedImage(null);
+    setRegisteredUserId(null);
     setFormData({
       username: '',
       email: '',
@@ -186,7 +222,7 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
   const endIndex = startIndex + itemsPerPage;
   const currentPets = petTypes.slice(startIndex, endIndex);
 
-  console.log('Rendering SignupModal, current step:', step); // Debug log
+  console.log('Rendering SignupModal, current step:', step, 'isLoading:', isLoading);
 
   return (
     <div style={{
@@ -206,7 +242,7 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
         backgroundColor: '#000',
         borderRadius: '16px',
         width: '100%',
-        maxWidth: step === 1 ? '380px' : '450px', // Slightly wider for step 2
+        maxWidth: step === 1 ? '380px' : '500px',
         maxHeight: '90vh',
         overflowY: 'auto',
         padding: '20px',
@@ -310,13 +346,10 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
           </div>
         )}
 
-        {/* Content based on step */}
+        {/* Step 1: Account Creation */}
         {step === 1 && (
           <div>
-            <div style={{
-              marginBottom: '8px',
-              marginTop: '10px',
-            }}>
+            <div style={{ marginBottom: '8px', marginTop: '10px' }}>
               <label htmlFor="username" style={{ display: 'block', color: '#e0e0e0', marginBottom: '3px', fontSize: '12px' }}>Username</label>
               <input 
                 type="text" 
@@ -345,9 +378,7 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
               )}
             </div>
 
-            <div style={{
-              marginBottom: '8px',
-            }}>
+            <div style={{ marginBottom: '8px' }}>
               <label htmlFor="email" style={{ display: 'block', color: '#e0e0e0', marginBottom: '3px', fontSize: '12px' }}>Email</label>
               <input 
                 type="email" 
@@ -375,9 +406,7 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
               )}
             </div>
 
-            <div style={{
-              marginBottom: '8px',
-            }}>
+            <div style={{ marginBottom: '8px' }}>
               <label htmlFor="password" style={{ display: 'block', color: '#e0e0e0', marginBottom: '3px', fontSize: '12px' }}>Password</label>
               <input 
                 type="password" 
@@ -405,9 +434,7 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
               )}
             </div>
 
-            <div style={{
-              marginBottom: '12px',
-            }}>
+            <div style={{ marginBottom: '12px' }}>
               <label htmlFor="confirmPassword" style={{ display: 'block', color: '#e0e0e0', marginBottom: '3px', fontSize: '12px' }}>Confirm Password</label>
               <input 
                 type="password" 
@@ -449,6 +476,7 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
                 fontSize: '14px',
                 fontWeight: 'bold',
                 cursor: isLoading ? 'not-allowed' : 'pointer',
+                opacity: isLoading ? 0.7 : 1,
               }}
             >
               {isLoading ? 'Creating Account...' : 'Next'}
@@ -456,6 +484,7 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
           </div>
         )}
 
+        {/* Step 2: Pet Information */}
         {step === 2 && (
           <div>
             <div style={{
@@ -476,6 +505,21 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
                 Choose your pet
               </h3>
             </div>
+
+            {/* Pet Type Error */}
+            {errors.petType && (
+              <div style={{
+                color: '#ff4444',
+                fontSize: '12px',
+                textAlign: 'center',
+                marginBottom: '10px',
+                padding: '5px',
+                backgroundColor: 'rgba(255, 68, 68, 0.1)',
+                borderRadius: '4px',
+              }}>
+                {errors.petType}
+              </div>
+            )}
 
             <div style={{
               marginBottom: '15px',
@@ -556,9 +600,7 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
               </button>
             </div>
 
-            <div style={{
-              marginBottom: '15px',
-            }}>
+            <div style={{ marginBottom: '15px' }}>
               <label htmlFor="petName" style={{ display: 'block', color: '#e0e0e0', marginBottom: '5px', fontSize: '12px' }}>Pet Name</label>
               <input 
                 type="text" 
@@ -571,7 +613,7 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
                   width: '100%',
                   padding: '12px',
                   backgroundColor: '#1a1a1a',
-                  border: '1px solid #363636',
+                  border: `1px solid ${errors.petName ? '#ff4444' : '#363636'}`,
                   borderRadius: '4px',
                   color: '#fff',
                   fontSize: '16px',
@@ -579,6 +621,11 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
                   boxSizing: 'border-box',
                 }}
               />
+              {errors.petName && (
+                <div style={{ color: '#ff4444', fontSize: '10px', marginTop: '2px' }}>
+                  {errors.petName}
+                </div>
+              )}
             </div>
 
             <div style={{
@@ -629,9 +676,7 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
                 />
               </div>
 
-              <div style={{
-                flexGrow: 1,
-              }}>
+              <div style={{ flexGrow: 1 }}>
                 <label htmlFor="aboutPet" style={{ display: 'block', color: '#e0e0e0', marginBottom: '5px', fontSize: '12px' }}>About pet</label>
                 <textarea 
                   id="aboutPet" 
@@ -671,7 +716,7 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
                 cursor: 'pointer',
               }}
             >
-              Confirm
+              Complete Setup
             </button>
           </div>
         )}
