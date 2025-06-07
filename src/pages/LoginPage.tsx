@@ -4,6 +4,7 @@ import { Eye, EyeOff, Heart, ArrowLeft, Mail, Lock, AlertCircle } from 'lucide-r
 import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
 import { designTokens } from '../design-system/tokens'
+import { validateLogin, setAuthenticationState, verifyPassword, getRegisteredUsers } from '../utils/auth'
 
 export default function LoginPage() {
   const navigate = useNavigate()
@@ -50,21 +51,40 @@ export default function LoginPage() {
 
     setIsLoading(true)
     
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false)
-      // For demo purposes, any valid email/password combination works
-      if (formData.email && formData.password.length >= 6) {
-        localStorage.setItem('isAuthenticated', 'true')
-        localStorage.setItem('userEmail', formData.email)
-        // Force navigation to home page
-        navigate('/home', { replace: true })
-        // Trigger a page reload to ensure state updates
-        window.location.reload()
-      } else {
-        setErrors({ general: 'Invalid email or password' })
+    try {
+      // Get all registered users
+      const users = getRegisteredUsers()
+      
+      // Find user by email
+      const user = users.find(u => u.email.toLowerCase() === formData.email.toLowerCase())
+      
+      if (!user) {
+        setErrors({ general: 'No account found with this email address. Please sign up first.' })
+        setIsLoading(false)
+        return
       }
-    }, 1500)
+      
+      // Verify password
+      const isPasswordValid = verifyPassword(formData.password, user.password)
+      
+      if (!isPasswordValid) {
+        setErrors({ general: 'Invalid password. Please try again.' })
+        setIsLoading(false)
+        return
+      }
+      
+      // Set authentication state
+      setAuthenticationState(user)
+      
+      setIsLoading(false)
+      
+      // Navigate to home page
+      navigate('/home', { replace: true })
+      
+    } catch (error) {
+      setIsLoading(false)
+      setErrors({ general: 'An error occurred during login. Please try again.' })
+    }
   }
 
   return (

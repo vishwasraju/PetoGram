@@ -4,6 +4,7 @@ import { Eye, EyeOff, Heart, ArrowLeft, Mail, Lock, User, AlertCircle, CheckCirc
 import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
 import { designTokens } from '../design-system/tokens'
+import { registerUser, hashPassword } from '../utils/auth'
 
 export default function SignupPage() {
   const navigate = useNavigate()
@@ -95,16 +96,35 @@ export default function SignupPage() {
 
     setIsLoading(true)
     
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false)
-      // Store user data and redirect to profile creation
+    try {
+      // Hash the password before storing
+      const hashedPassword = hashPassword(formData.password)
+      
+      // Register the user
+      const newUser = registerUser({
+        fullName: formData.fullName,
+        email: formData.email,
+        password: hashedPassword
+      })
+      
+      // Store temporary user data for profile creation
       localStorage.setItem('tempUserData', JSON.stringify({
+        userId: newUser.id,
         fullName: formData.fullName,
         email: formData.email,
       }))
+      
+      setIsLoading(false)
       navigate('/create-profile')
-    }, 1500)
+      
+    } catch (error) {
+      setIsLoading(false)
+      if (error instanceof Error) {
+        setErrors({ general: error.message })
+      } else {
+        setErrors({ general: 'An error occurred during registration. Please try again.' })
+      }
+    }
   }
 
   const passwordStrength = getPasswordStrengthLabel()
@@ -258,6 +278,28 @@ export default function SignupPage() {
               Fill in your details to get started
             </p>
           </div>
+
+          {/* Error Message */}
+          {errors.general && (
+            <div style={{
+              padding: designTokens.spacing[4],
+              backgroundColor: designTokens.colors.error[50],
+              border: `1px solid ${designTokens.colors.error[200]}`,
+              borderRadius: designTokens.borderRadius.xl,
+              marginBottom: designTokens.spacing[6],
+              display: 'flex',
+              alignItems: 'center',
+              gap: designTokens.spacing[2],
+            }}>
+              <AlertCircle size={20} color={designTokens.colors.error[500]} />
+              <span style={{
+                fontSize: designTokens.typography.fontSize.sm,
+                color: designTokens.colors.error[700],
+              }}>
+                {errors.general}
+              </span>
+            </div>
+          )}
 
           {/* Signup Form */}
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: designTokens.spacing[6] }}>

@@ -8,23 +8,28 @@ import EnhancedHome from './pages/EnhancedHome'
 import Profile from './pages/Profile'
 import Messages from './pages/Messages'
 import NotFound from './pages/NotFound'
+import { isAuthenticated } from './utils/auth'
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [isAuth, setIsAuth] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     // Check authentication status
-    const authStatus = localStorage.getItem('isAuthenticated')
-    setIsAuthenticated(authStatus === 'true')
-    setIsLoading(false)
+    const checkAuth = () => {
+      const authStatus = isAuthenticated()
+      setIsAuth(authStatus)
+      setIsLoading(false)
+    }
+    
+    checkAuth()
   }, [])
 
   // Listen for authentication changes
   useEffect(() => {
     const handleStorageChange = () => {
-      const authStatus = localStorage.getItem('isAuthenticated')
-      setIsAuthenticated(authStatus === 'true')
+      const authStatus = isAuthenticated()
+      setIsAuth(authStatus)
     }
 
     // Listen for storage changes (for logout functionality)
@@ -32,8 +37,8 @@ function App() {
     
     // Also check periodically for changes within the same tab
     const interval = setInterval(() => {
-      const authStatus = localStorage.getItem('isAuthenticated')
-      setIsAuthenticated(authStatus === 'true')
+      const authStatus = isAuthenticated()
+      setIsAuth(authStatus)
     }, 1000)
 
     return () => {
@@ -74,33 +79,33 @@ function App() {
       {/* Public Routes */}
       <Route 
         path="/" 
-        element={isAuthenticated ? <Navigate to="/home\" replace /> : <IntroPage />} 
+        element={isAuth ? <Navigate to="/home" replace /> : <IntroPage />} 
       />
       <Route 
         path="/login" 
-        element={isAuthenticated ? <Navigate to="/home\" replace /> : <LoginPage />} 
+        element={isAuth ? <Navigate to="/home" replace /> : <LoginPage />} 
       />
       <Route 
         path="/signup" 
-        element={isAuthenticated ? <Navigate to="/home\" replace /> : <SignupPage />} 
+        element={isAuth ? <Navigate to="/home" replace /> : <SignupPage />} 
       />
       <Route 
         path="/create-profile" 
-        element={isAuthenticated ? <Navigate to="/home\" replace /> : <CreateProfilePage />} 
+        element={isAuth ? <Navigate to="/home" replace /> : <CreateProfilePage />} 
       />
       
       {/* Protected Routes */}
       <Route 
         path="/home" 
-        element={isAuthenticated ? <EnhancedHome /> : <Navigate to="/\" replace />} 
+        element={isAuth ? <EnhancedHome /> : <Navigate to="/" replace />} 
       />
       <Route 
         path="/profile" 
-        element={isAuthenticated ? <Profile /> : <Navigate to="/\" replace />} 
+        element={isAuth ? <Profile /> : <Navigate to="/" replace />} 
       />
       <Route 
         path="/messages" 
-        element={isAuthenticated ? <Messages /> : <Navigate to="/\" replace />} 
+        element={isAuth ? <Messages /> : <Navigate to="/" replace />} 
       />
       
       {/* 404 Route */}

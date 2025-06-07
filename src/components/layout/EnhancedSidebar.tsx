@@ -23,6 +23,7 @@ import {
 import Avatar from '../ui/Avatar'
 import Badge from '../ui/Badge'
 import { designTokens } from '../../design-system/tokens'
+import { clearAuthenticationState } from '../../utils/auth'
 
 interface SidebarProps {
   isOpen: boolean
@@ -75,10 +76,7 @@ export default function EnhancedSidebar({ isOpen, onClose, isMobile }: SidebarPr
 
   const handleLogout = () => {
     // Clear authentication data
-    localStorage.removeItem('isAuthenticated')
-    localStorage.removeItem('userEmail')
-    localStorage.removeItem('userProfile')
-    localStorage.removeItem('tempUserData')
+    clearAuthenticationState()
     
     // Close sidebar if mobile
     if (isMobile) {

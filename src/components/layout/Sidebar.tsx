@@ -16,6 +16,7 @@ import {
   Bookmark
 } from 'lucide-react'
 import Avatar from '../ui/Avatar'
+import { clearAuthenticationState } from '../../utils/auth'
 
 interface SidebarProps {
   isOpen: boolean
@@ -38,10 +39,7 @@ export default function Sidebar({ isOpen, onClose, isMobile }: SidebarProps) {
 
   const handleLogout = () => {
     // Clear authentication data
-    localStorage.removeItem('isAuthenticated')
-    localStorage.removeItem('userEmail')
-    localStorage.removeItem('userProfile')
-    localStorage.removeItem('tempUserData')
+    clearAuthenticationState()
     
     // Close sidebar if mobile
     if (isMobile) {
