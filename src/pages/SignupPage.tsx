@@ -105,7 +105,12 @@ export default function SignupPage() {
       })
       
       if (error || !user) {
-        setErrors({ general: error || 'Registration failed. Please try again.' })
+        // Check if the error is specifically about user already existing
+        if (error && (error.includes('user_already_exists') || error.includes('User already registered'))) {
+          setErrors({ general: 'This email is already registered. Please try logging in or use a different email.' })
+        } else {
+          setErrors({ general: error || 'Registration failed. Please try again.' })
+        }
         setIsLoading(false)
         return
       }
@@ -120,10 +125,17 @@ export default function SignupPage() {
       setIsLoading(false)
       navigate('/create-profile')
       
-    } catch (error) {
+    } catch (error: any) {
       setIsLoading(false)
       console.error('Registration error:', error)
-      setErrors({ general: 'An error occurred during registration. Please try again.' })
+      
+      // Check if the error message contains user already exists information
+      const errorMessage = error?.message || error?.toString() || ''
+      if (errorMessage.includes('user_already_exists') || errorMessage.includes('User already registered')) {
+        setErrors({ general: 'This email is already registered. Please try logging in or use a different email.' })
+      } else {
+        setErrors({ general: 'An error occurred during registration. Please try again.' })
+      }
     }
   }
 
