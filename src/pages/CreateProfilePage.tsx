@@ -141,7 +141,9 @@ export default function CreateProfilePage() {
       localStorage.setItem('isAuthenticated', 'true')
       localStorage.setItem('userProfile', JSON.stringify(profileData))
       localStorage.removeItem('tempUserData')
-      navigate('/')
+      navigate('/home', { replace: true })
+      // Trigger a page reload to ensure state updates
+      window.location.reload()
     }, 2000)
   }
 

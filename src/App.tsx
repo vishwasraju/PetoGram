@@ -20,6 +20,28 @@ function App() {
     setIsLoading(false)
   }, [])
 
+  // Listen for authentication changes
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const authStatus = localStorage.getItem('isAuthenticated')
+      setIsAuthenticated(authStatus === 'true')
+    }
+
+    // Listen for storage changes (for logout functionality)
+    window.addEventListener('storage', handleStorageChange)
+    
+    // Also check periodically for changes within the same tab
+    const interval = setInterval(() => {
+      const authStatus = localStorage.getItem('isAuthenticated')
+      setIsAuthenticated(authStatus === 'true')
+    }, 1000)
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange)
+      clearInterval(interval)
+    }
+  }, [])
+
   if (isLoading) {
     return (
       <div style={{
@@ -52,29 +74,33 @@ function App() {
       {/* Public Routes */}
       <Route 
         path="/" 
-        element={isAuthenticated ? <EnhancedHome /> : <IntroPage />} 
+        element={isAuthenticated ? <Navigate to="/home" replace /> : <IntroPage />} 
       />
       <Route 
         path="/login" 
-        element={isAuthenticated ? <Navigate to="/\" replace /> : <LoginPage />} 
+        element={isAuthenticated ? <Navigate to="/home" replace /> : <LoginPage />} 
       />
       <Route 
         path="/signup" 
-        element={isAuthenticated ? <Navigate to="/\" replace /> : <SignupPage />} 
+        element={isAuthenticated ? <Navigate to="/home" replace /> : <SignupPage />} 
       />
       <Route 
         path="/create-profile" 
-        element={isAuthenticated ? <Navigate to="/\" replace /> : <CreateProfilePage />} 
+        element={isAuthenticated ? <Navigate to="/home" replace /> : <CreateProfilePage />} 
       />
       
       {/* Protected Routes */}
       <Route 
+        path="/home" 
+        element={isAuthenticated ? <EnhancedHome /> : <Navigate to="/" replace />} 
+      />
+      <Route 
         path="/profile" 
-        element={isAuthenticated ? <Profile /> : <Navigate to="/login\" replace />} 
+        element={isAuthenticated ? <Profile /> : <Navigate to="/" replace />} 
       />
       <Route 
         path="/messages" 
-        element={isAuthenticated ? <Messages /> : <Navigate to="/login\" replace />} 
+        element={isAuthenticated ? <Messages /> : <Navigate to="/" replace />} 
       />
       
       {/* 404 Route */}

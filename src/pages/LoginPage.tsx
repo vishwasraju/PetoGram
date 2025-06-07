@@ -57,7 +57,10 @@ export default function LoginPage() {
       if (formData.email && formData.password.length >= 6) {
         localStorage.setItem('isAuthenticated', 'true')
         localStorage.setItem('userEmail', formData.email)
-        navigate('/')
+        // Force navigation to home page
+        navigate('/home', { replace: true })
+        // Trigger a page reload to ensure state updates
+        window.location.reload()
       } else {
         setErrors({ general: 'Invalid email or password' })
       }
