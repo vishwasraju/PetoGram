@@ -21,6 +21,7 @@ import Input from '../components/ui/Input'
 import Card from '../components/ui/Card'
 import Badge from '../components/ui/Badge'
 import { designTokens } from '../design-system/tokens'
+import { createUserProfile, createUserPets, setAuthenticationState } from '../utils/auth'
 
 const petTypes = [
   { id: 'dog', name: 'Dog', emoji: '🐕' },
@@ -135,16 +136,70 @@ export default function CreateProfilePage() {
   const handleSubmit = async () => {
     setIsLoading(true)
     
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false)
-      localStorage.setItem('isAuthenticated', 'true')
-      localStorage.setItem('userProfile', JSON.stringify(profileData))
+    try {
+      // Get temp user data
+      const tempUserData = localStorage.getItem('tempUserData')
+      if (!tempUserData) {
+        throw new Error('User data not found')
+      }
+      
+      const userData = JSON.parse(tempUserData)
+      
+      // Create user profile
+      const profile = await createUserProfile({
+        user_id: userData.userId,
+        username: profileData.username,
+        bio: profileData.bio,
+        profile_picture: profileData.profilePicture,
+        location: profileData.location,
+        birth_date: profileData.birthDate || undefined,
+        phone: profileData.phone,
+        website: profileData.website,
+        social_media: profileData.socialMedia,
+        interests: profileData.interests,
+        is_public: profileData.isPublic,
+        allow_messages: profileData.allowMessages,
+        show_email: profileData.showEmail,
+      })
+      
+      // Create user pets if any
+      if (profileData.pets.length > 0) {
+        const validPets = profileData.pets.filter(pet => pet.name && pet.type)
+        if (validPets.length > 0) {
+          await createUserPets(
+            validPets.map(pet => ({
+              user_id: userData.userId,
+              name: pet.name,
+              type: pet.type,
+              breed: pet.breed,
+              age: pet.age,
+              photo: pet.photo,
+            }))
+          )
+        }
+      }
+      
+      // Set authentication state
+      setAuthenticationState({
+        id: userData.userId,
+        email: userData.email,
+        full_name: userData.fullName,
+        password_hash: '', // Not needed for auth state
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      
+      // Clean up temp data
       localStorage.removeItem('tempUserData')
+      
+      setIsLoading(false)
       navigate('/home', { replace: true })
-      // Trigger a page reload to ensure state updates
-      window.location.reload()
-    }, 2000)
+      
+    } catch (error) {
+      setIsLoading(false)
+      console.error('Profile creation error:', error)
+      // Handle error - could show error message to user
+    }
   }
 
   const nextStep = () => {

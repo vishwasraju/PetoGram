@@ -4,7 +4,7 @@ import { Eye, EyeOff, Heart, ArrowLeft, Mail, Lock, AlertCircle } from 'lucide-r
 import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
 import { designTokens } from '../design-system/tokens'
-import { validateLogin, setAuthenticationState, verifyPassword, getRegisteredUsers } from '../utils/auth'
+import { validateLogin, setAuthenticationState } from '../utils/auth'
 
 export default function LoginPage() {
   const navigate = useNavigate()
@@ -52,23 +52,11 @@ export default function LoginPage() {
     setIsLoading(true)
     
     try {
-      // Get all registered users
-      const users = getRegisteredUsers()
-      
-      // Find user by email
-      const user = users.find(u => u.email.toLowerCase() === formData.email.toLowerCase())
+      // Validate login credentials with Supabase
+      const user = await validateLogin(formData.email, formData.password)
       
       if (!user) {
-        setErrors({ general: 'No account found with this email address. Please sign up first.' })
-        setIsLoading(false)
-        return
-      }
-      
-      // Verify password
-      const isPasswordValid = verifyPassword(formData.password, user.password)
-      
-      if (!isPasswordValid) {
-        setErrors({ general: 'Invalid password. Please try again.' })
+        setErrors({ general: 'Invalid email or password. Please try again.' })
         setIsLoading(false)
         return
       }

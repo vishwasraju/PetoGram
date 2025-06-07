@@ -4,7 +4,7 @@ import { Eye, EyeOff, Heart, ArrowLeft, Mail, Lock, User, AlertCircle, CheckCirc
 import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
 import { designTokens } from '../design-system/tokens'
-import { registerUser, hashPassword } from '../utils/auth'
+import { registerUser } from '../utils/auth'
 
 export default function SignupPage() {
   const navigate = useNavigate()
@@ -97,14 +97,11 @@ export default function SignupPage() {
     setIsLoading(true)
     
     try {
-      // Hash the password before storing
-      const hashedPassword = hashPassword(formData.password)
-      
-      // Register the user
-      const newUser = registerUser({
+      // Register the user in Supabase
+      const newUser = await registerUser({
         fullName: formData.fullName,
         email: formData.email,
-        password: hashedPassword
+        password: formData.password
       })
       
       // Store temporary user data for profile creation
