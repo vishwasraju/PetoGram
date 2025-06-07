@@ -1,101 +1,60 @@
 import { supabase } from './supabase'
 import type { User, UserProfile, UserPet } from './supabase'
 
-// Hash password (simple implementation - in production use proper hashing)
-export const hashPassword = (password: string): string => {
-  // Simple base64 encoding for demo purposes
-  // In production, use proper password hashing like bcrypt
-  return btoa(password + 'salt_key_petogram')
-}
-
-// Verify password
-export const verifyPassword = (password: string, hashedPassword: string): boolean => {
-  return hashPassword(password) === hashedPassword
-}
-
-// Register a new user
+// Register a new user using Supabase Auth
 export const registerUser = async (userData: {
   fullName: string
   email: string
   password: string
-}): Promise<User> => {
+}): Promise<{ user: any; error: any }> => {
   try {
-    // Check if user already exists
-    const { data: existingUser } = await supabase
-      .from('users')
-      .select('id')
-      .eq('email', userData.email.toLowerCase())
-      .maybeSingle()
-
-    if (existingUser) {
-      throw new Error('User with this email already exists')
-    }
-
-    // Hash the password
-    const hashedPassword = hashPassword(userData.password)
-
-    // Insert new user
-    const { data: newUser, error } = await supabase
-      .from('users')
-      .insert({
-        email: userData.email.toLowerCase(),
-        password_hash: hashedPassword,
-        full_name: userData.fullName
-      })
-      .select()
-      .single()
+    // Use Supabase Auth to create user
+    const { data, error } = await supabase.auth.signUp({
+      email: userData.email.toLowerCase(),
+      password: userData.password,
+      options: {
+        data: {
+          full_name: userData.fullName
+        }
+      }
+    })
 
     if (error) {
       throw new Error(error.message)
     }
 
-    return newUser
+    return { user: data.user, error: null }
   } catch (error) {
     if (error instanceof Error) {
-      throw error
+      return { user: null, error: error.message }
     }
-    throw new Error('An error occurred during registration')
+    return { user: null, error: 'An error occurred during registration' }
   }
 }
 
-// Validate login credentials
-export const validateLogin = async (email: string, password: string): Promise<User | null> => {
+// Login user using Supabase Auth
+export const validateLogin = async (email: string, password: string): Promise<{ user: any; error: any }> => {
   try {
-    const { data: user, error } = await supabase
-      .from('users')
-      .select('*')
-      .eq('email', email.toLowerCase())
-      .single()
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: email.toLowerCase(),
+      password: password
+    })
 
-    if (error || !user) {
-      return null
+    if (error) {
+      return { user: null, error: error.message }
     }
 
-    // Verify password
-    const isPasswordValid = verifyPassword(password, user.password_hash)
-    
-    if (!isPasswordValid) {
-      return null
-    }
-
-    return user
+    return { user: data.user, error: null }
   } catch (error) {
     console.error('Login validation error:', error)
-    return null
+    return { user: null, error: 'An error occurred during login' }
   }
 }
 
-// Get current authenticated user from localStorage
-export const getCurrentUser = async (): Promise<User | null> => {
-  const userId = localStorage.getItem('currentUserId')
-  if (!userId) return null
-
+// Get current authenticated user from Supabase Auth
+export const getCurrentUser = async (): Promise<any> => {
   try {
-    const { data: user, error } = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', userId)
-      .single()
+    const { data: { user }, error } = await supabase.auth.getUser()
 
     if (error || !user) {
       return null
@@ -108,15 +67,18 @@ export const getCurrentUser = async (): Promise<User | null> => {
   }
 }
 
-// Set authentication state
-export const setAuthenticationState = (user: User): void => {
+// Set authentication state (now handled by Supabase Auth automatically)
+export const setAuthenticationState = (user: any): void => {
+  // Supabase Auth handles session management automatically
+  // We can still store some user info in localStorage if needed
   localStorage.setItem('isAuthenticated', 'true')
   localStorage.setItem('userEmail', user.email)
   localStorage.setItem('currentUserId', user.id)
 }
 
-// Clear authentication state
-export const clearAuthenticationState = (): void => {
+// Clear authentication state and sign out
+export const clearAuthenticationState = async (): Promise<void> => {
+  await supabase.auth.signOut()
   localStorage.removeItem('isAuthenticated')
   localStorage.removeItem('userEmail')
   localStorage.removeItem('currentUserId')
@@ -124,12 +86,14 @@ export const clearAuthenticationState = (): void => {
   localStorage.removeItem('tempUserData')
 }
 
-// Check if user is authenticated
-export const isAuthenticated = (): boolean => {
-  const authStatus = localStorage.getItem('isAuthenticated')
-  const userId = localStorage.getItem('currentUserId')
-  
-  return authStatus === 'true' && userId !== null
+// Check if user is authenticated using Supabase Auth
+export const isAuthenticated = async (): Promise<boolean> => {
+  try {
+    const { data: { user } } = await supabase.auth.getUser()
+    return user !== null
+  } catch (error) {
+    return false
+  }
 }
 
 // Create user profile
