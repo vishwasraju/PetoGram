@@ -1,178 +1,71 @@
-// Mock authentication utilities without Supabase
-export interface AuthUser {
-  id: string
-  email: string
-  user_metadata: {
-    full_name?: string
-  }
-}
+import { supabase } from './supabase'
+import type { UserProfile, UserPet, AuthUser } from './supabase'
 
-export interface UserProfile {
-  id: string
-  user_id: string
-  username?: string
-  bio: string
-  profile_picture: string
-  location: string
-  birth_date?: string
-  phone: string
-  website: string
-  social_media: {
-    instagram: string
-    twitter: string
-    facebook: string
-  }
-  interests: string[]
-  is_public: boolean
-  allow_messages: boolean
-  show_email: boolean
-  created_at: string
-  updated_at: string
-}
-
-export interface UserPet {
-  id: string
-  user_id: string
-  name: string
-  type: string
-  breed: string
-  age: string
-  photo: string
-  created_at: string
-  updated_at: string
-}
-
-// Mock user data
-const mockUsers: Record<string, { user: AuthUser; profile: UserProfile; pets: UserPet[] }> = {
-  'john@example.com': {
-    user: {
-      id: 'user-1',
-      email: 'john@example.com',
-      user_metadata: {
-        full_name: 'John Doe'
-      }
-    },
-    profile: {
-      id: 'profile-1',
-      user_id: 'user-1',
-      username: 'johndoe',
-      bio: 'Proud pet parent to Max 🐕 and Luna 🐱. Love sharing their adventures!',
-      profile_picture: 'https://images.pexels.com/photos/1036622/pexels-photo-1036622.jpeg?auto=compress&cs=tinysrgb&w=300&h=300&dpr=2',
-      location: 'New York, NY',
-      birth_date: '1990-05-15',
-      phone: '+1234567890',
-      website: 'https://johndoe.com',
-      social_media: {
-        instagram: '@johndoe',
-        twitter: '@johndoe',
-        facebook: 'john.doe'
-      },
-      interests: ['Pet Photography', 'Dog Training', 'Cat Care'],
-      is_public: true,
-      allow_messages: true,
-      show_email: false,
-      created_at: '2023-03-01T00:00:00Z',
-      updated_at: '2023-03-01T00:00:00Z'
-    },
-    pets: [
-      {
-        id: 'pet-1',
-        user_id: 'user-1',
-        name: 'Max',
-        type: 'dog',
-        breed: 'Golden Retriever',
-        age: '3 years',
-        photo: 'https://images.pexels.com/photos/1805164/pexels-photo-1805164.jpeg?auto=compress&cs=tinysrgb&w=400',
-        created_at: '2023-03-01T00:00:00Z',
-        updated_at: '2023-03-01T00:00:00Z'
-      },
-      {
-        id: 'pet-2',
-        user_id: 'user-1',
-        name: 'Luna',
-        type: 'cat',
-        breed: 'Persian',
-        age: '2 years',
-        photo: 'https://images.pexels.com/photos/1170986/pexels-photo-1170986.jpeg?auto=compress&cs=tinysrgb&w=400',
-        created_at: '2023-03-01T00:00:00Z',
-        updated_at: '2023-03-01T00:00:00Z'
-      }
-    ]
-  }
-}
-
-// Register a new user (mock implementation)
+// Register a new user using Supabase Auth
 export const registerUser = async (userData: {
   fullName: string
   email: string
   password: string
 }): Promise<{ user: AuthUser | null; error: string | null }> => {
   try {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
-    // Check if user already exists
-    if (mockUsers[userData.email.toLowerCase()]) {
-      return { user: null, error: 'This email is already registered. Please try logging in or use a different email.' }
-    }
-
-    // Create new user
-    const newUser: AuthUser = {
-      id: `user-${Date.now()}`,
+    const { data, error } = await supabase.auth.signUp({
       email: userData.email.toLowerCase(),
-      user_metadata: {
-        full_name: userData.fullName
+      password: userData.password,
+      options: {
+        data: {
+          full_name: userData.fullName
+        }
       }
+    })
+
+    if (error) {
+      return { user: null, error: error.message }
     }
 
-    // Store in mock database
-    mockUsers[userData.email.toLowerCase()] = {
-      user: newUser,
-      profile: {} as UserProfile, // Will be created later
-      pets: []
+    if (!data.user) {
+      return { user: null, error: 'Failed to create user account' }
     }
 
-    return { user: newUser, error: null }
+    return { user: data.user as AuthUser, error: null }
   } catch (error) {
     console.error('Registration error:', error)
     return { user: null, error: 'An error occurred during registration' }
   }
 }
 
-// Login user (mock implementation)
+// Login user using Supabase Auth
 export const validateLogin = async (email: string, password: string): Promise<{ user: AuthUser | null; error: string | null }> => {
   try {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
-    const userData = mockUsers[email.toLowerCase()]
-    
-    if (!userData) {
-      return { user: null, error: 'Invalid email or password' }
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: email.toLowerCase(),
+      password: password
+    })
+
+    if (error) {
+      return { user: null, error: error.message }
     }
 
-    // In a real app, you'd verify the password here
-    // For demo purposes, we'll accept any password
-    
-    return { user: userData.user, error: null }
+    if (!data.user) {
+      return { user: null, error: 'Login failed' }
+    }
+
+    return { user: data.user as AuthUser, error: null }
   } catch (error) {
     console.error('Login validation error:', error)
     return { user: null, error: 'An error occurred during login' }
   }
 }
 
-// Get current authenticated user
+// Get current authenticated user from Supabase Auth
 export const getCurrentUser = async (): Promise<AuthUser | null> => {
   try {
-    const userEmail = localStorage.getItem('userEmail')
-    const isAuth = localStorage.getItem('isAuthenticated') === 'true'
-    
-    if (!userEmail || !isAuth) {
+    const { data: { user }, error } = await supabase.auth.getUser()
+
+    if (error || !user) {
       return null
     }
 
-    const userData = mockUsers[userEmail]
-    return userData ? userData.user : null
+    return user as AuthUser
   } catch (error) {
     console.error('Get current user error:', error)
     return null
@@ -186,8 +79,9 @@ export const setAuthenticationState = (user: AuthUser): void => {
   localStorage.setItem('currentUserId', user.id)
 }
 
-// Clear authentication state
+// Clear authentication state and sign out
 export const clearAuthenticationState = async (): Promise<void> => {
+  await supabase.auth.signOut()
   localStorage.removeItem('isAuthenticated')
   localStorage.removeItem('userEmail')
   localStorage.removeItem('currentUserId')
@@ -195,37 +89,28 @@ export const clearAuthenticationState = async (): Promise<void> => {
   localStorage.removeItem('tempUserData')
 }
 
-// Check if user is authenticated
+// Check if user is authenticated using Supabase Auth
 export const isAuthenticated = async (): Promise<boolean> => {
   try {
-    const isAuth = localStorage.getItem('isAuthenticated') === 'true'
-    const userEmail = localStorage.getItem('userEmail')
-    return isAuth && userEmail !== null
+    const { data: { user } } = await supabase.auth.getUser()
+    return user !== null
   } catch (error) {
     return false
   }
 }
 
-// Create user profile (mock implementation)
+// Create user profile
 export const createUserProfile = async (profileData: Omit<UserProfile, 'id' | 'created_at' | 'updated_at'>): Promise<UserProfile> => {
   try {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 500))
-    
-    const userEmail = localStorage.getItem('userEmail')
-    if (!userEmail || !mockUsers[userEmail]) {
-      throw new Error('User not found')
-    }
+    const { data: profile, error } = await supabase
+      .from('user_profiles')
+      .insert(profileData)
+      .select()
+      .single()
 
-    const profile: UserProfile = {
-      ...profileData,
-      id: `profile-${Date.now()}`,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+    if (error) {
+      throw new Error(error.message)
     }
-
-    // Store in mock database
-    mockUsers[userEmail].profile = profile
 
     return profile
   } catch (error) {
@@ -237,43 +122,39 @@ export const createUserProfile = async (profileData: Omit<UserProfile, 'id' | 'c
   }
 }
 
-// Get user profile (mock implementation)
+// Get user profile
 export const getUserProfile = async (userId: string): Promise<UserProfile | null> => {
   try {
-    const userEmail = localStorage.getItem('userEmail')
-    if (!userEmail || !mockUsers[userEmail]) {
+    const { data: profile, error } = await supabase
+      .from('user_profiles')
+      .select('*')
+      .eq('user_id', userId)
+      .single()
+
+    if (error) {
       return null
     }
 
-    return mockUsers[userEmail].profile || null
+    return profile
   } catch (error) {
     console.error('Get user profile error:', error)
     return null
   }
 }
 
-// Create user pets (mock implementation)
+// Create user pets
 export const createUserPets = async (pets: Omit<UserPet, 'id' | 'created_at' | 'updated_at'>[]): Promise<UserPet[]> => {
   try {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 500))
-    
-    const userEmail = localStorage.getItem('userEmail')
-    if (!userEmail || !mockUsers[userEmail]) {
-      throw new Error('User not found')
+    const { data: createdPets, error } = await supabase
+      .from('user_pets')
+      .insert(pets)
+      .select()
+
+    if (error) {
+      throw new Error(error.message)
     }
 
-    const createdPets: UserPet[] = pets.map(pet => ({
-      ...pet,
-      id: `pet-${Date.now()}-${Math.random()}`,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    }))
-
-    // Store in mock database
-    mockUsers[userEmail].pets = createdPets
-
-    return createdPets
+    return createdPets || []
   } catch (error) {
     console.error('Create pets error:', error)
     if (error instanceof Error) {
@@ -283,15 +164,19 @@ export const createUserPets = async (pets: Omit<UserPet, 'id' | 'created_at' | '
   }
 }
 
-// Get user pets (mock implementation)
+// Get user pets
 export const getUserPets = async (userId: string): Promise<UserPet[]> => {
   try {
-    const userEmail = localStorage.getItem('userEmail')
-    if (!userEmail || !mockUsers[userEmail]) {
-      return []
+    const { data: pets, error } = await supabase
+      .from('user_pets')
+      .select('*')
+      .eq('user_id', userId)
+
+    if (error) {
+      throw new Error(error.message)
     }
 
-    return mockUsers[userEmail].pets || []
+    return pets || []
   } catch (error) {
     console.error('Get user pets error:', error)
     return []

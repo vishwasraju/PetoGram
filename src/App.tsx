@@ -13,6 +13,7 @@ import PrivacyPolicyPage from './pages/PrivacyPolicyPage'
 import TermsOfServicePage from './pages/TermsOfServicePage'
 import HelpCenterPage from './pages/HelpCenterPage'
 import { getCurrentUser } from './utils/auth'
+import { supabase } from './utils/supabase'
 
 function App() {
   const [isAuth, setIsAuth] = useState(false)
@@ -34,15 +35,23 @@ function App() {
     
     checkAuth()
 
-    // Listen for auth state changes via localStorage
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'isAuthenticated') {
-        setIsAuth(e.newValue === 'true')
+    // Listen for auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        setIsAuth(!!session?.user)
+        
+        if (event === 'SIGNED_OUT') {
+          // Clear any local storage when user signs out
+          localStorage.removeItem('isAuthenticated')
+          localStorage.removeItem('userEmail')
+          localStorage.removeItem('currentUserId')
+          localStorage.removeItem('userProfile')
+          localStorage.removeItem('tempUserData')
+        }
       }
-    }
+    )
 
-    window.addEventListener('storage', handleStorageChange)
-    return () => window.removeEventListener('storage', handleStorageChange)
+    return () => subscription.unsubscribe()
   }, [])
 
   if (isLoading) {
@@ -77,11 +86,11 @@ function App() {
       {/* Public Routes */}
       <Route 
         path="/" 
-        element={isAuth ? <Navigate to="/home\" replace /> : <IntroPage />} 
+        element={isAuth ? <Navigate to="/home" replace /> : <IntroPage />} 
       />
       <Route 
         path="/create-profile" 
-        element={isAuth ? <Navigate to="/home\" replace /> : <CreateProfilePage />} 
+        element={isAuth ? <Navigate to="/home" replace /> : <CreateProfilePage />} 
       />
       <Route path="/about" element={<AboutPage />} />
       <Route path="/careers" element={<CareersPage />} />
@@ -93,15 +102,15 @@ function App() {
       {/* Protected Routes */}
       <Route 
         path="/home" 
-        element={isAuth ? <EnhancedHome /> : <Navigate to="/\" replace />} 
+        element={isAuth ? <EnhancedHome /> : <Navigate to="/" replace />} 
       />
       <Route 
         path="/profile" 
-        element={isAuth ? <Profile /> : <Navigate to="/\" replace />} 
+        element={isAuth ? <Profile /> : <Navigate to="/" replace />} 
       />
       <Route 
         path="/messages" 
-        element={isAuth ? <Messages /> : <Navigate to="/\" replace />} 
+        element={isAuth ? <Messages /> : <Navigate to="/" replace />} 
       />
       
       {/* 404 Route */}

@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react'
 import { X, ChevronLeft, ChevronRight } from 'lucide-react'
+import { registerUser } from '../utils/auth'
 
 interface SignupModalProps {
   isOpen: boolean;
@@ -15,10 +16,98 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
   const [selectedPetType, setSelectedPetType] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(0); // For the pet type slider
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+  const [formData, setFormData] = useState({
+    username: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    petName: '',
+    aboutPet: ''
+  });
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isLoading, setIsLoading] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (!isOpen) return null;
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: '' }));
+    }
+  };
+
+  const validateStep1 = () => {
+    const newErrors: Record<string, string> = {};
+
+    if (!formData.username.trim()) {
+      newErrors.username = 'Username is required';
+    }
+
+    if (!formData.email) {
+      newErrors.email = 'Email is required';
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = 'Please enter a valid email address';
+    }
+
+    if (!formData.password) {
+      newErrors.password = 'Password is required';
+    } else if (formData.password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters';
+    }
+
+    if (!formData.confirmPassword) {
+      newErrors.confirmPassword = 'Please confirm your password';
+    } else if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = 'Passwords do not match';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleNext = async () => {
+    if (step === 1) {
+      if (validateStep1()) {
+        setIsLoading(true);
+        try {
+          const { user, error } = await registerUser({
+            fullName: formData.username,
+            email: formData.email,
+            password: formData.password
+          });
+
+          if (error || !user) {
+            setErrors({ general: error || 'Registration failed. Please try again.' });
+            setIsLoading(false);
+            return;
+          }
+
+          // Store user data for profile creation
+          localStorage.setItem('tempUserData', JSON.stringify({
+            userId: user.id,
+            fullName: formData.username,
+            email: formData.email,
+            username: formData.username,
+            selectedPetType,
+            petName: formData.petName,
+            petPhoto: uploadedImage,
+            aboutPet: formData.aboutPet
+          }));
+
+          setIsLoading(false);
+          setStep(2);
+        } catch (error) {
+          setIsLoading(false);
+          console.error('Registration error:', error);
+          setErrors({ general: 'An error occurred during registration. Please try again.' });
+        }
+      }
+    }
+  };
 
   const handlePetTypeSelect = (petType: string) => {
     setSelectedPetType(petType);
@@ -45,6 +134,22 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
 
   const handleUploadClick = () => {
     fileInputRef.current?.click();
+  };
+
+  const handleConfirm = () => {
+    // Update temp data with pet information
+    const tempData = localStorage.getItem('tempUserData');
+    if (tempData) {
+      const userData = JSON.parse(tempData);
+      localStorage.setItem('tempUserData', JSON.stringify({
+        ...userData,
+        selectedPetType,
+        petName: formData.petName,
+        petPhoto: uploadedImage,
+        aboutPet: formData.aboutPet
+      }));
+    }
+    onConfirm();
   };
 
   const startIndex = currentPage * itemsPerPage;
@@ -94,19 +199,31 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
         </button>
         
         {/* Header */}
-        {step === 1 && (
-          <div style={{
-            textAlign: 'center',
-            marginBottom: '20px',
-            marginTop: '15px',
+        <div style={{
+          textAlign: 'center',
+          marginBottom: '20px',
+          marginTop: '15px',
+        }}>
+          <h2 style={{
+            fontSize: '20px',
+            fontWeight: 'bold',
+            margin: '0',
           }}>
-            <h2 style={{
-              fontSize: '20px',
-              fontWeight: 'bold',
-              margin: '0',
-            }}>
-              Create your account
-            </h2>
+            {step === 1 ? 'Create your account' : 'Tell us about your pet'}
+          </h2>
+        </div>
+
+        {/* Error Message */}
+        {errors.general && (
+          <div style={{
+            padding: '10px',
+            backgroundColor: '#ff4444',
+            borderRadius: '4px',
+            marginBottom: '15px',
+            fontSize: '12px',
+            textAlign: 'center',
+          }}>
+            {errors.general}
           </div>
         )}
 
@@ -121,13 +238,16 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
               <input 
                 type="text" 
                 id="username" 
+                name="username"
                 placeholder="Username" 
                 maxLength={50}
+                value={formData.username}
+                onChange={handleInputChange}
                 style={{
                   width: '100%',
                   padding: '8px',
                   backgroundColor: '#1a1a1a',
-                  border: '1px solid #363636',
+                  border: `1px solid ${errors.username ? '#ff4444' : '#363636'}`,
                   borderRadius: '4px',
                   color: '#fff',
                   fontSize: '12px',
@@ -135,7 +255,11 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
                   boxSizing: 'border-box',
                 }}
               />
-              <div style={{ textAlign: 'right', fontSize: '10px', color: '#8e8e8e', marginTop: '3px' }}>0 / 50</div>
+              {errors.username && (
+                <div style={{ color: '#ff4444', fontSize: '10px', marginTop: '2px' }}>
+                  {errors.username}
+                </div>
+              )}
             </div>
 
             <div style={{
@@ -145,12 +269,15 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
               <input 
                 type="email" 
                 id="email" 
+                name="email"
                 placeholder="Email" 
+                value={formData.email}
+                onChange={handleInputChange}
                 style={{
                   width: '100%',
                   padding: '8px',
                   backgroundColor: '#1a1a1a',
-                  border: '1px solid #363636',
+                  border: `1px solid ${errors.email ? '#ff4444' : '#363636'}`,
                   borderRadius: '4px',
                   color: '#fff',
                   fontSize: '12px',
@@ -158,6 +285,11 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
                   boxSizing: 'border-box',
                 }}
               />
+              {errors.email && (
+                <div style={{ color: '#ff4444', fontSize: '10px', marginTop: '2px' }}>
+                  {errors.email}
+                </div>
+              )}
             </div>
 
             <div style={{
@@ -167,12 +299,15 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
               <input 
                 type="password" 
                 id="password" 
+                name="password"
                 placeholder="Password" 
+                value={formData.password}
+                onChange={handleInputChange}
                 style={{
                   width: '100%',
                   padding: '8px',
                   backgroundColor: '#1a1a1a',
-                  border: '1px solid #363636',
+                  border: `1px solid ${errors.password ? '#ff4444' : '#363636'}`,
                   borderRadius: '4px',
                   color: '#fff',
                   fontSize: '12px',
@@ -180,6 +315,11 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
                   boxSizing: 'border-box',
                 }}
               />
+              {errors.password && (
+                <div style={{ color: '#ff4444', fontSize: '10px', marginTop: '2px' }}>
+                  {errors.password}
+                </div>
+              )}
             </div>
 
             <div style={{
@@ -189,12 +329,15 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
               <input 
                 type="password" 
                 id="confirmPassword" 
+                name="confirmPassword"
                 placeholder="Confirm Password" 
+                value={formData.confirmPassword}
+                onChange={handleInputChange}
                 style={{
                   width: '100%',
                   padding: '8px',
                   backgroundColor: '#1a1a1a',
-                  border: '1px solid #363636',
+                  border: `1px solid ${errors.confirmPassword ? '#ff4444' : '#363636'}`,
                   borderRadius: '4px',
                   color: '#fff',
                   fontSize: '12px',
@@ -202,39 +345,36 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
                   boxSizing: 'border-box',
                 }}
               />
+              {errors.confirmPassword && (
+                <div style={{ color: '#ff4444', fontSize: '10px', marginTop: '2px' }}>
+                  {errors.confirmPassword}
+                </div>
+              )}
             </div>
             
             <button
               type="button"
-              onClick={() => setStep(2)}
+              onClick={handleNext}
+              disabled={isLoading}
               style={{
                 width: '100%',
                 padding: '10px 15px',
-                backgroundColor: '#8e8e8e',
-                color: '#000',
+                backgroundColor: isLoading ? '#666' : '#0095f6',
+                color: '#fff',
                 border: 'none',
                 borderRadius: '9999px',
                 fontSize: '12px',
                 fontWeight: 'bold',
-                cursor: 'pointer',
+                cursor: isLoading ? 'not-allowed' : 'pointer',
               }}
             >
-              Next
+              {isLoading ? 'Creating Account...' : 'Next'}
             </button>
           </div>
         )}
 
         {step === 2 && (
           <div>
-            <h2 style={{
-              fontSize: '20px',
-              fontWeight: 'bold',
-              margin: '0 0 15px 0',
-              textAlign: 'center',
-            }}>
-              Tell us about your pet
-            </h2>
-
             <div style={{
               border: '1px solid #363636',
               borderRadius: '8px',
@@ -340,7 +480,10 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
               <input 
                 type="text" 
                 id="petName" 
+                name="petName"
                 placeholder="Pet's Name" 
+                value={formData.petName}
+                onChange={handleInputChange}
                 style={{
                   width: '100%',
                   padding: '8px',
@@ -408,8 +551,11 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
                 <label htmlFor="aboutPet" style={{ display: 'block', color: '#e0e0e0', marginBottom: '4px', fontSize: '12px' }}>About pet</label>
                 <textarea 
                   id="aboutPet" 
+                  name="aboutPet"
                   placeholder="Tell us about your pet..." 
                   rows={4}
+                  value={formData.aboutPet}
+                  onChange={handleInputChange}
                   style={{
                     width: '100%',
                     padding: '8px',
@@ -428,7 +574,7 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
 
             <button
               type="button"
-              onClick={onConfirm}
+              onClick={handleConfirm}
               style={{
                 width: '100%',
                 padding: '10px 15px',
