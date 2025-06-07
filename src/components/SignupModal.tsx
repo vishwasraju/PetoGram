@@ -70,10 +70,16 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
   };
 
   const handleNext = async () => {
+    console.log('handleNext called, current step:', step); // Debug log
+    
     if (step === 1) {
       if (validateStep1()) {
         setIsLoading(true);
+        setErrors({}); // Clear any previous errors
+        
         try {
+          console.log('Attempting to register user...'); // Debug log
+          
           const { user, error } = await registerUser({
             fullName: formData.username,
             email: formData.email,
@@ -81,10 +87,13 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
           });
 
           if (error || !user) {
+            console.log('Registration error:', error); // Debug log
             setErrors({ general: error || 'Registration failed. Please try again.' });
             setIsLoading(false);
             return;
           }
+
+          console.log('Registration successful, user:', user.id); // Debug log
 
           // Store user data for profile creation
           localStorage.setItem('tempUserData', JSON.stringify({
@@ -95,13 +104,18 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
           }));
 
           setIsLoading(false);
+          
           // Move to step 2 after successful registration
+          console.log('Moving to step 2...'); // Debug log
           setStep(2);
+          
         } catch (error) {
+          console.error('Registration error:', error); // Debug log
           setIsLoading(false);
-          console.error('Registration error:', error);
           setErrors({ general: 'An error occurred during registration. Please try again.' });
         }
+      } else {
+        console.log('Validation failed:', errors); // Debug log
       }
     }
   };
@@ -149,9 +163,30 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
     onConfirm();
   };
 
+  const handleClose = () => {
+    // Reset form when closing
+    setStep(1);
+    setSelectedPetType(null);
+    setCurrentPage(0);
+    setUploadedImage(null);
+    setFormData({
+      username: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+      petName: '',
+      aboutPet: ''
+    });
+    setErrors({});
+    setIsLoading(false);
+    onClose();
+  };
+
   const startIndex = currentPage * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const currentPets = petTypes.slice(startIndex, endIndex);
+
+  console.log('Rendering SignupModal, current step:', step); // Debug log
 
   return (
     <div style={{
@@ -181,7 +216,7 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
         transition: 'max-width 0.3s ease',
       }}>
         <button 
-          onClick={onClose}
+          onClick={handleClose}
           style={{
             position: 'absolute',
             top: '15px',
