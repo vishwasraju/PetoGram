@@ -56,33 +56,11 @@ body {
   font-size: 14px;
   line-height: 1.5;
   color: var(--gray-900);
-  /* Strategic gradient background using provided colors */
-  background: linear-gradient(135deg, #003049 0%, #d62828 25%, #f77f00 50%, #fcbf49 75%, #eae2b7 100%);
-  background-attachment: fixed;
-  background-size: 400% 400%;
-  animation: strategicGradientShift 20s ease infinite;
+  /* Removed background color - now transparent */
+  background: transparent;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
-}
-
-/* Strategic gradient animation */
-@keyframes strategicGradientShift {
-  0% {
-    background-position: 0% 50%;
-  }
-  25% {
-    background-position: 100% 50%;
-  }
-  50% {
-    background-position: 100% 100%;
-  }
-  75% {
-    background-position: 0% 100%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
 }
 
 #root {
@@ -94,6 +72,7 @@ body {
 .app-container {
   display: flex;
   min-height: 100vh;
+  /* Removed background color */
   position: relative;
 }
 
@@ -115,8 +94,9 @@ body {
   flex: 1;
   margin-left: 320px;
   min-height: 100vh;
-  display: 'flex';
+  display: flex;
   flex-direction: column;
+  /* Removed background color */
 }
 
 .content-area {
@@ -248,7 +228,7 @@ body {
 
 /* Utility Classes */
 .min-h-screen { min-height: 100vh; }
-.bg-gray-50 { background-color: transparent; } /* Override to use gradient */
+.bg-gray-50 { background-color: transparent; } /* Override to use transparent */
 .bg-white { 
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(20px);
