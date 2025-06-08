@@ -21,7 +21,10 @@ import {
   Bookmark,
   MoreHorizontal,
   UserPlus,
-  X
+  X,
+  Clock,
+  Fire,
+  Hash
 } from 'lucide-react'
 import { designTokens } from '../design-system/tokens'
 
@@ -115,17 +118,77 @@ const contacts = [
   { id: '5', name: 'Domingo Flores', location: 'Honolulu, HI, US', avatar: 'https://images.pexels.com/photos/1108099/pexels-photo-1108099.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2', online: true },
 ]
 
-const suggestions = [
-  { id: '1', name: 'Chantal Shelburne', location: 'Memphis, TN, US', avatar: 'https://images.pexels.com/photos/733872/pexels-photo-733872.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2' },
-  { id: '2', name: 'Marci Senter', location: 'Newark, NJ, US', avatar: 'https://images.pexels.com/photos/1212984/pexels-photo-1212984.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2' },
-  { id: '3', name: 'Janetta Rotolo', location: 'Fort Worth, TX, US', avatar: 'https://images.pexels.com/photos/1564506/pexels-photo-1564506.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2' },
-  { id: '4', name: 'Tyra Dhillon', location: 'Springfield, MA, US', avatar: 'https://images.pexels.com/photos/2023384/pexels-photo-2023384.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2' },
-  { id: '5', name: 'Marielle Wigington', location: 'Honolulu, HI, US', avatar: 'https://images.pexels.com/photos/1108099/pexels-photo-1108099.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2' },
-]
-
 const requests = [
   { id: '1', name: 'Lauralee Quintero', action: 'wants to add you to friends', avatar: 'https://images.pexels.com/photos/733872/pexels-photo-733872.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2' },
   { id: '2', name: 'Brittni Landom', action: 'wants to add you to friends', avatar: 'https://images.pexels.com/photos/1212984/pexels-photo-1212984.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2' },
+]
+
+const upcomingEvents = [
+  {
+    id: '1',
+    title: 'Pet Adoption Fair',
+    date: 'Tomorrow',
+    time: '10:00 AM',
+    location: 'Central Park',
+    attendees: 234,
+    image: 'https://images.pexels.com/photos/1805164/pexels-photo-1805164.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2'
+  },
+  {
+    id: '2',
+    title: 'Dog Training Workshop',
+    date: 'This Weekend',
+    time: '2:00 PM',
+    location: 'Community Center',
+    attendees: 89,
+    image: 'https://images.pexels.com/photos/1851164/pexels-photo-1851164.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2'
+  },
+  {
+    id: '3',
+    title: 'Cat Cafe Meetup',
+    date: 'Next Monday',
+    time: '6:00 PM',
+    location: 'Whiskers Cafe',
+    attendees: 156,
+    image: 'https://images.pexels.com/photos/1170986/pexels-photo-1170986.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2'
+  }
+]
+
+const trendingTopics = [
+  {
+    id: '1',
+    hashtag: '#PuppyLove',
+    posts: '45.2K',
+    growth: '+12%',
+    category: 'Trending in Pets'
+  },
+  {
+    id: '2',
+    hashtag: '#CatsOfInstagram',
+    posts: '38.9K',
+    growth: '+8%',
+    category: 'Trending in Social'
+  },
+  {
+    id: '3',
+    hashtag: '#DogTraining',
+    posts: '23.1K',
+    growth: '+15%',
+    category: 'Trending in Education'
+  },
+  {
+    id: '4',
+    hashtag: '#PetPhotography',
+    posts: '19.8K',
+    growth: '+5%',
+    category: 'Trending in Art'
+  },
+  {
+    id: '5',
+    hashtag: '#AdoptDontShop',
+    posts: '16.7K',
+    growth: '+20%',
+    category: 'Trending in Advocacy'
+  }
 ]
 
 export default function EnhancedHome() {
@@ -916,65 +979,113 @@ export default function EnhancedHome() {
             </div>
           </div>
 
-          {/* Suggestions */}
+          {/* Upcoming Events */}
           <div style={{ marginBottom: '32px' }}>
-            <h3 style={{
-              margin: '0 0 16px 0',
-              fontSize: '16px',
-              fontWeight: '600',
-              color: '#FFFFFF',
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              marginBottom: '16px',
             }}>
-              Suggestions for you
-            </h3>
+              <Calendar size={20} color="#6366F1" />
+              <h3 style={{
+                margin: 0,
+                fontSize: '16px',
+                fontWeight: '600',
+                color: '#FFFFFF',
+              }}>
+                Upcoming Events
+              </h3>
+            </div>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              {suggestions.slice(0, 5).map((suggestion) => (
-                <div key={suggestion.id} style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
+              {upcomingEvents.slice(0, 3).map((event) => (
+                <div key={event.id} style={{
+                  backgroundColor: '#374151',
+                  borderRadius: '12px',
+                  padding: '16px',
+                  border: '1px solid #4B5563',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = '#404756'
+                  e.currentTarget.style.transform = 'translateY(-2px)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = '#374151'
+                  e.currentTarget.style.transform = 'translateY(0)'
                 }}>
-                  <img 
-                    src={suggestion.avatar}
-                    alt={suggestion.name}
-                    style={{
-                      width: '40px',
-                      height: '40px',
-                      borderRadius: '50%',
-                      objectFit: 'cover',
-                    }}
-                  />
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{
-                      fontSize: '14px',
-                      fontWeight: '500',
-                      color: '#FFFFFF',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                    }}>
-                      {suggestion.name}
-                    </div>
-                    <div style={{
-                      fontSize: '12px',
-                      color: '#9CA3AF',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                    }}>
-                      {suggestion.location}
+                  <div style={{ display: 'flex', gap: '12px' }}>
+                    <img 
+                      src={event.image}
+                      alt={event.title}
+                      style={{
+                        width: '50px',
+                        height: '50px',
+                        borderRadius: '8px',
+                        objectFit: 'cover',
+                      }}
+                    />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <h4 style={{
+                        margin: '0 0 4px 0',
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        color: '#FFFFFF',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}>
+                        {event.title}
+                      </h4>
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        marginBottom: '4px',
+                      }}>
+                        <Clock size={12} color="#9CA3AF" />
+                        <span style={{
+                          fontSize: '12px',
+                          color: '#9CA3AF',
+                        }}>
+                          {event.date} • {event.time}
+                        </span>
+                      </div>
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        marginBottom: '8px',
+                      }}>
+                        <MapPin size={12} color="#9CA3AF" />
+                        <span style={{
+                          fontSize: '12px',
+                          color: '#9CA3AF',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                        }}>
+                          {event.location}
+                        </span>
+                      </div>
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                      }}>
+                        <Users size={12} color="#6366F1" />
+                        <span style={{
+                          fontSize: '12px',
+                          color: '#6366F1',
+                          fontWeight: '500',
+                        }}>
+                          {event.attendees} attending
+                        </span>
+                      </div>
                     </div>
                   </div>
-                  <button style={{
-                    padding: '6px',
-                    backgroundColor: 'transparent',
-                    border: '1px solid #6366F1',
-                    borderRadius: '8px',
-                    color: '#6366F1',
-                    cursor: 'pointer',
-                  }}>
-                    <UserPlus size={16} />
-                  </button>
                 </div>
               ))}
             </div>
@@ -990,65 +1101,100 @@ export default function EnhancedHome() {
               fontWeight: '500',
               cursor: 'pointer',
             }}>
-              View All
+              View All Events
             </button>
           </div>
 
-          {/* Followers Stats */}
-          <div style={{
-            backgroundColor: '#374151',
-            borderRadius: '16px',
-            padding: '20px',
-            textAlign: 'center',
-            marginBottom: '24px',
-          }}>
+          {/* Trending Topics */}
+          <div style={{ marginBottom: '32px' }}>
             <div style={{
               display: 'flex',
-              justifyContent: 'center',
-              marginBottom: '12px',
+              alignItems: 'center',
+              gap: '8px',
+              marginBottom: '16px',
             }}>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
+              <TrendingUp size={20} color="#EF4444" />
+              <h3 style={{
+                margin: 0,
+                fontSize: '16px',
+                fontWeight: '600',
+                color: '#FFFFFF',
               }}>
-                {[1,2,3,4,5,6].map((i) => (
-                  <img 
-                    key={i}
-                    src={`https://images.pexels.com/photos/${1036622 + i}/pexels-photo-${1036622 + i}.jpeg?auto=compress&cs=tinysrgb&w=40&h=40&dpr=2`}
-                    alt={`Follower ${i}`}
-                    style={{
-                      width: '32px',
-                      height: '32px',
-                      borderRadius: '50%',
-                      objectFit: 'cover',
-                      border: '2px solid #2A2D3A',
-                      marginLeft: i > 1 ? '-8px' : '0',
-                    }}
-                  />
-                ))}
-              </div>
+                Trending
+              </h3>
             </div>
-            <div style={{
-              fontSize: '18px',
-              fontWeight: '700',
-              color: '#FFFFFF',
-              marginBottom: '4px',
-            }}>
-              184.3K
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {trendingTopics.slice(0, 4).map((topic) => (
+                <div key={topic.id} style={{
+                  padding: '12px',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  transition: 'background-color 0.2s ease',
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#374151'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'flex-start',
+                    marginBottom: '4px',
+                  }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{
+                        fontSize: '12px',
+                        color: '#9CA3AF',
+                        marginBottom: '2px',
+                      }}>
+                        {topic.category}
+                      </div>
+                      <div style={{
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        color: '#6366F1',
+                        marginBottom: '2px',
+                      }}>
+                        {topic.hashtag}
+                      </div>
+                      <div style={{
+                        fontSize: '12px',
+                        color: '#9CA3AF',
+                      }}>
+                        {topic.posts} posts
+                      </div>
+                    </div>
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      backgroundColor: '#10B981',
+                      color: '#FFFFFF',
+                      padding: '2px 6px',
+                      borderRadius: '12px',
+                      fontSize: '10px',
+                      fontWeight: '600',
+                    }}>
+                      <TrendingUp size={10} />
+                      {topic.growth}
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
-            <div style={{
+            
+            <button style={{
+              width: '100%',
+              padding: '8px',
+              marginTop: '16px',
+              backgroundColor: 'transparent',
+              border: 'none',
+              color: '#6366F1',
               fontSize: '14px',
-              color: '#9CA3AF',
-              marginBottom: '4px',
+              fontWeight: '500',
+              cursor: 'pointer',
             }}>
-              Followers
-            </div>
-            <div style={{
-              fontSize: '12px',
-              color: '#9CA3AF',
-            }}>
-              Active now on your profile
-            </div>
+              Show More
+            </button>
           </div>
 
           {/* Footer Links */}
