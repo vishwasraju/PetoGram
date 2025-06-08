@@ -1,14 +1,28 @@
 import React, { useState, useEffect } from 'react'
 import EnhancedSidebar from '../components/layout/EnhancedSidebar'
 import EnhancedHeader from '../components/layout/EnhancedHeader'
-import EnhancedCreatePost from '../components/feed/EnhancedCreatePost'
 import Post from '../components/feed/Post'
 import Card from '../components/ui/Card'
 import Avatar from '../components/ui/Avatar'
 import Button from '../components/ui/Button'
 import Badge from '../components/ui/Badge'
 import { SkeletonCard } from '../components/ui/Skeleton'
-import { TrendingUp, Users, Calendar, MapPin, Star } from 'lucide-react'
+import { 
+  TrendingUp, 
+  Users, 
+  Calendar, 
+  MapPin, 
+  Star, 
+  Plus,
+  Search,
+  Mic,
+  Heart,
+  MessageCircle,
+  Bookmark,
+  MoreHorizontal,
+  UserPlus,
+  X
+} from 'lucide-react'
 import { designTokens } from '../design-system/tokens'
 
 interface PostData {
@@ -39,20 +53,20 @@ const mockPosts: PostData[] = [
   {
     id: '1',
     user: {
-      name: 'Sarah Miller',
-      avatar: 'https://images.pexels.com/photos/733872/pexels-photo-733872.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2',
-      pets: 'with Bella & Max',
+      name: 'Robert Fox',
+      avatar: 'https://images.pexels.com/photos/1036622/pexels-photo-1036622.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2',
+      pets: '@alexsamdrovonzi',
       verified: true,
     },
     content: {
       type: 'image',
       url: 'https://images.pexels.com/photos/1805164/pexels-photo-1805164.jpeg?auto=compress&cs=tinysrgb&w=800',
-      caption: 'Bella discovered the sprinkler today! 💦 First time seeing her this excited about water. She went from being scared of baths to absolutely loving getting soaked in the backyard. Sometimes the best moments happen when you least expect them! 🐕✨',
-      hashtags: ['#GoldenRetriever', '#WaterDog', '#SummerFun', '#PuppyJoy'],
+      caption: 'While Corfu give us the ability to shoot by the sea with amazing blue background full of light of the sky. Florina give us its gentle side. The humble atmosphere and Light of Florina which comes... read more',
+      hashtags: ['#landscape', '#flora', '#nature'],
     },
     engagement: {
-      likes: 1247,
-      comments: 89,
+      likes: 1600,
+      comments: 2300,
       shares: 23,
       liked: false,
       saved: false,
@@ -62,16 +76,16 @@ const mockPosts: PostData[] = [
   {
     id: '2',
     user: {
-      name: 'Alex Johnson',
-      avatar: 'https://images.pexels.com/photos/1036622/pexels-photo-1036622.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2',
-      pets: 'with Luna & Shadow',
+      name: 'Dianne Russell',
+      avatar: 'https://images.pexels.com/photos/733872/pexels-photo-733872.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2',
+      pets: '@amandadasilva',
       verified: false,
     },
     content: {
-      type: 'video',
+      type: 'image',
       url: 'https://images.pexels.com/photos/1851164/pexels-photo-1851164.jpeg?auto=compress&cs=tinysrgb&w=800',
-      caption: 'Luna and Shadow playing together in the park. These two are inseparable! 🐱🐕 Best friends forever.',
-      hashtags: ['#CatsAndDogs', '#BestFriends', '#PlayTime'],
+      caption: 'Beautiful sunset over the mountains with amazing colors and peaceful atmosphere.',
+      hashtags: ['#sunset', '#mountains', '#nature'],
     },
     engagement: {
       likes: 892,
@@ -82,78 +96,36 @@ const mockPosts: PostData[] = [
     },
     timestamp: '4h',
   },
-  {
-    id: '3',
-    user: {
-      name: 'Mike Chen',
-      avatar: 'https://images.pexels.com/photos/1212984/pexels-photo-1212984.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2',
-      pets: 'with Whiskers',
-      verified: true,
-    },
-    content: {
-      type: 'image',
-      url: 'https://images.pexels.com/photos/1170986/pexels-photo-1170986.jpeg?auto=compress&cs=tinysrgb&w=800',
-      caption: 'Whiskers found the perfect sunny spot for his afternoon nap ☀️ This little guy knows how to live the good life!',
-      hashtags: ['#CatLife', '#SunnyDay', '#Napping', '#LazyAfternoon'],
-    },
-    engagement: {
-      likes: 634,
-      comments: 28,
-      shares: 8,
-      liked: false,
-      saved: false,
-    },
-    timestamp: '6h',
-  },
 ]
 
-const suggestedUsers = [
-  { 
-    name: 'Emma Wilson', 
-    pets: 'with Charlie & Milo', 
-    avatar: 'https://images.pexels.com/photos/733872/pexels-photo-733872.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2',
-    mutualFriends: 12,
-    verified: true
-  },
-  { 
-    name: 'David Kim', 
-    pets: 'with Coco & Luna', 
-    avatar: 'https://images.pexels.com/photos/1212984/pexels-photo-1212984.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2',
-    mutualFriends: 8,
-    verified: false
-  },
-  { 
-    name: 'Lisa Garcia', 
-    pets: 'with Buddy', 
-    avatar: 'https://images.pexels.com/photos/1036622/pexels-photo-1036622.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2',
-    mutualFriends: 15,
-    verified: true
-  },
+const stories = [
+  { id: '1', name: 'Your story', avatar: 'https://images.pexels.com/photos/1036622/pexels-photo-1036622.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2', isAdd: true },
+  { id: '2', name: 'Sarah', avatar: 'https://images.pexels.com/photos/733872/pexels-photo-733872.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2' },
+  { id: '3', name: 'Mike', avatar: 'https://images.pexels.com/photos/1212984/pexels-photo-1212984.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2' },
+  { id: '4', name: 'Emma', avatar: 'https://images.pexels.com/photos/1564506/pexels-photo-1564506.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2' },
+  { id: '5', name: 'David', avatar: 'https://images.pexels.com/photos/2023384/pexels-photo-2023384.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2' },
+  { id: '6', name: 'Lisa', avatar: 'https://images.pexels.com/photos/1108099/pexels-photo-1108099.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2' },
 ]
 
-const trendingHashtags = [
-  { tag: '#PuppyLove', posts: '45.2K posts', growth: '+12%' },
-  { tag: '#CatsOfInstagram', posts: '38.9K posts', growth: '+8%' },
-  { tag: '#DogTraining', posts: '23.1K posts', growth: '+15%' },
-  { tag: '#PetPhotography', posts: '19.8K posts', growth: '+5%' },
-  { tag: '#AdoptDontShop', posts: '16.7K posts', growth: '+20%' },
+const contacts = [
+  { id: '1', name: 'Julie Mendez', location: 'Memphis, TN, US', avatar: 'https://images.pexels.com/photos/733872/pexels-photo-733872.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2', online: true },
+  { id: '2', name: 'Marian Montgomery', location: 'Newark, NJ, US', avatar: 'https://images.pexels.com/photos/1212984/pexels-photo-1212984.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2', online: false },
+  { id: '3', name: 'Joyce Reid', location: 'Fort Worth, TX, US', avatar: 'https://images.pexels.com/photos/1564506/pexels-photo-1564506.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2', online: true },
+  { id: '4', name: 'Alice Franklin', location: 'Springfield, MA, US', avatar: 'https://images.pexels.com/photos/2023384/pexels-photo-2023384.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2', online: false },
+  { id: '5', name: 'Domingo Flores', location: 'Honolulu, HI, US', avatar: 'https://images.pexels.com/photos/1108099/pexels-photo-1108099.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2', online: true },
 ]
 
-const upcomingEvents = [
-  {
-    id: '1',
-    title: 'Pet Adoption Fair',
-    date: 'Tomorrow, 10:00 AM',
-    location: 'Central Park',
-    attendees: 234,
-  },
-  {
-    id: '2',
-    title: 'Dog Training Workshop',
-    date: 'This Weekend',
-    location: 'Community Center',
-    attendees: 89,
-  },
+const suggestions = [
+  { id: '1', name: 'Chantal Shelburne', location: 'Memphis, TN, US', avatar: 'https://images.pexels.com/photos/733872/pexels-photo-733872.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2' },
+  { id: '2', name: 'Marci Senter', location: 'Newark, NJ, US', avatar: 'https://images.pexels.com/photos/1212984/pexels-photo-1212984.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2' },
+  { id: '3', name: 'Janetta Rotolo', location: 'Fort Worth, TX, US', avatar: 'https://images.pexels.com/photos/1564506/pexels-photo-1564506.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2' },
+  { id: '4', name: 'Tyra Dhillon', location: 'Springfield, MA, US', avatar: 'https://images.pexels.com/photos/2023384/pexels-photo-2023384.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2' },
+  { id: '5', name: 'Marielle Wigington', location: 'Honolulu, HI, US', avatar: 'https://images.pexels.com/photos/1108099/pexels-photo-1108099.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2' },
+]
+
+const requests = [
+  { id: '1', name: 'Lauralee Quintero', action: 'wants to add you to friends', avatar: 'https://images.pexels.com/photos/733872/pexels-photo-733872.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2' },
+  { id: '2', name: 'Brittni Landom', action: 'wants to add you to friends', avatar: 'https://images.pexels.com/photos/1212984/pexels-photo-1212984.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2' },
 ]
 
 export default function EnhancedHome() {
@@ -161,6 +133,7 @@ export default function EnhancedHome() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [activeTab, setActiveTab] = useState('Popular')
 
   useEffect(() => {
     const updateLayout = () => {
@@ -207,124 +180,630 @@ export default function EnhancedHome() {
     )
   }
 
-  const loadMorePosts = () => {
-    setLoading(true)
-    // Simulate API call
-    setTimeout(() => {
-      setLoading(false)
-    }, 1500)
-  }
-
   return (
     <div style={{
       display: 'flex',
       minHeight: '100vh',
-      backgroundColor: designTokens.colors.gray[50],
-      position: 'relative',
+      backgroundColor: '#2A2D3A',
+      color: '#FFFFFF',
+      fontFamily: designTokens.typography.fontFamily.sans.join(', '),
     }}>
-      {/* Mobile Overlay with Blur Effect */}
+      {/* Mobile Overlay */}
       {isMobile && sidebarOpen && (
         <div 
           style={{
             position: 'fixed',
             inset: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.3)',
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
             backdropFilter: 'blur(8px)',
             zIndex: designTokens.zIndex.overlay,
-            opacity: sidebarOpen ? 1 : 0,
-            visibility: sidebarOpen ? 'visible' : 'hidden',
-            transition: `all ${designTokens.animation.duration.normal} ${designTokens.animation.easing.ease}`,
           }}
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
-      {/* Sidebar - Always Clear */}
+      {/* Left Sidebar */}
       <div style={{
-        width: isMobile ? '320px' : '320px',
+        width: isMobile ? '280px' : '280px',
         height: '100vh',
         position: 'fixed',
         top: 0,
         left: 0,
-        zIndex: designTokens.zIndex.modal, // Higher z-index to stay above blur
+        zIndex: designTokens.zIndex.modal,
         transform: isMobile && !sidebarOpen ? 'translateX(-100%)' : 'translateX(0)',
         transition: `transform ${designTokens.animation.duration.normal} ${designTokens.animation.easing.ease}`,
+        backgroundColor: '#2A2D3A',
+        borderRight: '1px solid #3A3D4A',
+        padding: '24px',
+        overflowY: 'auto',
       }}>
-        <EnhancedSidebar 
-          isOpen={sidebarOpen} 
-          onClose={() => setSidebarOpen(false)} 
-          isMobile={isMobile}
-        />
+        {/* Profile Section */}
+        <div style={{ marginBottom: '32px', textAlign: 'center' }}>
+          <div style={{ position: 'relative', display: 'inline-block', marginBottom: '16px' }}>
+            <img 
+              src="https://images.pexels.com/photos/1036622/pexels-photo-1036622.jpeg?auto=compress&cs=tinysrgb&w=120&h=120&dpr=2"
+              alt="Cyndy Lillibridge"
+              style={{
+                width: '80px',
+                height: '80px',
+                borderRadius: '50%',
+                objectFit: 'cover',
+                border: '3px solid #4F46E5',
+              }}
+            />
+            <div style={{
+              position: 'absolute',
+              bottom: '2px',
+              right: '2px',
+              width: '20px',
+              height: '20px',
+              backgroundColor: '#10B981',
+              borderRadius: '50%',
+              border: '3px solid #2A2D3A',
+            }} />
+          </div>
+          <h3 style={{
+            margin: '0 0 4px 0',
+            fontSize: '18px',
+            fontWeight: '600',
+            color: '#FFFFFF',
+          }}>
+            Cyndy Lillibridge
+          </h3>
+          <p style={{
+            margin: '0 0 16px 0',
+            fontSize: '14px',
+            color: '#9CA3AF',
+          }}>
+            Torrance, CA, United States
+          </p>
+          
+          {/* Stats */}
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-around',
+            padding: '16px 0',
+            borderTop: '1px dotted #4B5563',
+            borderBottom: '1px dotted #4B5563',
+          }}>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '18px', fontWeight: '700', color: '#FFFFFF' }}>368</div>
+              <div style={{ fontSize: '12px', color: '#9CA3AF' }}>Posts</div>
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '18px', fontWeight: '700', color: '#FFFFFF' }}>184.3K</div>
+              <div style={{ fontSize: '12px', color: '#9CA3AF' }}>Followers</div>
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '18px', fontWeight: '700', color: '#FFFFFF' }}>1.04M</div>
+              <div style={{ fontSize: '12px', color: '#9CA3AF' }}>Following</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Navigation */}
+        <nav style={{ marginBottom: '32px' }}>
+          {[
+            { icon: '🏠', label: 'Feed', active: true },
+            { icon: '🔍', label: 'Explore' },
+            { icon: '❤️', label: 'My favorites' },
+            { icon: '💬', label: 'Direct' },
+            { icon: '📊', label: 'Stats' },
+            { icon: '⚙️', label: 'Settings' },
+          ].map((item, index) => (
+            <div key={index} style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              padding: '12px 16px',
+              borderRadius: '12px',
+              backgroundColor: item.active ? '#4F46E5' : 'transparent',
+              color: item.active ? '#FFFFFF' : '#9CA3AF',
+              cursor: 'pointer',
+              marginBottom: '4px',
+              transition: 'all 0.2s ease',
+            }}>
+              <span style={{ fontSize: '18px' }}>{item.icon}</span>
+              <span style={{ fontSize: '14px', fontWeight: '500' }}>{item.label}</span>
+            </div>
+          ))}
+        </nav>
+
+        {/* Contacts */}
+        <div>
+          <h4 style={{
+            margin: '0 0 16px 0',
+            fontSize: '16px',
+            fontWeight: '600',
+            color: '#FFFFFF',
+            borderTop: '1px dotted #4B5563',
+            paddingTop: '24px',
+          }}>
+            Contacts
+          </h4>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {contacts.slice(0, 5).map((contact) => (
+              <div key={contact.id} style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                padding: '8px',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                transition: 'background-color 0.2s ease',
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#374151'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
+                <div style={{ position: 'relative' }}>
+                  <img 
+                    src={contact.avatar}
+                    alt={contact.name}
+                    style={{
+                      width: '40px',
+                      height: '40px',
+                      borderRadius: '50%',
+                      objectFit: 'cover',
+                    }}
+                  />
+                  {contact.online && (
+                    <div style={{
+                      position: 'absolute',
+                      bottom: '0',
+                      right: '0',
+                      width: '12px',
+                      height: '12px',
+                      backgroundColor: '#10B981',
+                      borderRadius: '50%',
+                      border: '2px solid #2A2D3A',
+                    }} />
+                  )}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    color: '#FFFFFF',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}>
+                    {contact.name}
+                  </div>
+                  <div style={{
+                    fontSize: '12px',
+                    color: '#9CA3AF',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}>
+                    {contact.location}
+                  </div>
+                </div>
+                <div style={{
+                  width: '8px',
+                  height: '8px',
+                  backgroundColor: contact.online ? '#10B981' : '#6B7280',
+                  borderRadius: '50%',
+                }} />
+              </div>
+            ))}
+          </div>
+          <button style={{
+            width: '100%',
+            padding: '8px',
+            marginTop: '16px',
+            backgroundColor: 'transparent',
+            border: 'none',
+            color: '#6366F1',
+            fontSize: '14px',
+            fontWeight: '500',
+            cursor: 'pointer',
+          }}>
+            View All
+          </button>
+        </div>
       </div>
 
-      {/* Main Content Area with Conditional Blur */}
+      {/* Main Content */}
       <div style={{
         flex: 1,
-        marginLeft: isMobile ? 0 : '320px',
+        marginLeft: isMobile ? 0 : '280px',
         marginRight: isMobile ? 0 : '320px',
         minHeight: '100vh',
         display: 'flex',
         flexDirection: 'column',
-        filter: isMobile && sidebarOpen ? 'blur(4px)' : 'none',
-        transition: `filter ${designTokens.animation.duration.normal} ${designTokens.animation.easing.ease}`,
-        pointerEvents: isMobile && sidebarOpen ? 'none' : 'auto',
       }}>
         {/* Header */}
-        <div style={{
+        <header style={{
+          padding: '16px 24px',
+          borderBottom: '1px solid #3A3D4A',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          backgroundColor: '#2A2D3A',
           position: 'sticky',
           top: 0,
-          zIndex: designTokens.zIndex.sticky,
+          zIndex: 100,
         }}>
-          <EnhancedHeader 
-            onMenuClick={() => setSidebarOpen(true)}
-            isMobile={isMobile}
-          />
-        </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1 }}>
+            {isMobile && (
+              <button
+                onClick={() => setSidebarOpen(true)}
+                style={{
+                  padding: '8px',
+                  backgroundColor: 'transparent',
+                  border: 'none',
+                  color: '#9CA3AF',
+                  cursor: 'pointer',
+                }}
+              >
+                ☰
+              </button>
+            )}
+            
+            <div style={{
+              position: 'relative',
+              flex: 1,
+              maxWidth: '400px',
+            }}>
+              <Search 
+                size={20} 
+                style={{
+                  position: 'absolute',
+                  left: '12px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  color: '#9CA3AF',
+                }}
+              />
+              <input
+                type="text"
+                placeholder="Search..."
+                style={{
+                  width: '100%',
+                  padding: '10px 16px 10px 44px',
+                  backgroundColor: '#374151',
+                  border: '1px solid #4B5563',
+                  borderRadius: '24px',
+                  color: '#FFFFFF',
+                  fontSize: '14px',
+                  outline: 'none',
+                }}
+              />
+              <Mic 
+                size={20} 
+                style={{
+                  position: 'absolute',
+                  right: '12px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  color: '#9CA3AF',
+                  cursor: 'pointer',
+                }}
+              />
+            </div>
+          </div>
+          
+          <button style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '10px 20px',
+            backgroundColor: '#6366F1',
+            border: 'none',
+            borderRadius: '24px',
+            color: '#FFFFFF',
+            fontSize: '14px',
+            fontWeight: '500',
+            cursor: 'pointer',
+          }}>
+            <Plus size={16} />
+            Create new post
+          </button>
+        </header>
 
-        {/* Feed Content */}
+        {/* Content */}
         <div style={{
+          padding: '24px',
           maxWidth: '600px',
           margin: '0 auto',
-          padding: `${designTokens.spacing[6]} ${designTokens.spacing[4]}`,
           width: '100%',
         }}>
-          {/* Create Post */}
-          {/* <EnhancedCreatePost /> */}
+          {/* Stories */}
+          <div style={{ marginBottom: '32px' }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: '16px',
+            }}>
+              <h2 style={{
+                margin: 0,
+                fontSize: '20px',
+                fontWeight: '600',
+                color: '#FFFFFF',
+              }}>
+                Stories
+              </h2>
+              <button style={{
+                backgroundColor: 'transparent',
+                border: 'none',
+                color: '#6366F1',
+                fontSize: '14px',
+                fontWeight: '500',
+                cursor: 'pointer',
+              }}>
+                Watch all
+              </button>
+            </div>
+            
+            <div style={{
+              display: 'flex',
+              gap: '16px',
+              overflowX: 'auto',
+              paddingBottom: '8px',
+            }}>
+              {stories.map((story) => (
+                <div key={story.id} style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '8px',
+                  minWidth: '70px',
+                  cursor: 'pointer',
+                }}>
+                  <div style={{
+                    position: 'relative',
+                    width: '60px',
+                    height: '60px',
+                    borderRadius: '50%',
+                    background: story.isAdd ? 'none' : 'linear-gradient(45deg, #6366F1, #8B5CF6)',
+                    padding: story.isAdd ? '0' : '3px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}>
+                    {story.isAdd ? (
+                      <div style={{
+                        width: '60px',
+                        height: '60px',
+                        borderRadius: '50%',
+                        border: '2px dashed #6B7280',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        backgroundColor: '#374151',
+                      }}>
+                        <Plus size={24} color="#9CA3AF" />
+                      </div>
+                    ) : (
+                      <img 
+                        src={story.avatar}
+                        alt={story.name}
+                        style={{
+                          width: '54px',
+                          height: '54px',
+                          borderRadius: '50%',
+                          objectFit: 'cover',
+                          border: '2px solid #2A2D3A',
+                        }}
+                      />
+                    )}
+                  </div>
+                  <span style={{
+                    fontSize: '12px',
+                    color: '#9CA3AF',
+                    textAlign: 'center',
+                    maxWidth: '70px',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}>
+                    {story.name}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
 
-          {/* Posts Feed */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: designTokens.spacing[6] }}>
-            {posts.map((post) => (
-              <Post 
-                key={post.id}
-                post={post}
-                onLike={handleLike}
-                onSave={handleSave}
-              />
-            ))}
+          {/* Feeds Section */}
+          <div style={{ marginBottom: '32px' }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: '24px',
+            }}>
+              <h2 style={{
+                margin: 0,
+                fontSize: '20px',
+                fontWeight: '600',
+                color: '#FFFFFF',
+              }}>
+                Feeds
+              </h2>
+              
+              <div style={{
+                display: 'flex',
+                backgroundColor: '#374151',
+                borderRadius: '24px',
+                padding: '4px',
+              }}>
+                {['Popular', 'Latest'].map((tab) => (
+                  <button
+                    key={tab}
+                    onClick={() => setActiveTab(tab)}
+                    style={{
+                      padding: '8px 16px',
+                      backgroundColor: activeTab === tab ? '#6366F1' : 'transparent',
+                      border: 'none',
+                      borderRadius: '20px',
+                      color: activeTab === tab ? '#FFFFFF' : '#9CA3AF',
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                    }}
+                  >
+                    {tab}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-            {/* Loading Skeletons */}
-            {loading && (
-              <>
-                <SkeletonCard />
-                <SkeletonCard />
-              </>
-            )}
+            {/* Posts */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              {posts.map((post) => (
+                <div key={post.id} style={{
+                  backgroundColor: '#374151',
+                  borderRadius: '16px',
+                  padding: '20px',
+                  border: '1px solid #4B5563',
+                }}>
+                  {/* Post Header */}
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    marginBottom: '16px',
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <img 
+                        src={post.user.avatar}
+                        alt={post.user.name}
+                        style={{
+                          width: '40px',
+                          height: '40px',
+                          borderRadius: '50%',
+                          objectFit: 'cover',
+                        }}
+                      />
+                      <div>
+                        <div style={{
+                          fontSize: '14px',
+                          fontWeight: '600',
+                          color: '#FFFFFF',
+                        }}>
+                          {post.user.name}
+                        </div>
+                        <div style={{
+                          fontSize: '12px',
+                          color: '#9CA3AF',
+                        }}>
+                          {post.user.pets}
+                        </div>
+                      </div>
+                    </div>
+                    <button style={{
+                      padding: '8px',
+                      backgroundColor: 'transparent',
+                      border: 'none',
+                      color: '#9CA3AF',
+                      cursor: 'pointer',
+                    }}>
+                      <MoreHorizontal size={20} />
+                    </button>
+                  </div>
 
-            {/* Load More */}
-            <div style={{ textAlign: 'center', paddingTop: designTokens.spacing[8] }}>
-              <Button 
-                variant="secondary" 
-                onClick={loadMorePosts}
-                loading={loading}
-              >
-                Load More Posts
-              </Button>
+                  {/* Post Image */}
+                  <div style={{
+                    borderRadius: '12px',
+                    overflow: 'hidden',
+                    marginBottom: '16px',
+                  }}>
+                    <img 
+                      src={post.content.url}
+                      alt="Post content"
+                      style={{
+                        width: '100%',
+                        height: '300px',
+                        objectFit: 'cover',
+                      }}
+                    />
+                  </div>
+
+                  {/* Post Content */}
+                  <div style={{ marginBottom: '16px' }}>
+                    <p style={{
+                      margin: '0 0 8px 0',
+                      fontSize: '14px',
+                      color: '#E5E7EB',
+                      lineHeight: '1.5',
+                    }}>
+                      {post.content.caption}
+                    </p>
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                      {post.content.hashtags.map((tag, index) => (
+                        <span key={index} style={{
+                          fontSize: '14px',
+                          color: '#6366F1',
+                          cursor: 'pointer',
+                        }}>
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Post Actions */}
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    paddingTop: '16px',
+                    borderTop: '1px solid #4B5563',
+                  }}>
+                    <div style={{ display: 'flex', gap: '24px' }}>
+                      <button
+                        onClick={() => handleLike(post.id)}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          backgroundColor: 'transparent',
+                          border: 'none',
+                          color: post.engagement.liked ? '#EF4444' : '#9CA3AF',
+                          cursor: 'pointer',
+                          fontSize: '14px',
+                        }}
+                      >
+                        <Heart size={18} fill={post.engagement.liked ? 'currentColor' : 'none'} />
+                        {post.engagement.likes.toLocaleString()}
+                      </button>
+                      <button style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        backgroundColor: 'transparent',
+                        border: 'none',
+                        color: '#9CA3AF',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                      }}>
+                        <MessageCircle size={18} />
+                        {post.engagement.comments.toLocaleString()}
+                      </button>
+                    </div>
+                    <button
+                      onClick={() => handleSave(post.id)}
+                      style={{
+                        backgroundColor: 'transparent',
+                        border: 'none',
+                        color: post.engagement.saved ? '#6366F1' : '#9CA3AF',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <Bookmark size={18} fill={post.engagement.saved ? 'currentColor' : 'none'} />
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
       </div>
 
-      {/* Right Sidebar - Desktop Only with Conditional Blur */}
+      {/* Right Sidebar */}
       {!isMobile && (
         <div style={{
           width: '320px',
@@ -332,152 +811,264 @@ export default function EnhancedHome() {
           position: 'fixed',
           top: 0,
           right: 0,
-          padding: designTokens.spacing[6],
+          backgroundColor: '#2A2D3A',
+          borderLeft: '1px solid #3A3D4A',
+          padding: '24px',
           overflowY: 'auto',
-          backgroundColor: designTokens.colors.gray[50],
-          borderLeft: `1px solid ${designTokens.colors.gray[100]}`,
-          filter: isMobile && sidebarOpen ? 'blur(4px)' : 'none',
-          transition: `filter ${designTokens.animation.duration.normal} ${designTokens.animation.easing.ease}`,
         }}>
-          <div style={{
-            position: 'sticky',
-            top: designTokens.spacing[6],
-            display: 'flex',
-            flexDirection: 'column',
-            gap: designTokens.spacing[6],
-          }}>
-            {/* Trending Hashtags */}
-            <Card>
+          {/* Requests */}
+          <div style={{ marginBottom: '32px' }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: '16px',
+            }}>
+              <h3 style={{
+                margin: 0,
+                fontSize: '16px',
+                fontWeight: '600',
+                color: '#FFFFFF',
+              }}>
+                Requests
+              </h3>
               <div style={{
+                backgroundColor: '#6366F1',
+                color: '#FFFFFF',
+                borderRadius: '50%',
+                width: '20px',
+                height: '20px',
                 display: 'flex',
                 alignItems: 'center',
-                gap: designTokens.spacing[2],
-                marginBottom: designTokens.spacing[4],
+                justifyContent: 'center',
+                fontSize: '12px',
+                fontWeight: '600',
               }}>
-                <TrendingUp size={20} color={designTokens.colors.error[500]} />
-                <h3 style={{
-                  fontWeight: designTokens.typography.fontWeight.semibold,
-                  color: designTokens.colors.gray[900],
-                  margin: 0,
-                  fontSize: designTokens.typography.fontSize.lg,
+                2
+              </div>
+            </div>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {requests.map((request) => (
+                <div key={request.id} style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
                 }}>
-                  Trending
-                </h3>
-              </div>
-              
-              <div style={{ display: 'flex', flexDirection: 'column', gap: designTokens.spacing[3] }}>
-                {trendingHashtags.slice(0, 3).map((item, index) => (
-                  <div key={index} style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    padding: designTokens.spacing[2],
-                    borderRadius: designTokens.borderRadius.lg,
-                    transition: `background-color ${designTokens.animation.duration.fast} ${designTokens.animation.easing.ease}`,
-                    cursor: 'pointer',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = designTokens.colors.gray[50]
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = 'transparent'
-                  }}>
-                    <div>
-                      <div style={{
-                        fontWeight: designTokens.typography.fontWeight.semibold,
-                        color: designTokens.colors.primary[600],
-                        fontSize: designTokens.typography.fontSize.sm,
-                      }}>
-                        {item.tag}
-                      </div>
-                      <div style={{
-                        fontSize: designTokens.typography.fontSize.xs,
-                        color: designTokens.colors.gray[500],
-                      }}>
-                        {item.posts}
-                      </div>
-                    </div>
-                    <Badge variant="success" size="sm">
-                      {item.growth}
-                    </Badge>
-                  </div>
-                ))}
-              </div>
-            </Card>
-
-            {/* Upcoming Events */}
-            <Card>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: designTokens.spacing[2],
-                marginBottom: designTokens.spacing[4],
-              }}>
-                <Calendar size={20} color={designTokens.colors.primary[500]} />
-                <h3 style={{
-                  fontWeight: designTokens.typography.fontWeight.semibold,
-                  color: designTokens.colors.gray[900],
-                  margin: 0,
-                  fontSize: designTokens.typography.fontSize.lg,
-                }}>
-                  Upcoming Events
-                </h3>
-              </div>
-              
-              <div style={{ display: 'flex', flexDirection: 'column', gap: designTokens.spacing[4] }}>
-                {upcomingEvents.map((event) => (
-                  <div key={event.id} style={{
-                    padding: designTokens.spacing[3],
-                    backgroundColor: designTokens.colors.primary[50],
-                    borderRadius: designTokens.borderRadius.xl,
-                    border: `1px solid ${designTokens.colors.primary[100]}`,
-                  }}>
-                    <h4 style={{
-                      fontWeight: designTokens.typography.fontWeight.semibold,
-                      color: designTokens.colors.gray[900],
-                      margin: 0,
-                      marginBottom: designTokens.spacing[1],
-                      fontSize: designTokens.typography.fontSize.sm,
-                    }}>
-                      {event.title}
-                    </h4>
+                  <img 
+                    src={request.avatar}
+                    alt={request.name}
+                    style={{
+                      width: '40px',
+                      height: '40px',
+                      borderRadius: '50%',
+                      objectFit: 'cover',
+                    }}
+                  />
+                  <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{
-                      fontSize: designTokens.typography.fontSize.xs,
-                      color: designTokens.colors.gray[600],
-                      marginBottom: designTokens.spacing[2],
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      color: '#FFFFFF',
+                      marginBottom: '2px',
                     }}>
-                      {event.date}
+                      {request.name}
+                    </div>
+                    <div style={{
+                      fontSize: '12px',
+                      color: '#9CA3AF',
+                    }}>
+                      {request.action}
                     </div>
                     <div style={{
                       display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
+                      gap: '8px',
+                      marginTop: '8px',
                     }}>
-                      <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: designTokens.spacing[1],
-                        fontSize: designTokens.typography.fontSize.xs,
-                        color: designTokens.colors.gray[500],
+                      <button style={{
+                        padding: '4px 12px',
+                        backgroundColor: '#6366F1',
+                        border: 'none',
+                        borderRadius: '16px',
+                        color: '#FFFFFF',
+                        fontSize: '12px',
+                        fontWeight: '500',
+                        cursor: 'pointer',
                       }}>
-                        <MapPin size={12} />
-                        <span>{event.location}</span>
-                      </div>
-                      <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: designTokens.spacing[1],
-                        fontSize: designTokens.typography.fontSize.xs,
-                        color: designTokens.colors.gray[500],
+                        Accept
+                      </button>
+                      <button style={{
+                        padding: '4px 12px',
+                        backgroundColor: '#374151',
+                        border: 'none',
+                        borderRadius: '16px',
+                        color: '#9CA3AF',
+                        fontSize: '12px',
+                        fontWeight: '500',
+                        cursor: 'pointer',
                       }}>
-                        <Users size={12} />
-                        <span>{event.attendees}</span>
-                      </div>
+                        Decline
+                      </button>
                     </div>
                   </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Suggestions */}
+          <div style={{ marginBottom: '32px' }}>
+            <h3 style={{
+              margin: '0 0 16px 0',
+              fontSize: '16px',
+              fontWeight: '600',
+              color: '#FFFFFF',
+            }}>
+              Suggestions for you
+            </h3>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {suggestions.slice(0, 5).map((suggestion) => (
+                <div key={suggestion.id} style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                }}>
+                  <img 
+                    src={suggestion.avatar}
+                    alt={suggestion.name}
+                    style={{
+                      width: '40px',
+                      height: '40px',
+                      borderRadius: '50%',
+                      objectFit: 'cover',
+                    }}
+                  />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      color: '#FFFFFF',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}>
+                      {suggestion.name}
+                    </div>
+                    <div style={{
+                      fontSize: '12px',
+                      color: '#9CA3AF',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}>
+                      {suggestion.location}
+                    </div>
+                  </div>
+                  <button style={{
+                    padding: '6px',
+                    backgroundColor: 'transparent',
+                    border: '1px solid #6366F1',
+                    borderRadius: '8px',
+                    color: '#6366F1',
+                    cursor: 'pointer',
+                  }}>
+                    <UserPlus size={16} />
+                  </button>
+                </div>
+              ))}
+            </div>
+            
+            <button style={{
+              width: '100%',
+              padding: '8px',
+              marginTop: '16px',
+              backgroundColor: 'transparent',
+              border: 'none',
+              color: '#6366F1',
+              fontSize: '14px',
+              fontWeight: '500',
+              cursor: 'pointer',
+            }}>
+              View All
+            </button>
+          </div>
+
+          {/* Followers Stats */}
+          <div style={{
+            backgroundColor: '#374151',
+            borderRadius: '16px',
+            padding: '20px',
+            textAlign: 'center',
+            marginBottom: '24px',
+          }}>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'center',
+              marginBottom: '12px',
+            }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+              }}>
+                {[1,2,3,4,5,6].map((i) => (
+                  <img 
+                    key={i}
+                    src={`https://images.pexels.com/photos/${1036622 + i}/pexels-photo-${1036622 + i}.jpeg?auto=compress&cs=tinysrgb&w=40&h=40&dpr=2`}
+                    alt={`Follower ${i}`}
+                    style={{
+                      width: '32px',
+                      height: '32px',
+                      borderRadius: '50%',
+                      objectFit: 'cover',
+                      border: '2px solid #2A2D3A',
+                      marginLeft: i > 1 ? '-8px' : '0',
+                    }}
+                  />
                 ))}
               </div>
-            </Card>
+            </div>
+            <div style={{
+              fontSize: '18px',
+              fontWeight: '700',
+              color: '#FFFFFF',
+              marginBottom: '4px',
+            }}>
+              184.3K
+            </div>
+            <div style={{
+              fontSize: '14px',
+              color: '#9CA3AF',
+              marginBottom: '4px',
+            }}>
+              Followers
+            </div>
+            <div style={{
+              fontSize: '12px',
+              color: '#9CA3AF',
+            }}>
+              Active now on your profile
+            </div>
+          </div>
+
+          {/* Footer Links */}
+          <div style={{
+            borderTop: '1px dotted #4B5563',
+            paddingTop: '16px',
+            fontSize: '12px',
+            color: '#6B7280',
+            lineHeight: '1.5',
+          }}>
+            <div style={{ marginBottom: '8px' }}>
+              <a href="#" style={{ color: '#6B7280', textDecoration: 'none', marginRight: '12px' }}>About</a>
+              <a href="#" style={{ color: '#6B7280', textDecoration: 'none', marginRight: '12px' }}>Accessibility</a>
+              <a href="#" style={{ color: '#6B7280', textDecoration: 'none' }}>Help Center</a>
+            </div>
+            <div style={{ marginBottom: '8px' }}>
+              <a href="#" style={{ color: '#6B7280', textDecoration: 'none', marginRight: '12px' }}>Privacy and Terms</a>
+              <a href="#" style={{ color: '#6B7280', textDecoration: 'none' }}>Advertising</a>
+            </div>
+            <div>Business Services</div>
           </div>
         </div>
       )}
