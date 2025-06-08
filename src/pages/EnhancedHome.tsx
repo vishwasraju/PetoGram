@@ -3,12 +3,12 @@ import EnhancedSidebar from '../components/layout/EnhancedSidebar'
 import EnhancedHeader from '../components/layout/EnhancedHeader'
 import EnhancedCreatePost from '../components/feed/EnhancedCreatePost'
 import Post from '../components/feed/Post'
-import Card from '../components/ui/Card'
+import StrategicCard from '../components/ui/StrategicCard'
+import ProfessionalButton from '../components/ui/ProfessionalButton'
 import Avatar from '../components/ui/Avatar'
-import Button from '../components/ui/Button'
 import Badge from '../components/ui/Badge'
 import { SkeletonCard } from '../components/ui/Skeleton'
-import { TrendingUp, Users, Calendar, MapPin, Star } from 'lucide-react'
+import { TrendingUp, Users, Calendar, MapPin, Star, Plus, Heart, MessageCircle } from 'lucide-react'
 import { designTokens } from '../design-system/tokens'
 
 interface PostData {
@@ -132,11 +132,11 @@ const suggestedUsers = [
 ]
 
 const trendingHashtags = [
-  { tag: '#PuppyLove', posts: '45.2K posts', growth: '+12%' },
-  { tag: '#CatsOfInstagram', posts: '38.9K posts', growth: '+8%' },
-  { tag: '#DogTraining', posts: '23.1K posts', growth: '+15%' },
-  { tag: '#PetPhotography', posts: '19.8K posts', growth: '+5%' },
-  { tag: '#AdoptDontShop', posts: '16.7K posts', growth: '+20%' },
+  { tag: '#PuppyLove', posts: '45.2K posts', growth: '+12%', variant: 'primary' },
+  { tag: '#CatsOfInstagram', posts: '38.9K posts', growth: '+8%', variant: 'secondary' },
+  { tag: '#DogTraining', posts: '23.1K posts', growth: '+15%', variant: 'accent' },
+  { tag: '#PetPhotography', posts: '19.8K posts', growth: '+5%', variant: 'success' },
+  { tag: '#AdoptDontShop', posts: '16.7K posts', growth: '+20%', variant: 'neutral' },
 ]
 
 const upcomingEvents = [
@@ -146,6 +146,7 @@ const upcomingEvents = [
     date: 'Tomorrow, 10:00 AM',
     location: 'Central Park',
     attendees: 234,
+    variant: 'primary'
   },
   {
     id: '2',
@@ -153,6 +154,15 @@ const upcomingEvents = [
     date: 'This Weekend',
     location: 'Community Center',
     attendees: 89,
+    variant: 'secondary'
+  },
+  {
+    id: '3',
+    title: 'Pet Photography Session',
+    date: 'Next Monday',
+    location: 'Downtown Studio',
+    attendees: 156,
+    variant: 'accent'
   },
 ]
 
@@ -238,7 +248,7 @@ export default function EnhancedHome() {
         />
       )}
 
-      {/* Sidebar - Glass morphism effect */}
+      {/* Sidebar - Always Clear */}
       <div style={{
         width: isMobile ? '320px' : '320px',
         height: '100vh',
@@ -268,7 +278,7 @@ export default function EnhancedHome() {
         transition: `filter ${designTokens.animation.duration.normal} ${designTokens.animation.easing.ease}`,
         pointerEvents: isMobile && sidebarOpen ? 'none' : 'auto',
       }}>
-        {/* Header with glass effect */}
+        {/* Header */}
         <div style={{
           position: 'sticky',
           top: 0,
@@ -311,19 +321,20 @@ export default function EnhancedHome() {
 
             {/* Load More */}
             <div style={{ textAlign: 'center', paddingTop: designTokens.spacing[8] }}>
-              <Button 
-                variant="secondary" 
+              <ProfessionalButton 
+                variant="prussian" 
                 onClick={loadMorePosts}
                 loading={loading}
+                icon={<Plus size={18} />}
               >
                 Load More Posts
-              </Button>
+              </ProfessionalButton>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Right Sidebar - Glass morphism effect */}
+      {/* Right Sidebar - Desktop Only */}
       {!isMobile && (
         <div style={{
           width: '320px',
@@ -336,8 +347,6 @@ export default function EnhancedHome() {
           background: 'rgba(255, 255, 255, 0.1)',
           backdropFilter: 'blur(20px)',
           borderLeft: '1px solid rgba(255, 255, 255, 0.2)',
-          filter: isMobile && sidebarOpen ? 'blur(4px)' : 'none',
-          transition: `filter ${designTokens.animation.duration.normal} ${designTokens.animation.easing.ease}`,
         }}>
           <div style={{
             position: 'sticky',
@@ -346,25 +355,18 @@ export default function EnhancedHome() {
             flexDirection: 'column',
             gap: designTokens.spacing[6],
           }}>
-            {/* Trending Hashtags with glass effect */}
-            <div style={{
-              background: 'rgba(255, 255, 255, 0.15)',
-              backdropFilter: 'blur(25px)',
-              border: '1px solid rgba(255, 255, 255, 0.3)',
-              borderRadius: designTokens.borderRadius['2xl'],
-              padding: designTokens.spacing[6],
-              boxShadow: '0 12px 40px rgba(0, 0, 0, 0.15)',
-            }}>
+            {/* Trending Hashtags with Strategic Cards */}
+            <StrategicCard variant="primary" floating>
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
                 gap: designTokens.spacing[2],
                 marginBottom: designTokens.spacing[4],
               }}>
-                <TrendingUp size={20} color={designTokens.colors.error[500]} />
+                <TrendingUp size={20} color="#d62828" />
                 <h3 style={{
                   fontWeight: designTokens.typography.fontWeight.semibold,
-                  color: designTokens.colors.gray[900],
+                  color: '#ffffff',
                   margin: 0,
                   fontSize: designTokens.typography.fontSize.lg,
                 }}>
@@ -392,14 +394,14 @@ export default function EnhancedHome() {
                     <div>
                       <div style={{
                         fontWeight: designTokens.typography.fontWeight.semibold,
-                        color: designTokens.colors.primary[600],
+                        color: '#fcbf49',
                         fontSize: designTokens.typography.fontSize.sm,
                       }}>
                         {item.tag}
                       </div>
                       <div style={{
                         fontSize: designTokens.typography.fontSize.xs,
-                        color: designTokens.colors.gray[500],
+                        color: 'rgba(255, 255, 255, 0.7)',
                       }}>
                         {item.posts}
                       </div>
@@ -410,27 +412,20 @@ export default function EnhancedHome() {
                   </div>
                 ))}
               </div>
-            </div>
+            </StrategicCard>
 
-            {/* Upcoming Events with glass effect */}
-            <div style={{
-              background: 'rgba(255, 255, 255, 0.15)',
-              backdropFilter: 'blur(25px)',
-              border: '1px solid rgba(255, 255, 255, 0.3)',
-              borderRadius: designTokens.borderRadius['2xl'],
-              padding: designTokens.spacing[6],
-              boxShadow: '0 12px 40px rgba(0, 0, 0, 0.15)',
-            }}>
+            {/* Upcoming Events with Strategic Cards */}
+            <StrategicCard variant="secondary" floating>
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
                 gap: designTokens.spacing[2],
                 marginBottom: designTokens.spacing[4],
               }}>
-                <Calendar size={20} color={designTokens.colors.primary[500]} />
+                <Calendar size={20} color="#f77f00" />
                 <h3 style={{
                   fontWeight: designTokens.typography.fontWeight.semibold,
-                  color: designTokens.colors.gray[900],
+                  color: '#ffffff',
                   margin: 0,
                   fontSize: designTokens.typography.fontSize.lg,
                 }}>
@@ -439,16 +434,16 @@ export default function EnhancedHome() {
               </div>
               
               <div style={{ display: 'flex', flexDirection: 'column', gap: designTokens.spacing[4] }}>
-                {upcomingEvents.map((event) => (
+                {upcomingEvents.slice(0, 2).map((event) => (
                   <div key={event.id} style={{
                     padding: designTokens.spacing[3],
-                    background: 'rgba(139, 92, 246, 0.1)',
+                    background: 'rgba(247, 127, 0, 0.1)',
                     borderRadius: designTokens.borderRadius.xl,
-                    border: '1px solid rgba(139, 92, 246, 0.2)',
+                    border: '1px solid rgba(247, 127, 0, 0.2)',
                   }}>
                     <h4 style={{
                       fontWeight: designTokens.typography.fontWeight.semibold,
-                      color: designTokens.colors.gray[900],
+                      color: '#ffffff',
                       margin: 0,
                       marginBottom: designTokens.spacing[1],
                       fontSize: designTokens.typography.fontSize.sm,
@@ -457,7 +452,7 @@ export default function EnhancedHome() {
                     </h4>
                     <div style={{
                       fontSize: designTokens.typography.fontSize.xs,
-                      color: designTokens.colors.gray[600],
+                      color: 'rgba(255, 255, 255, 0.8)',
                       marginBottom: designTokens.spacing[2],
                     }}>
                       {event.date}
@@ -472,7 +467,7 @@ export default function EnhancedHome() {
                         alignItems: 'center',
                         gap: designTokens.spacing[1],
                         fontSize: designTokens.typography.fontSize.xs,
-                        color: designTokens.colors.gray[500],
+                        color: 'rgba(255, 255, 255, 0.7)',
                       }}>
                         <MapPin size={12} />
                         <span>{event.location}</span>
@@ -482,7 +477,7 @@ export default function EnhancedHome() {
                         alignItems: 'center',
                         gap: designTokens.spacing[1],
                         fontSize: designTokens.typography.fontSize.xs,
-                        color: designTokens.colors.gray[500],
+                        color: 'rgba(255, 255, 255, 0.7)',
                       }}>
                         <Users size={12} />
                         <span>{event.attendees}</span>
@@ -491,7 +486,67 @@ export default function EnhancedHome() {
                   </div>
                 ))}
               </div>
-            </div>
+            </StrategicCard>
+
+            {/* Suggested Users with Strategic Cards */}
+            <StrategicCard variant="accent" floating>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: designTokens.spacing[2],
+                marginBottom: designTokens.spacing[4],
+              }}>
+                <Users size={20} color="#fcbf49" />
+                <h3 style={{
+                  fontWeight: designTokens.typography.fontWeight.semibold,
+                  color: '#ffffff',
+                  margin: 0,
+                  fontSize: designTokens.typography.fontSize.lg,
+                }}>
+                  Suggested for You
+                </h3>
+              </div>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: designTokens.spacing[3] }}>
+                {suggestedUsers.slice(0, 2).map((user, index) => (
+                  <div key={index} style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: designTokens.spacing[2],
+                    borderRadius: designTokens.borderRadius.lg,
+                    transition: `background-color ${designTokens.animation.duration.fast} ${designTokens.animation.easing.ease}`,
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: designTokens.spacing[3] }}>
+                      <Avatar 
+                        src={user.avatar}
+                        alt={user.name}
+                        size="md"
+                        verified={user.verified}
+                      />
+                      <div>
+                        <div style={{
+                          fontWeight: designTokens.typography.fontWeight.semibold,
+                          color: '#ffffff',
+                          fontSize: designTokens.typography.fontSize.sm,
+                        }}>
+                          {user.name}
+                        </div>
+                        <div style={{
+                          fontSize: designTokens.typography.fontSize.xs,
+                          color: 'rgba(255, 255, 255, 0.7)',
+                        }}>
+                          {user.pets}
+                        </div>
+                      </div>
+                    </div>
+                    <ProfessionalButton variant="xanthous" size="sm">
+                      Follow
+                    </ProfessionalButton>
+                  </div>
+                ))}
+              </div>
+            </StrategicCard>
           </div>
         </div>
       )}

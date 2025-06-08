@@ -5,6 +5,13 @@
 }
 
 :root {
+  /* Strategic Brand Colors */
+  --prussian-blue-500: #003049;
+  --fire-red-500: #d62828;
+  --orange-500: #f77f00;
+  --xanthous-500: #fcbf49;
+  --vanilla-500: #eae2b7;
+  
   /* Brand Colors */
   --primary-500: #8B5CF6;
   --primary-600: #7C3AED;
@@ -49,23 +56,29 @@ body {
   font-size: 14px;
   line-height: 1.5;
   color: var(--gray-900);
-  /* Beautiful gradient background for the entire app */
-  background: linear-gradient(135deg, #4ade80 0%, #06b6d4 25%, #3b82f6 50%, #8b5cf6 75%, #f59e0b 100%);
+  /* Strategic gradient background using provided colors */
+  background: linear-gradient(135deg, #003049 0%, #d62828 25%, #f77f00 50%, #fcbf49 75%, #eae2b7 100%);
   background-attachment: fixed;
   background-size: 400% 400%;
-  animation: gradientShift 15s ease infinite;
+  animation: strategicGradientShift 20s ease infinite;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
 }
 
-/* Gradient animation for dynamic background */
-@keyframes gradientShift {
+/* Strategic gradient animation */
+@keyframes strategicGradientShift {
   0% {
     background-position: 0% 50%;
   }
-  50% {
+  25% {
     background-position: 100% 50%;
+  }
+  50% {
+    background-position: 100% 100%;
+  }
+  75% {
+    background-position: 0% 100%;
   }
   100% {
     background-position: 0% 50%;
@@ -91,18 +104,18 @@ body {
   top: 0;
   left: 0;
   z-index: 1000;
-  /* Glass morphism effect for sidebar */
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(20px);
+  /* Strategic glass morphism with Prussian Blue tint */
+  background: rgba(0, 48, 73, 0.1);
+  backdrop-filter: blur(25px);
   border-right: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 48, 73, 0.15);
 }
 
 .main-content {
   flex: 1;
   margin-left: 320px;
   min-height: 100vh;
-  display: flex;
+  display: 'flex';
   flex-direction: column;
 }
 
@@ -122,8 +135,8 @@ body {
   position: fixed;
   top: 0;
   right: 0;
-  /* Glass morphism effect for right sidebar */
-  background: rgba(255, 255, 255, 0.1);
+  /* Strategic glass morphism with Fire Red tint */
+  background: rgba(214, 40, 40, 0.1);
   backdrop-filter: blur(20px);
   border-left: 1px solid rgba(255, 255, 255, 0.2);
 }
@@ -161,7 +174,7 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 48, 73, 0.5);
   z-index: 999;
   opacity: 0;
   visibility: hidden;
@@ -173,23 +186,55 @@ body {
   visibility: visible;
 }
 
-/* Header Styles with glass effect */
+/* Header Styles with strategic glass effect */
 .header-container {
   position: sticky;
   top: 0;
   z-index: 100;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(247, 127, 0, 0.1);
   backdrop-filter: blur(20px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-/* Card components with glass morphism */
+/* Strategic Card components with different color variations */
 .glass-card {
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 16px;
+  border-radius: 20px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.glass-card-prussian {
+  background: rgba(0, 48, 73, 0.1);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(0, 48, 73, 0.2);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0, 48, 73, 0.15);
+}
+
+.glass-card-fire-red {
+  background: rgba(214, 40, 40, 0.1);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(214, 40, 40, 0.2);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(214, 40, 40, 0.15);
+}
+
+.glass-card-orange {
+  background: rgba(247, 127, 0, 0.1);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(247, 127, 0, 0.2);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(247, 127, 0, 0.15);
+}
+
+.glass-card-xanthous {
+  background: rgba(252, 191, 73, 0.1);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(252, 191, 73, 0.2);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(252, 191, 73, 0.15);
 }
 
 /* Enhanced glass effect for important cards */
@@ -223,6 +268,13 @@ body {
 .text-purple-700 { color: var(--primary-700); }
 .text-red-500 { color: var(--red-500); }
 .text-blue-600 { color: var(--blue-500); }
+
+/* Strategic color text utilities */
+.text-prussian { color: var(--prussian-blue-500); }
+.text-fire-red { color: var(--fire-red-500); }
+.text-orange { color: var(--orange-500); }
+.text-xanthous { color: var(--xanthous-500); }
+.text-vanilla { color: var(--vanilla-500); }
 
 .flex { display: flex; }
 .flex-1 { flex: 1; }
@@ -378,23 +430,23 @@ body {
 .disabled\:opacity-50:disabled { opacity: 0.5; }
 .disabled\:cursor-not-allowed:disabled { cursor: not-allowed; }
 
-/* Custom Scrollbar */
+/* Custom Scrollbar with strategic colors */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(0, 48, 73, 0.1);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(247, 127, 0, 0.3);
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.5);
+  background: rgba(247, 127, 0, 0.5);
 }
 
 /* Button Reset */
@@ -478,7 +530,7 @@ img {
   animation: none !important;
 }
 
-/* Glass morphism effects for various components */
+/* Strategic glass morphism effects for various components */
 .glass-effect {
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(20px);
@@ -491,7 +543,7 @@ img {
   border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
-/* Floating animation for cards */
+/* Strategic floating animation for cards */
 @keyframes float {
   0%, 100% {
     transform: translateY(0px);
@@ -505,7 +557,7 @@ img {
   animation: float 6s ease-in-out infinite;
 }
 
-/* Shimmer effect for loading states */
+/* Strategic shimmer effect for loading states */
 @keyframes shimmer {
   0% {
     background-position: -200px 0;
@@ -516,7 +568,39 @@ img {
 }
 
 .shimmer {
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  background: linear-gradient(90deg, transparent, rgba(252, 191, 73, 0.2), transparent);
   background-size: 200px 100%;
   animation: shimmer 1.5s infinite;
+}
+
+/* Professional micro-interactions */
+.strategic-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.strategic-hover:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
+/* Accessibility enhancements */
+@media (prefers-reduced-motion: reduce) {
+  .floating,
+  .shimmer,
+  .strategic-hover {
+    animation: none;
+    transition: none;
+  }
+}
+
+@media (prefers-contrast: high) {
+  .glass-card,
+  .glass-card-prussian,
+  .glass-card-fire-red,
+  .glass-card-orange,
+  .glass-card-xanthous {
+    border-width: 2px;
+    background: rgba(255, 255, 255, 0.9);
+    color: #000;
+  }
 }
