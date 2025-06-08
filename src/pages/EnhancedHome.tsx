@@ -7,8 +7,10 @@ import Avatar from '../components/ui/Avatar'
 import Button from '../components/ui/Button'
 import Badge from '../components/ui/Badge'
 import { SkeletonCard } from '../components/ui/Skeleton'
-import { TrendingUp, Users, Calendar, MapPin, Star, Plus, Search, Mic, Heart, MessageCircle, Bookmark, MoreHorizontal, UserPlus, X, Clock, Siren as Fire, Hash } from 'lucide-react'
+import { TrendingUp, Users, Calendar, MapPin, Star, Plus, Search, Mic, Heart, MessageCircle, Bookmark, MoreHorizontal, UserPlus, X, Clock, Siren as Fire, Hash, Bell, Stethoscope } from 'lucide-react'
 import { designTokens } from '../design-system/tokens'
+import { useNavigate } from 'react-router-dom'
+import { clearAuthenticationState } from '../utils/auth'
 
 interface PostData {
   id: string
@@ -179,6 +181,8 @@ export default function EnhancedHome() {
   const [isMobile, setIsMobile] = useState(false)
   const [loading, setLoading] = useState(false)
   const [activeTab, setActiveTab] = useState('Popular')
+  const navigate = useNavigate()
+  const [showAllTrending, setShowAllTrending] = useState(false)
 
   useEffect(() => {
     const updateLayout = () => {
@@ -225,6 +229,11 @@ export default function EnhancedHome() {
     )
   }
 
+  const handleLogout = () => {
+    clearAuthenticationState()
+    navigate('/')
+  }
+
   return (
     <div style={{
       display: 'flex',
@@ -260,7 +269,6 @@ export default function EnhancedHome() {
         backgroundColor: '#2A2D3A',
         borderRight: '1px solid #3A3D4A',
         padding: '24px',
-        overflowY: 'auto',
       }}>
         {/* Profile Section */}
         <div style={{ marginBottom: '32px', textAlign: 'center' }}>
@@ -326,14 +334,23 @@ export default function EnhancedHome() {
           </div>
         </div>
 
+        {/* Notifications and Messages */}
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '40px', marginBottom: '28px' }}>
+          <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9CA3AF', padding: 0 }} title="Notifications">
+            <Bell size={22} />
+          </button>
+          <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9CA3AF', padding: 0 }} title="Messages">
+            <MessageCircle size={22} />
+          </button>
+        </div>
+
         {/* Navigation */}
-        <nav style={{ marginBottom: '32px' }}>
-          {[
+        <nav style={{ marginBottom: '4px' }}>
+          {[ 
             { icon: '🏠', label: 'Feed', active: true },
             { icon: '🔍', label: 'Explore' },
-            { icon: '❤️', label: 'My favorites' },
-            { icon: '💬', label: 'Direct' },
-            { icon: '📊', label: 'Stats' },
+            { icon: <Calendar size={20} />, label: 'Events' },
+            { icon: <Stethoscope size={20} />, label: 'Appointment' },
             { icon: '⚙️', label: 'Settings' },
           ].map((item, index) => (
             <div key={index} style={{
@@ -354,98 +371,42 @@ export default function EnhancedHome() {
           ))}
         </nav>
 
-        {/* Contacts */}
-        <div>
-          <h4 style={{
-            margin: '0 0 16px 0',
-            fontSize: '16px',
-            fontWeight: '600',
-            color: '#FFFFFF',
-            borderTop: '1px dotted #4B5563',
-            paddingTop: '24px',
-          }}>
-            Contacts
-          </h4>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {contacts.slice(0, 5).map((contact) => (
-              <div key={contact.id} style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                padding: '8px',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                transition: 'background-color 0.2s ease',
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#374151'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
-                <div style={{ position: 'relative' }}>
-                  <img 
-                    src={contact.avatar}
-                    alt={contact.name}
-                    style={{
-                      width: '40px',
-                      height: '40px',
-                      borderRadius: '50%',
-                      objectFit: 'cover',
-                    }}
-                  />
-                  {contact.online && (
-                    <div style={{
-                      position: 'absolute',
-                      bottom: '0',
-                      right: '0',
-                      width: '12px',
-                      height: '12px',
-                      backgroundColor: '#10B981',
-                      borderRadius: '50%',
-                      border: '2px solid #2A2D3A',
-                    }} />
-                  )}
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{
-                    fontSize: '14px',
-                    fontWeight: '500',
-                    color: '#FFFFFF',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}>
-                    {contact.name}
-                  </div>
-                  <div style={{
-                    fontSize: '12px',
-                    color: '#9CA3AF',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}>
-                    {contact.location}
-                  </div>
-                </div>
-                <div style={{
-                  width: '8px',
-                  height: '8px',
-                  backgroundColor: contact.online ? '#10B981' : '#6B7280',
-                  borderRadius: '50%',
-                }} />
-              </div>
-            ))}
-          </div>
-          <button style={{
+        {/* Log Out Button */}
+        <button
+          onClick={handleLogout}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
             width: '100%',
-            padding: '8px',
-            marginTop: '16px',
-            backgroundColor: 'transparent',
+            padding: '12px 16px',
+            borderRadius: '12px',
+            color: '#EF4444',
+            fontWeight: '600',
+            fontSize: '16px',
             border: 'none',
-            color: '#6366F1',
-            fontSize: '14px',
-            fontWeight: '500',
             cursor: 'pointer',
-          }}>
-            View All
-          </button>
+            backgroundColor: '#18181b',
+            transition: 'background 0.2s',
+          }}
+          onMouseEnter={e => e.currentTarget.style.backgroundColor = '#27272a'}
+          onMouseLeave={e => e.currentTarget.style.backgroundColor = '#18181b'}
+        >
+          🚪 Log Out
+        </button>
+        <div style={{
+          marginTop: '12px',
+          fontSize: '12px',
+          color: '#6B7280',
+          lineHeight: '1.5',
+        }}>
+          <div style={{ marginBottom: '8px' }}>
+            <a href="#" style={{ color: '#6B7280', textDecoration: 'none', marginRight: '12px' }}>About</a>
+            <a href="#" style={{ color: '#6B7280', textDecoration: 'none' }}>Help Center</a>
+          </div>
+          <div>
+            <a href="#" style={{ color: '#6B7280', textDecoration: 'none' }}>Privacy and Terms</a>
+          </div>
         </div>
       </div>
 
@@ -470,29 +431,15 @@ export default function EnhancedHome() {
           top: 0,
           zIndex: 100,
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1 }}>
-            {isMobile && (
-              <button
-                onClick={() => setSidebarOpen(true)}
-                style={{
-                  padding: '8px',
-                  backgroundColor: 'transparent',
-                  border: 'none',
-                  color: '#9CA3AF',
-                  cursor: 'pointer',
-                }}
-              >
-                ☰
-              </button>
-            )}
-            
+          {/* Left: Search Bar */}
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
             <div style={{
               position: 'relative',
               flex: 1,
-              maxWidth: '400px',
+              maxWidth: '250px',
             }}>
               <Search 
-                size={20} 
+                size={18} 
                 style={{
                   position: 'absolute',
                   left: '12px',
@@ -506,17 +453,17 @@ export default function EnhancedHome() {
                 placeholder="Search..."
                 style={{
                   width: '100%',
-                  padding: '10px 16px 10px 44px',
-                  backgroundColor: '#374151',
+                  padding: '8px 12px 8px 38px',
+                  backgroundColor: '#18181b',
                   border: '1px solid #4B5563',
                   borderRadius: '24px',
                   color: '#FFFFFF',
-                  fontSize: '14px',
+                  fontSize: '13px',
                   outline: 'none',
                 }}
               />
               <Mic 
-                size={20} 
+                size={16} 
                 style={{
                   position: 'absolute',
                   right: '12px',
@@ -528,23 +475,43 @@ export default function EnhancedHome() {
               />
             </div>
           </div>
-          
-          <button style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            padding: '10px 20px',
-            backgroundColor: '#6366F1',
-            border: 'none',
-            borderRadius: '24px',
-            color: '#FFFFFF',
-            fontSize: '14px',
-            fontWeight: '500',
-            cursor: 'pointer',
-          }}>
-            <Plus size={16} />
-            Create new post
-          </button>
+          {/* Center: Logo */}
+          <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
+            <span style={{
+              fontFamily: 'Comic Sans MS, Comic Sans, cursive',
+              fontSize: '2.2rem',
+              fontWeight: 400,
+              color: '#fff',
+              letterSpacing: '1px',
+              userSelect: 'none',
+            }}>
+              PetoGram
+            </span>
+          </div>
+          {/* Right: Create Post Button */}
+          <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
+            <button style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '10px 24px',
+              backgroundColor: '#6366F1',
+              border: 'none',
+              borderRadius: '24px',
+              color: '#FFFFFF',
+              fontSize: '16px',
+              fontWeight: '600',
+              cursor: 'pointer',
+              boxShadow: '0 2px 8px rgba(99,102,241,0.12)',
+              transition: 'background 0.2s',
+            }}
+            onMouseEnter={e => e.currentTarget.style.backgroundColor = '#4F46E5'}
+            onMouseLeave={e => e.currentTarget.style.backgroundColor = '#6366F1'}
+            >
+              <Plus size={20} />
+              Create new post
+            </button>
+          </div>
         </header>
 
         {/* Content */}
@@ -554,296 +521,153 @@ export default function EnhancedHome() {
           margin: '0 auto',
           width: '100%',
         }}>
-          {/* Stories */}
-          <div style={{ marginBottom: '32px' }}>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              marginBottom: '16px',
-            }}>
-              <h2 style={{
-                margin: 0,
-                fontSize: '20px',
-                fontWeight: '600',
-                color: '#FFFFFF',
-              }}>
-                Stories
-              </h2>
-              <button style={{
-                backgroundColor: 'transparent',
-                border: 'none',
-                color: '#6366F1',
-                fontSize: '14px',
-                fontWeight: '500',
-                cursor: 'pointer',
-              }}>
-                Watch all
-              </button>
-            </div>
-            
-            <div style={{
-              display: 'flex',
-              gap: '16px',
-              overflowX: 'auto',
-              paddingBottom: '8px',
-            }}>
-              {stories.map((story) => (
-                <div key={story.id} style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: '8px',
-                  minWidth: '70px',
-                  cursor: 'pointer',
-                }}>
-                  <div style={{
-                    position: 'relative',
-                    width: '60px',
-                    height: '60px',
-                    borderRadius: '50%',
-                    background: story.isAdd ? 'none' : 'linear-gradient(45deg, #6366F1, #8B5CF6)',
-                    padding: story.isAdd ? '0' : '3px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}>
-                    {story.isAdd ? (
-                      <div style={{
-                        width: '60px',
-                        height: '60px',
-                        borderRadius: '50%',
-                        border: '2px dashed #6B7280',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        backgroundColor: '#374151',
-                      }}>
-                        <Plus size={24} color="#9CA3AF" />
-                      </div>
-                    ) : (
-                      <img 
-                        src={story.avatar}
-                        alt={story.name}
-                        style={{
-                          width: '54px',
-                          height: '54px',
-                          borderRadius: '50%',
-                          objectFit: 'cover',
-                          border: '2px solid #2A2D3A',
-                        }}
-                      />
-                    )}
-                  </div>
-                  <span style={{
-                    fontSize: '12px',
-                    color: '#9CA3AF',
-                    textAlign: 'center',
-                    maxWidth: '70px',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}>
-                    {story.name}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-
           {/* Feeds Section */}
-          <div style={{ marginBottom: '32px' }}>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              marginBottom: '24px',
-            }}>
-              <h2 style={{
-                margin: 0,
-                fontSize: '20px',
-                fontWeight: '600',
-                color: '#FFFFFF',
-              }}>
-                Feeds
-              </h2>
-              
-              <div style={{
-                display: 'flex',
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+            {posts.map((post) => (
+              <div key={post.id} style={{
                 backgroundColor: '#374151',
-                borderRadius: '24px',
-                padding: '4px',
+                borderRadius: '16px',
+                padding: '20px',
+                border: '1px solid #4B5563',
               }}>
-                {['Popular', 'Latest'].map((tab) => (
-                  <button
-                    key={tab}
-                    onClick={() => setActiveTab(tab)}
-                    style={{
-                      padding: '8px 16px',
-                      backgroundColor: activeTab === tab ? '#6366F1' : 'transparent',
-                      border: 'none',
-                      borderRadius: '20px',
-                      color: activeTab === tab ? '#FFFFFF' : '#9CA3AF',
-                      fontSize: '14px',
-                      fontWeight: '500',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease',
-                    }}
-                  >
-                    {tab}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Posts */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-              {posts.map((post) => (
-                <div key={post.id} style={{
-                  backgroundColor: '#374151',
-                  borderRadius: '16px',
-                  padding: '20px',
-                  border: '1px solid #4B5563',
+                {/* Post Header */}
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  marginBottom: '16px',
                 }}>
-                  {/* Post Header */}
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    marginBottom: '16px',
-                  }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <img 
-                        src={post.user.avatar}
-                        alt={post.user.name}
-                        style={{
-                          width: '40px',
-                          height: '40px',
-                          borderRadius: '50%',
-                          objectFit: 'cover',
-                        }}
-                      />
-                      <div>
-                        <div style={{
-                          fontSize: '14px',
-                          fontWeight: '600',
-                          color: '#FFFFFF',
-                        }}>
-                          {post.user.name}
-                        </div>
-                        <div style={{
-                          fontSize: '12px',
-                          color: '#9CA3AF',
-                        }}>
-                          {post.user.pets}
-                        </div>
-                      </div>
-                    </div>
-                    <button style={{
-                      padding: '8px',
-                      backgroundColor: 'transparent',
-                      border: 'none',
-                      color: '#9CA3AF',
-                      cursor: 'pointer',
-                    }}>
-                      <MoreHorizontal size={20} />
-                    </button>
-                  </div>
-
-                  {/* Post Image */}
-                  <div style={{
-                    borderRadius: '12px',
-                    overflow: 'hidden',
-                    marginBottom: '16px',
-                  }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <img 
-                      src={post.content.url}
-                      alt="Post content"
+                      src={post.user.avatar}
+                      alt={post.user.name}
                       style={{
-                        width: '100%',
-                        height: '300px',
+                        width: '40px',
+                        height: '40px',
+                        borderRadius: '50%',
                         objectFit: 'cover',
                       }}
                     />
-                  </div>
-
-                  {/* Post Content */}
-                  <div style={{ marginBottom: '16px' }}>
-                    <p style={{
-                      margin: '0 0 8px 0',
-                      fontSize: '14px',
-                      color: '#E5E7EB',
-                      lineHeight: '1.5',
-                    }}>
-                      {post.content.caption}
-                    </p>
-                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                      {post.content.hashtags.map((tag, index) => (
-                        <span key={index} style={{
-                          fontSize: '14px',
-                          color: '#6366F1',
-                          cursor: 'pointer',
-                        }}>
-                          {tag}
-                        </span>
-                      ))}
+                    <div>
+                      <div style={{
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        color: '#FFFFFF',
+                      }}>
+                        {post.user.name}
+                      </div>
+                      <div style={{
+                        fontSize: '12px',
+                        color: '#9CA3AF',
+                      }}>
+                        {post.user.pets}
+                      </div>
                     </div>
                   </div>
-
-                  {/* Post Actions */}
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    paddingTop: '16px',
-                    borderTop: '1px solid #4B5563',
+                  <button style={{
+                    padding: '8px',
+                    backgroundColor: 'transparent',
+                    border: 'none',
+                    color: '#9CA3AF',
+                    cursor: 'pointer',
                   }}>
-                    <div style={{ display: 'flex', gap: '24px' }}>
-                      <button
-                        onClick={() => handleLike(post.id)}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '8px',
-                          backgroundColor: 'transparent',
-                          border: 'none',
-                          color: post.engagement.liked ? '#EF4444' : '#9CA3AF',
-                          cursor: 'pointer',
-                          fontSize: '14px',
-                        }}
-                      >
-                        <Heart size={18} fill={post.engagement.liked ? 'currentColor' : 'none'} />
-                        {post.engagement.likes.toLocaleString()}
-                      </button>
-                      <button style={{
+                    <MoreHorizontal size={20} />
+                  </button>
+                </div>
+
+                {/* Post Image */}
+                <div style={{
+                  borderRadius: '12px',
+                  overflow: 'hidden',
+                  marginBottom: '16px',
+                }}>
+                  <img 
+                    src={post.content.url}
+                    alt="Post content"
+                    style={{
+                      width: '100%',
+                      height: '300px',
+                      objectFit: 'cover',
+                    }}
+                  />
+                </div>
+
+                {/* Post Content */}
+                <div style={{ marginBottom: '16px' }}>
+                  <p style={{
+                    margin: '0 0 8px 0',
+                    fontSize: '14px',
+                    color: '#E5E7EB',
+                    lineHeight: '1.5',
+                  }}>
+                    {post.content.caption}
+                  </p>
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    {post.content.hashtags.map((tag, index) => (
+                      <span key={index} style={{
+                        fontSize: '14px',
+                        color: '#6366F1',
+                        cursor: 'pointer',
+                      }}>
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Post Actions */}
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  paddingTop: '16px',
+                  borderTop: '1px solid #4B5563',
+                }}>
+                  <div style={{ display: 'flex', gap: '24px' }}>
+                    <button
+                      onClick={() => handleLike(post.id)}
+                      style={{
                         display: 'flex',
                         alignItems: 'center',
                         gap: '8px',
                         backgroundColor: 'transparent',
                         border: 'none',
-                        color: '#9CA3AF',
+                        color: post.engagement.liked ? '#EF4444' : '#9CA3AF',
                         cursor: 'pointer',
                         fontSize: '14px',
-                      }}>
-                        <MessageCircle size={18} />
-                        {post.engagement.comments.toLocaleString()}
-                      </button>
-                    </div>
-                    <button
-                      onClick={() => handleSave(post.id)}
-                      style={{
-                        backgroundColor: 'transparent',
-                        border: 'none',
-                        color: post.engagement.saved ? '#6366F1' : '#9CA3AF',
-                        cursor: 'pointer',
                       }}
                     >
-                      <Bookmark size={18} fill={post.engagement.saved ? 'currentColor' : 'none'} />
+                      <Heart size={18} fill={post.engagement.liked ? 'currentColor' : 'none'} />
+                      {post.engagement.likes.toLocaleString()}
+                    </button>
+                    <button style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      backgroundColor: 'transparent',
+                      border: 'none',
+                      color: '#9CA3AF',
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                    }}>
+                      <MessageCircle size={18} />
+                      {post.engagement.comments.toLocaleString()}
                     </button>
                   </div>
+                  <button
+                    onClick={() => handleSave(post.id)}
+                    style={{
+                      backgroundColor: 'transparent',
+                      border: 'none',
+                      color: post.engagement.saved ? '#6366F1' : '#9CA3AF',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <Bookmark size={18} fill={post.engagement.saved ? 'currentColor' : 'none'} />
+                  </button>
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
@@ -859,7 +683,6 @@ export default function EnhancedHome() {
           backgroundColor: '#2A2D3A',
           borderLeft: '1px solid #3A3D4A',
           padding: '24px',
-          overflowY: 'auto',
         }}>
           {/* Requests */}
           <div style={{ marginBottom: '32px' }}>
@@ -980,12 +803,12 @@ export default function EnhancedHome() {
               </h3>
             </div>
             
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              {upcomingEvents.slice(0, 3).map((event) => (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {upcomingEvents.slice(0, 2).map((event) => (
                 <div key={event.id} style={{
                   backgroundColor: '#374151',
-                  borderRadius: '12px',
-                  padding: '16px',
+                  borderRadius: '10px',
+                  padding: '10px',
                   border: '1px solid #4B5563',
                   cursor: 'pointer',
                   transition: 'all 0.2s ease',
@@ -998,21 +821,21 @@ export default function EnhancedHome() {
                   e.currentTarget.style.backgroundColor = '#374151'
                   e.currentTarget.style.transform = 'translateY(0)'
                 }}>
-                  <div style={{ display: 'flex', gap: '12px' }}>
+                  <div style={{ display: 'flex', gap: '8px' }}>
                     <img 
                       src={event.image}
                       alt={event.title}
                       style={{
-                        width: '50px',
-                        height: '50px',
-                        borderRadius: '8px',
+                        width: '38px',
+                        height: '38px',
+                        borderRadius: '6px',
                         objectFit: 'cover',
                       }}
                     />
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <h4 style={{
-                        margin: '0 0 4px 0',
-                        fontSize: '14px',
+                        margin: '0 0 2px 0',
+                        fontSize: '12px',
                         fontWeight: '600',
                         color: '#FFFFFF',
                         overflow: 'hidden',
@@ -1024,26 +847,23 @@ export default function EnhancedHome() {
                       <div style={{
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '4px',
-                        marginBottom: '4px',
+                        gap: '2px',
+                        marginBottom: '2px',
                       }}>
-                        <Clock size={12} color="#9CA3AF" />
-                        <span style={{
-                          fontSize: '12px',
-                          color: '#9CA3AF',
-                        }}>
+                        <Clock size={10} color="#9CA3AF" />
+                        <span style={{ fontSize: '10px' }}>
                           {event.date} • {event.time}
                         </span>
                       </div>
                       <div style={{
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '4px',
-                        marginBottom: '8px',
+                        gap: '2px',
+                        marginBottom: '4px',
                       }}>
-                        <MapPin size={12} color="#9CA3AF" />
+                        <MapPin size={10} color="#9CA3AF" />
                         <span style={{
-                          fontSize: '12px',
+                          fontSize: '10px',
                           color: '#9CA3AF',
                           overflow: 'hidden',
                           textOverflow: 'ellipsis',
@@ -1055,11 +875,11 @@ export default function EnhancedHome() {
                       <div style={{
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '4px',
+                        gap: '2px',
                       }}>
-                        <Users size={12} color="#6366F1" />
+                        <Users size={10} color="#6366F1" />
                         <span style={{
-                          fontSize: '12px',
+                          fontSize: '10px',
                           color: '#6366F1',
                           fontWeight: '500',
                         }}>
@@ -1072,18 +892,21 @@ export default function EnhancedHome() {
               ))}
             </div>
             
-            <button style={{
-              width: '100%',
-              padding: '8px',
-              marginTop: '16px',
-              backgroundColor: 'transparent',
-              border: 'none',
-              color: '#6366F1',
-              fontSize: '14px',
-              fontWeight: '500',
-              cursor: 'pointer',
-            }}>
-              View All Events
+            <button
+              style={{
+                width: '100%',
+                padding: '8px',
+                marginTop: '16px',
+                backgroundColor: 'transparent',
+                border: 'none',
+                color: '#6366F1',
+                fontSize: '14px',
+                fontWeight: '500',
+                cursor: 'pointer',
+              }}
+              onClick={() => navigate('/events')}
+            >
+              Explore more events
             </button>
           </div>
 
@@ -1106,97 +929,57 @@ export default function EnhancedHome() {
               </h3>
             </div>
             
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {trendingTopics.slice(0, 4).map((topic) => (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {(showAllTrending ? trendingTopics : trendingTopics.slice(0, 3)).map((topic) => (
                 <div key={topic.id} style={{
-                  padding: '12px',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '6px 0',
+                  borderRadius: '6px',
                   transition: 'background-color 0.2s ease',
                 }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#374151'}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#23242b'}
                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
-                  <div style={{
+                  <span style={{
+                    fontSize: '13px',
+                    fontWeight: '600',
+                    color: '#6366F1',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    cursor: 'pointer',
+                  }}>{topic.hashtag}</span>
+                  <span style={{
                     display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'flex-start',
-                    marginBottom: '4px',
+                    alignItems: 'center',
+                    gap: '2px',
+                    fontSize: '12px',
+                    fontWeight: '600',
+                    color: '#10B981',
                   }}>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{
-                        fontSize: '12px',
-                        color: '#9CA3AF',
-                        marginBottom: '2px',
-                      }}>
-                        {topic.category}
-                      </div>
-                      <div style={{
-                        fontSize: '14px',
-                        fontWeight: '600',
-                        color: '#6366F1',
-                        marginBottom: '2px',
-                      }}>
-                        {topic.hashtag}
-                      </div>
-                      <div style={{
-                        fontSize: '12px',
-                        color: '#9CA3AF',
-                      }}>
-                        {topic.posts} posts
-                      </div>
-                    </div>
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                      backgroundColor: '#10B981',
-                      color: '#FFFFFF',
-                      padding: '2px 6px',
-                      borderRadius: '12px',
-                      fontSize: '10px',
-                      fontWeight: '600',
-                    }}>
-                      <TrendingUp size={10} />
-                      {topic.growth}
-                    </div>
-                  </div>
+                    <TrendingUp size={12} /> {topic.growth}
+                  </span>
                 </div>
               ))}
             </div>
             
-            <button style={{
-              width: '100%',
-              padding: '8px',
-              marginTop: '16px',
-              backgroundColor: 'transparent',
-              border: 'none',
-              color: '#6366F1',
-              fontSize: '14px',
-              fontWeight: '500',
-              cursor: 'pointer',
-            }}>
-              Show More
+            <button
+              style={{
+                width: '100%',
+                padding: '8px',
+                marginTop: '16px',
+                backgroundColor: 'transparent',
+                border: 'none',
+                color: '#6366F1',
+                fontSize: '14px',
+                fontWeight: '500',
+                cursor: 'pointer',
+              }}
+              onClick={() => setShowAllTrending((prev) => !prev)}
+            >
+              {showAllTrending ? 'Show Less' : 'Show More'}
             </button>
-          </div>
-
-          {/* Footer Links */}
-          <div style={{
-            borderTop: '1px dotted #4B5563',
-            paddingTop: '16px',
-            fontSize: '12px',
-            color: '#6B7280',
-            lineHeight: '1.5',
-          }}>
-            <div style={{ marginBottom: '8px' }}>
-              <a href="#" style={{ color: '#6B7280', textDecoration: 'none', marginRight: '12px' }}>About</a>
-              <a href="#" style={{ color: '#6B7280', textDecoration: 'none', marginRight: '12px' }}>Accessibility</a>
-              <a href="#" style={{ color: '#6B7280', textDecoration: 'none' }}>Help Center</a>
-            </div>
-            <div style={{ marginBottom: '8px' }}>
-              <a href="#" style={{ color: '#6B7280', textDecoration: 'none', marginRight: '12px' }}>Privacy and Terms</a>
-              <a href="#" style={{ color: '#6B7280', textDecoration: 'none' }}>Advertising</a>
-            </div>
-            <div>Business Services</div>
           </div>
         </div>
       )}
