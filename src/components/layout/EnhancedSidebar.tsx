@@ -112,7 +112,7 @@ export default function EnhancedSidebar({ isOpen, onClose, isMobile }: SidebarPr
           borderRadius: designTokens.borderRadius.xl,
           textDecoration: 'none',
           transition: `all ${designTokens.animation.duration.normal} ${designTokens.animation.easing.ease}`,
-          backgroundColor: isActive ? designTokens.colors.primary[50] : 'transparent',
+          backgroundColor: isActive ? 'rgba(139, 92, 246, 0.2)' : 'transparent',
           color: isActive ? designTokens.colors.primary[700] : designTokens.colors.gray[600],
           fontWeight: isActive ? designTokens.typography.fontWeight.semibold : designTokens.typography.fontWeight.medium,
           margin: `${designTokens.spacing[1]} 0`,
@@ -123,7 +123,7 @@ export default function EnhancedSidebar({ isOpen, onClose, isMobile }: SidebarPr
         <div style={{
           padding: designTokens.spacing[2],
           borderRadius: designTokens.borderRadius.lg,
-          backgroundColor: isActive ? designTokens.colors.primary[500] : designTokens.colors.gray[100],
+          backgroundColor: isActive ? designTokens.colors.primary[500] : 'rgba(255, 255, 255, 0.1)',
           color: isActive ? designTokens.colors.white : designTokens.colors.gray[600],
           transition: `all ${designTokens.animation.duration.fast} ${designTokens.animation.easing.ease}`,
           display: 'flex',
@@ -192,22 +192,24 @@ export default function EnhancedSidebar({ isOpen, onClose, isMobile }: SidebarPr
     <aside style={{
       width: '100%',
       height: '100vh',
-      backgroundColor: designTokens.colors.white,
+      background: 'rgba(255, 255, 255, 0.1)',
+      backdropFilter: 'blur(20px)',
       display: 'flex',
       flexDirection: 'column',
-      borderRight: `1px solid ${designTokens.colors.gray[100]}`,
+      border: 'none',
+      borderRight: '1px solid rgba(255, 255, 255, 0.2)',
       position: 'relative',
-      boxShadow: isMobile ? designTokens.boxShadow.xl : 'none',
+      boxShadow: isMobile ? '0 8px 32px rgba(0, 0, 0, 0.1)' : 'none',
     }}>
-      {/* Header */}
+      {/* Header with glass effect */}
       <div style={{ 
         padding: designTokens.spacing[6], 
-        borderBottom: `1px solid ${designTokens.colors.gray[100]}`,
+        borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
         flexShrink: 0,
-        background: `linear-gradient(135deg, ${designTokens.colors.primary[50]}, ${designTokens.colors.white})`,
+        background: 'rgba(139, 92, 246, 0.1)',
       }}>
         <h1 style={{
           fontSize: designTokens.typography.fontSize['2xl'],
@@ -239,7 +241,7 @@ export default function EnhancedSidebar({ isOpen, onClose, isMobile }: SidebarPr
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.color = designTokens.colors.gray[600]
-              e.currentTarget.style.backgroundColor = designTokens.colors.gray[100]
+              e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.color = designTokens.colors.gray[400]
@@ -251,10 +253,10 @@ export default function EnhancedSidebar({ isOpen, onClose, isMobile }: SidebarPr
         )}
       </div>
 
-      {/* User Profile */}
+      {/* User Profile with glass effect */}
       <div style={{ 
         padding: designTokens.spacing[6], 
-        borderBottom: `1px solid ${designTokens.colors.gray[100]}`,
+        borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
         flexShrink: 0,
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: designTokens.spacing[3] }}>
@@ -352,7 +354,7 @@ export default function EnhancedSidebar({ isOpen, onClose, isMobile }: SidebarPr
         {/* Bottom Section */}
         <div style={{ 
           padding: `${designTokens.spacing[2]} ${designTokens.spacing[4]} ${designTokens.spacing[4]}`,
-          borderTop: `1px solid ${designTokens.colors.gray[100]}`,
+          borderTop: '1px solid rgba(255, 255, 255, 0.2)',
           marginTop: 'auto',
         }}>
           {bottomItems.map((item) => (
@@ -382,7 +384,7 @@ export default function EnhancedSidebar({ isOpen, onClose, isMobile }: SidebarPr
               margin: `${designTokens.spacing[1]} 0`,
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = designTokens.colors.error[50]
+              e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.1)'
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.backgroundColor = 'transparent'
@@ -391,7 +393,7 @@ export default function EnhancedSidebar({ isOpen, onClose, isMobile }: SidebarPr
             <div style={{
               padding: designTokens.spacing[2],
               color: designTokens.colors.error[600],
-              backgroundColor: designTokens.colors.error[100],
+              backgroundColor: 'rgba(239, 68, 68, 0.1)',
               borderRadius: designTokens.borderRadius.lg,
               transition: `all ${designTokens.animation.duration.fast} ${designTokens.animation.easing.ease}`,
               display: 'flex',

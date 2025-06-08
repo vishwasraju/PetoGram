@@ -26,10 +26,12 @@ export default function Card({
   }
 
   const cardStyle: React.CSSProperties = {
-    backgroundColor: '#ffffff',
+    // Glass morphism effect
+    background: 'rgba(255, 255, 255, 0.1)',
+    backdropFilter: 'blur(20px)',
     borderRadius: '16px',
-    border: '1px solid #F3F4F6',
-    boxShadow: '0 1px 2px 0 rgb(0 0 0 / 0.05)',
+    border: '1px solid rgba(255, 255, 255, 0.2)',
+    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
     padding: getPadding(),
     transition: hover ? 'all 200ms cubic-bezier(0.4, 0, 0.2, 1)' : undefined,
     ...style,
@@ -37,8 +39,10 @@ export default function Card({
 
   const hoverStyle: React.CSSProperties = hover ? {
     ':hover': {
-      boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
-      borderColor: '#E5E7EB',
+      background: 'rgba(255, 255, 255, 0.15)',
+      backdropFilter: 'blur(25px)',
+      boxShadow: '0 12px 40px rgba(0, 0, 0, 0.15)',
+      border: '1px solid rgba(255, 255, 255, 0.3)',
     }
   } : {}
 
@@ -47,12 +51,16 @@ export default function Card({
       style={cardStyle}
       className={className}
       onMouseEnter={hover ? (e) => {
-        e.currentTarget.style.boxShadow = '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)'
-        e.currentTarget.style.borderColor = '#E5E7EB'
+        e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)'
+        e.currentTarget.style.backdropFilter = 'blur(25px)'
+        e.currentTarget.style.boxShadow = '0 12px 40px rgba(0, 0, 0, 0.15)'
+        e.currentTarget.style.border = '1px solid rgba(255, 255, 255, 0.3)'
       } : undefined}
       onMouseLeave={hover ? (e) => {
-        e.currentTarget.style.boxShadow = '0 1px 2px 0 rgb(0 0 0 / 0.05)'
-        e.currentTarget.style.borderColor = '#F3F4F6'
+        e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
+        e.currentTarget.style.backdropFilter = 'blur(20px)'
+        e.currentTarget.style.boxShadow = '0 8px 32px rgba(0, 0, 0, 0.1)'
+        e.currentTarget.style.border = '1px solid rgba(255, 255, 255, 0.2)'
       } : undefined}
     >
       {children}

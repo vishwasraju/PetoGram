@@ -97,9 +97,9 @@ export default function IntroPage({ onSignupStart, onSignupComplete }: IntroPage
   }
 
   return (
-    <div style={{
+    <div className="intro-page" style={{
       minHeight: '100vh',
-      backgroundColor: '#000', // Black background
+      backgroundColor: '#000', // Keep intro page black
       color: '#fff',
       display: 'flex',
       flexDirection: 'column',
