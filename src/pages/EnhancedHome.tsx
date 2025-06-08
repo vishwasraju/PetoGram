@@ -7,25 +7,7 @@ import Avatar from '../components/ui/Avatar'
 import Button from '../components/ui/Button'
 import Badge from '../components/ui/Badge'
 import { SkeletonCard } from '../components/ui/Skeleton'
-import { 
-  TrendingUp, 
-  Users, 
-  Calendar, 
-  MapPin, 
-  Star, 
-  Plus,
-  Search,
-  Mic,
-  Heart,
-  MessageCircle,
-  Bookmark,
-  MoreHorizontal,
-  UserPlus,
-  X,
-  Clock,
-  Fire,
-  Hash
-} from 'lucide-react'
+import { TrendingUp, Users, Calendar, MapPin, Star, Plus, Search, Mic, Heart, MessageCircle, Bookmark, MoreHorizontal, UserPlus, X, Clock, Siren as Fire, Hash } from 'lucide-react'
 import { designTokens } from '../design-system/tokens'
 
 interface PostData {
