@@ -25,12 +25,11 @@ export default function EnhancedHeader({ onMenuClick, isMobile }: HeaderProps) {
   return (
     <header style={{
       padding: `${designTokens.spacing[3]} ${designTokens.spacing[4]}`,
-      background: 'rgba(255, 255, 255, 0.1)',
-      backdropFilter: 'blur(20px)',
-      borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
+      backgroundColor: designTokens.colors.white,
+      borderBottom: `1px solid ${designTokens.colors.gray[100]}`,
       position: 'relative',
       zIndex: designTokens.zIndex.sticky,
-      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+      boxShadow: designTokens.boxShadow.sm,
     }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         {/* Left Section */}
@@ -67,11 +66,6 @@ export default function EnhancedHeader({ onMenuClick, isMobile }: HeaderProps) {
               onChange={(e) => setSearchQuery(e.target.value)}
               variant="filled"
               fullWidth
-              style={{
-                background: 'rgba(255, 255, 255, 0.1)',
-                backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
-              }}
             />
           </div>
         )}
@@ -171,11 +165,6 @@ export default function EnhancedHeader({ onMenuClick, isMobile }: HeaderProps) {
             variant="filled"
             fullWidth
             autoFocus
-            style={{
-              background: 'rgba(255, 255, 255, 0.1)',
-              backdropFilter: 'blur(10px)',
-              border: '1px solid rgba(255, 255, 255, 0.2)',
-            }}
           />
         </div>
       )}

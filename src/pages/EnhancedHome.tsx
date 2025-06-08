@@ -219,6 +219,7 @@ export default function EnhancedHome() {
     <div style={{
       display: 'flex',
       minHeight: '100vh',
+      backgroundColor: designTokens.colors.gray[50],
       position: 'relative',
     }}>
       {/* Mobile Overlay with Blur Effect */}
@@ -238,14 +239,14 @@ export default function EnhancedHome() {
         />
       )}
 
-      {/* Sidebar - Glass morphism effect */}
+      {/* Sidebar - Always Clear */}
       <div style={{
         width: isMobile ? '320px' : '320px',
         height: '100vh',
         position: 'fixed',
         top: 0,
         left: 0,
-        zIndex: designTokens.zIndex.modal,
+        zIndex: designTokens.zIndex.modal, // Higher z-index to stay above blur
         transform: isMobile && !sidebarOpen ? 'translateX(-100%)' : 'translateX(0)',
         transition: `transform ${designTokens.animation.duration.normal} ${designTokens.animation.easing.ease}`,
       }}>
@@ -256,7 +257,7 @@ export default function EnhancedHome() {
         />
       </div>
 
-      {/* Main Content Area */}
+      {/* Main Content Area with Conditional Blur */}
       <div style={{
         flex: 1,
         marginLeft: isMobile ? 0 : '320px',
@@ -268,7 +269,7 @@ export default function EnhancedHome() {
         transition: `filter ${designTokens.animation.duration.normal} ${designTokens.animation.easing.ease}`,
         pointerEvents: isMobile && sidebarOpen ? 'none' : 'auto',
       }}>
-        {/* Header with glass effect */}
+        {/* Header */}
         <div style={{
           position: 'sticky',
           top: 0,
@@ -323,7 +324,7 @@ export default function EnhancedHome() {
         </div>
       </div>
 
-      {/* Right Sidebar - Glass morphism effect */}
+      {/* Right Sidebar - Desktop Only with Conditional Blur */}
       {!isMobile && (
         <div style={{
           width: '320px',
@@ -333,9 +334,8 @@ export default function EnhancedHome() {
           right: 0,
           padding: designTokens.spacing[6],
           overflowY: 'auto',
-          background: 'rgba(255, 255, 255, 0.1)',
-          backdropFilter: 'blur(20px)',
-          borderLeft: '1px solid rgba(255, 255, 255, 0.2)',
+          backgroundColor: designTokens.colors.gray[50],
+          borderLeft: `1px solid ${designTokens.colors.gray[100]}`,
           filter: isMobile && sidebarOpen ? 'blur(4px)' : 'none',
           transition: `filter ${designTokens.animation.duration.normal} ${designTokens.animation.easing.ease}`,
         }}>
@@ -346,15 +346,8 @@ export default function EnhancedHome() {
             flexDirection: 'column',
             gap: designTokens.spacing[6],
           }}>
-            {/* Trending Hashtags with glass effect */}
-            <div style={{
-              background: 'rgba(255, 255, 255, 0.15)',
-              backdropFilter: 'blur(25px)',
-              border: '1px solid rgba(255, 255, 255, 0.3)',
-              borderRadius: designTokens.borderRadius['2xl'],
-              padding: designTokens.spacing[6],
-              boxShadow: '0 12px 40px rgba(0, 0, 0, 0.15)',
-            }}>
+            {/* Trending Hashtags */}
+            <Card>
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -384,7 +377,7 @@ export default function EnhancedHome() {
                     cursor: 'pointer',
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'
+                    e.currentTarget.style.backgroundColor = designTokens.colors.gray[50]
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.backgroundColor = 'transparent'
@@ -410,17 +403,10 @@ export default function EnhancedHome() {
                   </div>
                 ))}
               </div>
-            </div>
+            </Card>
 
-            {/* Upcoming Events with glass effect */}
-            <div style={{
-              background: 'rgba(255, 255, 255, 0.15)',
-              backdropFilter: 'blur(25px)',
-              border: '1px solid rgba(255, 255, 255, 0.3)',
-              borderRadius: designTokens.borderRadius['2xl'],
-              padding: designTokens.spacing[6],
-              boxShadow: '0 12px 40px rgba(0, 0, 0, 0.15)',
-            }}>
+            {/* Upcoming Events */}
+            <Card>
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -442,9 +428,9 @@ export default function EnhancedHome() {
                 {upcomingEvents.map((event) => (
                   <div key={event.id} style={{
                     padding: designTokens.spacing[3],
-                    background: 'rgba(139, 92, 246, 0.1)',
+                    backgroundColor: designTokens.colors.primary[50],
                     borderRadius: designTokens.borderRadius.xl,
-                    border: '1px solid rgba(139, 92, 246, 0.2)',
+                    border: `1px solid ${designTokens.colors.primary[100]}`,
                   }}>
                     <h4 style={{
                       fontWeight: designTokens.typography.fontWeight.semibold,
@@ -491,7 +477,7 @@ export default function EnhancedHome() {
                   </div>
                 ))}
               </div>
-            </div>
+            </Card>
           </div>
         </div>
       )}
