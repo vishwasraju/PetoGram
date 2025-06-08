@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react'
 import { X, ChevronLeft, ChevronRight } from 'lucide-react'
-import { registerUser } from '../utils/auth'
+import { registerUser, createUserProfile, createUserPets, setAuthenticationState } from '../utils/auth'
 
 interface SignupModalProps {
   isOpen: boolean;
@@ -118,14 +118,6 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
         console.log('Registration successful, user:', user.id);
         setRegisteredUserId(user.id);
 
-        // Store user data for profile creation
-        localStorage.setItem('tempUserData', JSON.stringify({
-          userId: user.id,
-          fullName: formData.username,
-          email: formData.email,
-          username: formData.username,
-        }));
-
         setIsLoading(false);
         
         // Move to step 2 after successful registration
@@ -138,7 +130,7 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
         setErrors({ general: 'An error occurred during registration. Please try again.' });
       }
     } else if (step === 2) {
-      // This shouldn't be called for step 2, but just in case
+      // This is now the actual confirmation for step 2
       handleConfirm();
     }
   };
@@ -174,28 +166,72 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
     fileInputRef.current?.click();
   };
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     if (!validateStep2()) {
       console.log('Step 2 validation failed:', errors);
       return;
     }
 
-    console.log('Pet information confirmed, proceeding to profile creation...');
-    
-    // Update temp data with pet information
-    const tempData = localStorage.getItem('tempUserData');
-    if (tempData) {
-      const userData = JSON.parse(tempData);
-      localStorage.setItem('tempUserData', JSON.stringify({
-        ...userData,
-        selectedPetType,
-        petName: formData.petName,
-        petPhoto: uploadedImage,
-        aboutPet: formData.aboutPet
-      }));
+    if (!registeredUserId) {
+      setErrors({ general: 'User not registered. Please go back to Step 1.' });
+      return;
     }
-    
-    onConfirm();
+
+    setIsLoading(true);
+    setErrors({});
+
+    try {
+      console.log('Attempting to create user profile and pet...');
+
+      // Create user profile
+      await createUserProfile({
+        user_id: registeredUserId,
+        username: formData.username,
+        bio: '',
+        profile_picture: '',
+        location: '',
+        phone: '',
+        website: '',
+        social_media: {
+          instagram: '',
+          twitter: '',
+          facebook: '',
+        },
+        interests: [],
+        is_public: true,
+        allow_messages: true,
+        show_email: false,
+      });
+
+      // Create user pet
+      await createUserPets([
+        {
+          user_id: registeredUserId,
+          name: formData.petName,
+          type: selectedPetType || '',
+          breed: '',
+          age: '',
+          photo: uploadedImage || '',
+        },
+      ]);
+
+      // Set authentication state after successful profile and pet creation
+      setAuthenticationState({
+        id: registeredUserId,
+        email: formData.email,
+        user_metadata: {
+          full_name: formData.username,
+        },
+      });
+
+      setIsLoading(false);
+      onConfirm();
+
+    } catch (error) {
+      console.error('Profile/Pet creation error:', error);
+      setIsLoading(false);
+      setErrors({ general: 'An error occurred during profile/pet creation.' });
+    }
   };
 
   const handleClose = () => {
@@ -244,7 +280,7 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
         width: '100%',
         maxWidth: step === 1 ? '380px' : '500px',
         maxHeight: '90vh',
-        overflowY: 'auto',
+        overflowY: 'hidden',
         padding: '20px',
         position: 'relative',
         color: '#fff',
@@ -348,14 +384,12 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
 
         {/* Step 1: Account Creation */}
         {step === 1 && (
-          <div>
-            <div style={{ marginBottom: '8px', marginTop: '10px' }}>
-              <label htmlFor="username" style={{ display: 'block', color: '#e0e0e0', marginBottom: '3px', fontSize: '12px' }}>Username</label>
-              <input 
-                type="text" 
-                id="username" 
+          <form onSubmit={(e) => { e.preventDefault(); handleNext(); }} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+            <div>
+              <input
+                type="text"
                 name="username"
-                placeholder="Username" 
+                placeholder="Username"
                 maxLength={50}
                 value={formData.username}
                 onChange={handleInputChange}
@@ -378,13 +412,11 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
               )}
             </div>
 
-            <div style={{ marginBottom: '8px' }}>
-              <label htmlFor="email" style={{ display: 'block', color: '#e0e0e0', marginBottom: '3px', fontSize: '12px' }}>Email</label>
-              <input 
-                type="email" 
-                id="email" 
+            <div>
+              <input
+                type="email"
                 name="email"
-                placeholder="Email" 
+                placeholder="Email"
                 value={formData.email}
                 onChange={handleInputChange}
                 style={{
@@ -406,13 +438,11 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
               )}
             </div>
 
-            <div style={{ marginBottom: '8px' }}>
-              <label htmlFor="password" style={{ display: 'block', color: '#e0e0e0', marginBottom: '3px', fontSize: '12px' }}>Password</label>
-              <input 
-                type="password" 
-                id="password" 
+            <div>
+              <input
+                type="password"
                 name="password"
-                placeholder="Password" 
+                placeholder="Password"
                 value={formData.password}
                 onChange={handleInputChange}
                 style={{
@@ -434,13 +464,11 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
               )}
             </div>
 
-            <div style={{ marginBottom: '12px' }}>
-              <label htmlFor="confirmPassword" style={{ display: 'block', color: '#e0e0e0', marginBottom: '3px', fontSize: '12px' }}>Confirm Password</label>
-              <input 
-                type="password" 
-                id="confirmPassword" 
+            <div>
+              <input
+                type="password"
                 name="confirmPassword"
-                placeholder="Confirm Password" 
+                placeholder="Confirm Password"
                 value={formData.confirmPassword}
                 onChange={handleInputChange}
                 style={{
@@ -463,8 +491,7 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
             </div>
             
             <button
-              type="button"
-              onClick={handleNext}
+              type="submit"
               disabled={isLoading}
               style={{
                 width: '100%',
@@ -473,7 +500,7 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
                 color: '#fff',
                 border: 'none',
                 borderRadius: '9999px',
-                fontSize: '14px',
+                fontSize: '16px',
                 fontWeight: 'bold',
                 cursor: isLoading ? 'not-allowed' : 'pointer',
                 opacity: isLoading ? 0.7 : 1,
@@ -481,7 +508,7 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
             >
               {isLoading ? 'Creating Account...' : 'Next'}
             </button>
-          </div>
+          </form>
         )}
 
         {/* Step 2: Pet Information */}
@@ -527,7 +554,7 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
               alignItems: 'center',
               justifyContent: 'space-between',
             }}>
-              <button 
+              <button
                 onClick={handlePrevPage} 
                 disabled={currentPage === 0}
                 style={{

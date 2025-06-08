@@ -3,7 +3,12 @@ import { useNavigate } from 'react-router-dom'
 import { validateLogin, setAuthenticationState } from '../utils/auth'
 import SignupModal from '../components/SignupModal'
 
-export default function IntroPage() {
+interface IntroPageProps {
+  onSignupStart: () => void;
+  onSignupComplete: () => void;
+}
+
+export default function IntroPage({ onSignupStart, onSignupComplete }: IntroPageProps) {
   const navigate = useNavigate()
   const [formData, setFormData] = useState({
     email: '',
@@ -76,18 +81,19 @@ export default function IntroPage() {
   const handleSignupClick = () => {
     setIsSignupModalOpen(true)
     setIsLogoGlowing(true)
+    onSignupStart()
   }
 
   const handleSignupModalClose = () => {
     setIsSignupModalOpen(false)
     setIsLogoGlowing(false)
+    onSignupComplete()
   }
 
   const handleSignupConfirm = () => {
     setIsSignupModalOpen(false)
     setIsLogoGlowing(false)
-    // The SignupModal will handle navigation to create-profile
-    navigate('/create-profile')
+    onSignupComplete()
   }
 
   return (

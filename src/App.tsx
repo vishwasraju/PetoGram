@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react'
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route, useNavigate } from 'react-router-dom'
 import IntroPage from './pages/IntroPage'
-import CreateProfilePage from './pages/CreateProfilePage'
 import EnhancedHome from './pages/EnhancedHome'
 import Profile from './pages/Profile'
 import Messages from './pages/Messages'
@@ -12,49 +11,55 @@ import BlogPage from './pages/BlogPage'
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage'
 import TermsOfServicePage from './pages/TermsOfServicePage'
 import HelpCenterPage from './pages/HelpCenterPage'
-import { getCurrentUser } from './utils/auth'
+import { isAuthenticated } from './utils/auth'
 import { supabase } from './utils/supabase'
 
 function App() {
   const [isAuth, setIsAuth] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
+  const [loading, setLoading] = useState(true)
+  const [isSigningUp, setIsSigningUp] = useState(false)
+  const navigate = useNavigate()
 
   useEffect(() => {
-    // Check initial authentication status
     const checkAuth = async () => {
-      try {
-        const user = await getCurrentUser()
-        setIsAuth(!!user)
-      } catch (error) {
-        console.error('Auth check error:', error)
-        setIsAuth(false)
-      } finally {
-        setIsLoading(false)
-      }
+      const authenticated = await isAuthenticated()
+      setIsAuth(authenticated)
+      
+      setLoading(false)
     }
-    
+
     checkAuth()
 
-    // Listen for auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setIsAuth(!!session?.user)
-        
-        if (event === 'SIGNED_OUT') {
-          // Clear any local storage when user signs out
-          localStorage.removeItem('isAuthenticated')
-          localStorage.removeItem('userEmail')
-          localStorage.removeItem('currentUserId')
-          localStorage.removeItem('userProfile')
-          localStorage.removeItem('tempUserData')
-        }
-      }
-    )
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsAuth(!!session)
+    })
 
-    return () => subscription.unsubscribe()
+    return () => {
+      authListener.subscription.unsubscribe()
+    }
   }, [])
 
-  if (isLoading) {
+  // Programmatic navigation based on authentication status
+  useEffect(() => {
+    if (!loading && !isSigningUp) { 
+      if (isAuth) {
+        // Only navigate to /home if not already on /home
+        if (window.location.pathname !== '/home') {
+          setTimeout(() => {
+            navigate('/home', { replace: false })
+          }, 0); // Use setTimeout with 0ms to defer navigation
+        }
+      } else {
+        if (window.location.pathname !== '/' && window.location.pathname !== '/about' && window.location.pathname !== '/careers' && window.location.pathname !== '/blog' && window.location.pathname !== '/privacy' && window.location.pathname !== '/terms' && window.location.pathname !== '/help') {
+          setTimeout(() => {
+            navigate('/', { replace: false })
+          }, 0); // Use setTimeout with 0ms to defer navigation
+        }
+      }
+    }
+  }, [isAuth, loading, navigate, isSigningUp])
+
+  if (loading) {
     return (
       <div style={{
         display: 'flex',
@@ -86,11 +91,7 @@ function App() {
       {/* Public Routes */}
       <Route 
         path="/" 
-        element={isAuth ? <Navigate to="/home\" replace /> : <IntroPage />} 
-      />
-      <Route 
-        path="/create-profile" 
-        element={isAuth ? <Navigate to="/home\" replace /> : <CreateProfilePage />} 
+        element={<IntroPage onSignupStart={() => setIsSigningUp(true)} onSignupComplete={() => setIsSigningUp(false)} />} 
       />
       <Route path="/about" element={<AboutPage />} />
       <Route path="/careers" element={<CareersPage />} />
@@ -102,15 +103,15 @@ function App() {
       {/* Protected Routes */}
       <Route 
         path="/home" 
-        element={isAuth ? <EnhancedHome /> : <Navigate to="/\" replace />} 
+        element={<EnhancedHome />} 
       />
       <Route 
         path="/profile" 
-        element={isAuth ? <Profile /> : <Navigate to="/\" replace />} 
+        element={<Profile />} 
       />
       <Route 
         path="/messages" 
-        element={isAuth ? <Messages /> : <Navigate to="/\" replace />} 
+        element={<Messages />} 
       />
       
       {/* 404 Route */}
