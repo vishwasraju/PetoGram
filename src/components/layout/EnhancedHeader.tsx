@@ -36,7 +36,7 @@ export default function EnhancedHeader({ onMenuClick, isMobile }: HeaderProps) {
         {/* Left Section */}
         <div style={{ display: 'flex', alignItems: 'center', gap: designTokens.spacing[4] }}>
           {isMobile && (
-            <Button variant="ghost" size="sm" onClick={onMenuClick}>
+            <Button variant="ghost\" size="sm\" onClick={onMenuClick}>
               <Menu size={24} />
             </Button>
           )}
