@@ -23,6 +23,10 @@ import AppointmentPage from './pages/AppointmentPage'
 import SettingsPage from './pages/SettingsPage'
 import MessagesPage from './pages/MessagesPage'
 import CreatePostPage from './pages/CreatePostPage'
+import UserProfilePage from './pages/UserProfilePage'
+import EditProfilePage from './pages/EditProfilePage'
+import PasswordChangePage from './pages/PasswordChangePage'
+import DeleteAccountPage from './pages/DeleteAccountPage'
 import { isAuthenticated } from './utils/auth'
 import { supabase } from './utils/supabase'
 
@@ -56,8 +60,13 @@ function App() {
     if (!loading && !isSigningUp) { 
       if (isAuth) {
         // Only navigate to /home if not already on /home or other protected routes
-        const protectedRoutes = ['/home', '/feed', '/explore-page', '/events-page', '/appointment-page', '/settings-page', '/messages-page', '/create-post', '/profile', '/messages', '/explore', '/events', '/appointment', '/settings']
-        if (!protectedRoutes.includes(window.location.pathname)) {
+        const protectedRoutes = [
+          '/home', '/feed', '/explore-page', '/events-page', '/appointment-page', 
+          '/settings-page', '/messages-page', '/create-post', '/profile', '/messages', 
+          '/explore', '/events', '/appointment', '/settings', '/user-profile', 
+          '/edit-profile', '/password-change', '/delete-account'
+        ]
+        if (!protectedRoutes.some(route => window.location.pathname.startsWith(route))) {
           setTimeout(() => {
             navigate('/home', { replace: false })
           }, 0); // Use setTimeout with 0ms to defer navigation
@@ -173,6 +182,24 @@ function App() {
         <Route 
           path="/create-post" 
           element={<CreatePostPage />} 
+        />
+        
+        {/* User Profile and Account Management */}
+        <Route 
+          path="/user-profile/:userId" 
+          element={<UserProfilePage />} 
+        />
+        <Route 
+          path="/edit-profile" 
+          element={<EditProfilePage />} 
+        />
+        <Route 
+          path="/password-change" 
+          element={<PasswordChangePage />} 
+        />
+        <Route 
+          path="/delete-account" 
+          element={<DeleteAccountPage />} 
         />
         
         {/* 404 Route */}
