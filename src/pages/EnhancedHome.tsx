@@ -6,6 +6,7 @@ import Card from '../components/ui/Card'
 import Avatar from '../components/ui/Avatar'
 import Button from '../components/ui/Button'
 import Badge from '../components/ui/Badge'
+import NotificationPopup from '../components/ui/NotificationPopup'
 import { SkeletonCard } from '../components/ui/Skeleton'
 import { TrendingUp, Users, Calendar, MapPin, Star, Plus, Search, Mic, Heart, MessageCircle, Bookmark, MoreHorizontal, UserPlus, X, Clock, Siren as Fire, Hash, Bell, Stethoscope } from 'lucide-react'
 import { designTokens } from '../design-system/tokens'
@@ -273,6 +274,7 @@ export default function EnhancedHome() {
   const [isMobile, setIsMobile] = useState(false)
   const [loading, setLoading] = useState(false)
   const [activeTab, setActiveTab] = useState('Popular')
+  const [showNotifications, setShowNotifications] = useState(false)
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -422,11 +424,53 @@ export default function EnhancedHome() {
 
         {/* Notifications and Messages */}
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '40px', marginBottom: '28px' }}>
-          <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9CA3AF', padding: 0 }} title="Notifications">
+          <button 
+            onClick={() => setShowNotifications(!showNotifications)}
+            style={{ 
+              background: 'none', 
+              border: 'none', 
+              cursor: 'pointer', 
+              color: '#9CA3AF', 
+              padding: 0,
+              position: 'relative',
+              transition: 'color 0.2s ease',
+            }} 
+            title="Notifications"
+            onMouseEnter={(e) => e.currentTarget.style.color = '#fff'}
+            onMouseLeave={(e) => e.currentTarget.style.color = '#9CA3AF'}
+          >
             <Bell size={22} />
+            {/* Notification badge */}
+            <div style={{
+              position: 'absolute',
+              top: '-4px',
+              right: '-4px',
+              width: '16px',
+              height: '16px',
+              backgroundColor: '#EF4444',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '10px',
+              color: '#fff',
+              fontWeight: '600',
+            }}>
+              3
+            </div>
           </button>
-          <Link to="/home/messages">
-            <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9CA3AF', padding: 0 }} title="Messages">
+          <Link to="/messages-page">
+            <button style={{ 
+              background: 'none', 
+              border: 'none', 
+              cursor: 'pointer', 
+              color: '#9CA3AF', 
+              padding: 0,
+              transition: 'color 0.2s ease',
+            }} 
+            title="Messages"
+            onMouseEnter={(e) => e.currentTarget.style.color = '#fff'}
+            onMouseLeave={(e) => e.currentTarget.style.color = '#9CA3AF'}>
               <MessageCircle size={22} />
             </button>
           </Link>
@@ -1057,6 +1101,12 @@ export default function EnhancedHome() {
           </div>
         </div>
       )}
+
+      {/* Notification Popup */}
+      <NotificationPopup 
+        isOpen={showNotifications} 
+        onClose={() => setShowNotifications(false)} 
+      />
     </div>
   )
 }
