@@ -178,7 +178,7 @@ export default function Post({ post, onLike, onSave }: PostProps) {
         
         {post.content.type === 'video' && (
           <div className="absolute inset-0 flex items-center justify-center">
-            <Button variant="ghost\" size="lg\" className="bg-black/50 text-white hover:bg-black/60">
+            <Button variant="ghost\" size=\"lg\" className=\"bg-black/50 text-white hover:bg-black/60">
               <Play size={32} fill="currentColor" />
             </Button>
             
