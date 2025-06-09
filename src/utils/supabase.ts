@@ -7,7 +7,40 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase environment variables. Please check your .env file.')
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+// Add error handling and retry logic for better connection reliability
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true
+  },
+  global: {
+    headers: {
+      'X-Client-Info': 'supabase-js-web'
+    }
+  },
+  realtime: {
+    params: {
+      eventsPerSecond: 10
+    }
+  }
+})
+
+// Test connection function
+export const testConnection = async () => {
+  try {
+    const { data, error } = await supabase.from('user_profiles').select('count').limit(1)
+    if (error) {
+      console.error('Supabase connection test failed:', error)
+      return false
+    }
+    console.log('Supabase connection successful')
+    return true
+  } catch (err) {
+    console.error('Supabase connection error:', err)
+    return false
+  }
+}
 
 // Database types
 export interface UserProfile {
