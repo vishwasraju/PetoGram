@@ -201,6 +201,26 @@ export default function IntroPage({ onSignupStart, onSignupComplete }: IntroPage
             }}>
               PetoGram
             </h1>
+
+            {/* Enhanced Error Message Display */}
+            {errors.general && (
+              <div style={{
+                width: '100%',
+                padding: '12px',
+                marginBottom: '16px',
+                backgroundColor: '#ff4757',
+                border: '1px solid #ff3742',
+                borderRadius: '6px',
+                color: '#fff',
+                fontSize: '14px',
+                fontWeight: '500',
+                textAlign: 'center',
+                boxShadow: '0 2px 8px rgba(255, 71, 87, 0.2)',
+              }}>
+                {errors.general}
+              </div>
+            )}
+
             <input
               type="text"
               name="email"
@@ -212,13 +232,22 @@ export default function IntroPage({ onSignupStart, onSignupComplete }: IntroPage
                 padding: '10px',
                 marginBottom: '6px',
                 backgroundColor: '#1a1a1a',
-                border: '1px solid #363636',
+                border: errors.email ? '1px solid #ff4757' : '1px solid #363636',
                 borderRadius: '3px',
                 color: '#fff',
                 fontSize: '12px',
                 outline: 'none',
               }}
             />
+            {errors.email && (
+              <p style={{
+                color: '#ff4757',
+                fontSize: '12px',
+                margin: '4px 0 8px 0',
+                alignSelf: 'flex-start',
+              }}>{errors.email}</p>
+            )}
+
             <input
               type="password"
               name="password"
@@ -230,13 +259,22 @@ export default function IntroPage({ onSignupStart, onSignupComplete }: IntroPage
                 padding: '10px',
                 marginBottom: '14px',
                 backgroundColor: '#1a1a1a',
-                border: '1px solid #363636',
+                border: errors.password ? '1px solid #ff4757' : '1px solid #363636',
                 borderRadius: '3px',
                 color: '#fff',
                 fontSize: '12px',
                 outline: 'none',
               }}
             />
+            {errors.password && (
+              <p style={{
+                color: '#ff4757',
+                fontSize: '12px',
+                margin: '-10px 0 14px 0',
+                alignSelf: 'flex-start',
+              }}>{errors.password}</p>
+            )}
+
             <button
               onClick={handleSubmit}
               disabled={isLoading}
@@ -255,14 +293,6 @@ export default function IntroPage({ onSignupStart, onSignupComplete }: IntroPage
             >
               {isLoading ? 'Logging in...' : 'Log in'}
             </button>
-
-            {errors.general && (
-              <p style={{
-                color: 'red',
-                fontSize: '12px',
-                marginTop: '10px',
-              }}>{errors.general}</p>
-            )}
 
             {/* Sign Up Box */}
             <div style={{
