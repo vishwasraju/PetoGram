@@ -15,6 +15,12 @@ import BlogPage from './pages/BlogPage'
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage'
 import TermsOfServicePage from './pages/TermsOfServicePage'
 import HelpCenterPage from './pages/HelpCenterPage'
+// Import new pages
+import FeedPage from './pages/FeedPage'
+import ExplorePage from './pages/ExplorePage'
+import EventsPage from './pages/EventsPage'
+import AppointmentPage from './pages/AppointmentPage'
+import SettingsPage from './pages/SettingsPage'
 import { isAuthenticated } from './utils/auth'
 import { supabase } from './utils/supabase'
 
@@ -133,6 +139,28 @@ function App() {
         <Route 
           path="/settings" 
           element={<Settings />} 
+        />
+        
+        {/* New dedicated pages */}
+        <Route 
+          path="/feed" 
+          element={<FeedPage />} 
+        />
+        <Route 
+          path="/explore-page" 
+          element={<ExplorePage />} 
+        />
+        <Route 
+          path="/events-page" 
+          element={<EventsPage />} 
+        />
+        <Route 
+          path="/appointment-page" 
+          element={<AppointmentPage />} 
+        />
+        <Route 
+          path="/settings-page" 
+          element={<SettingsPage />} 
         />
         
         {/* 404 Route */}

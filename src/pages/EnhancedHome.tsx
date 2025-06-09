@@ -435,11 +435,11 @@ export default function EnhancedHome() {
         {/* Navigation */}
         <nav style={{ marginBottom: '4px' }}>
           {[ 
-            { icon: '🏠', label: 'Feed', path: '/home', active: true },
-            { icon: '🔍', label: 'Explore', path: '/explore' },
-            { icon: <Calendar size={20} />, label: 'Events', path: '/events' },
-            { icon: <Stethoscope size={20} />, label: 'Appointment', path: '/appointment' },
-            { icon: '⚙️', label: 'Settings', path: '/settings' },
+            { icon: '🏠', label: 'Feed', path: '/feed', active: false },
+            { icon: '🔍', label: 'Explore', path: '/explore-page' },
+            { icon: <Calendar size={20} />, label: 'Events', path: '/events-page' },
+            { icon: <Stethoscope size={20} />, label: 'Appointment', path: '/appointment-page' },
+            { icon: '⚙️', label: 'Settings', path: '/settings-page' },
           ].map((item, index) => (
             <Link 
               to={item.path}
@@ -456,6 +456,18 @@ export default function EnhancedHome() {
               marginBottom: '4px',
               transition: 'all 0.2s ease',
               textDecoration: 'none',
+            }}
+            onMouseEnter={(e) => {
+              if (!item.active) {
+                e.currentTarget.style.backgroundColor = '#3A3D4A'
+                e.currentTarget.style.color = '#FFFFFF'
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!item.active) {
+                e.currentTarget.style.backgroundColor = 'transparent'
+                e.currentTarget.style.color = '#9CA3AF'
+              }
             }}>
               <span style={{ fontSize: '18px' }}>{item.icon}</span>
               <span style={{ fontSize: '14px', fontWeight: '500' }}>{item.label}</span>
@@ -775,6 +787,7 @@ export default function EnhancedHome() {
           backgroundColor: '#1E1E2D',
           borderLeft: '1px solid #374151',
           padding: '24px',
+          overflowY: 'auto',
         }}>
           {/* Requests */}
           <div style={{ marginBottom: '32px' }}>
@@ -996,7 +1009,7 @@ export default function EnhancedHome() {
                 fontWeight: '500',
                 cursor: 'pointer',
               }}
-              onClick={() => navigate('/events')}
+              onClick={() => navigate('/events-page')}
             >
               Explore more events
             </button>
