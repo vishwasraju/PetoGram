@@ -109,6 +109,8 @@ export default function NotificationPopup({ isOpen, onClose }: NotificationPopup
   return (
     <>
       {/* Backdrop */}
+      {/* The following div was removed to prevent the black overlay when the notification popup is active. */}
+      {/*
       <div
         style={{
           position: 'fixed',
@@ -118,20 +120,21 @@ export default function NotificationPopup({ isOpen, onClose }: NotificationPopup
         }}
         onClick={onClose}
       />
+      */}
       
       {/* Notification Popup */}
       <div
         style={{
           position: 'fixed',
-          top: '70px',
-          right: '20px',
-          width: '400px',
-          maxHeight: '600px',
+          bottom: '10px',
+          right: '10px',
+          width: '280px',
+          height: '350px',
           backgroundColor: '#111',
           borderRadius: '16px',
           border: '1px solid #333',
-          boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.3)',
-          zIndex: 1001,
+          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.4)',
+          zIndex: 1002,
           overflow: 'hidden',
           animation: 'slideIn 0.3s ease-out',
         }}
@@ -148,7 +151,7 @@ export default function NotificationPopup({ isOpen, onClose }: NotificationPopup
             <Bell size={24} color="#6366F1" />
             <h2 style={{
               margin: 0,
-              fontSize: '20px',
+              fontSize: '18px',
               fontWeight: '700',
               color: '#fff',
             }}>
@@ -173,32 +176,30 @@ export default function NotificationPopup({ isOpen, onClose }: NotificationPopup
           </div>
           
           <div style={{ display: 'flex', gap: '8px' }}>
-            {unreadCount > 0 && (
-              <button
-                onClick={markAllAsRead}
-                style={{
-                  padding: '6px 12px',
-                  backgroundColor: 'transparent',
-                  border: '1px solid #6366F1',
-                  borderRadius: '8px',
-                  color: '#6366F1',
-                  fontSize: '12px',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = '#6366F1'
-                  e.currentTarget.style.color = '#fff'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'transparent'
-                  e.currentTarget.style.color = '#6366F1'
-                }}
-              >
-                Mark all read
-              </button>
-            )}
+            <button
+              onClick={onClose}
+              style={{
+                padding: '6px 12px',
+                backgroundColor: 'transparent',
+                border: '1px solid #9CA3AF',
+                borderRadius: '8px',
+                color: '#9CA3AF',
+                fontSize: '12px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#333'
+                e.currentTarget.style.color = '#fff'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent'
+                e.currentTarget.style.color = '#9CA3AF'
+              }}
+            >
+              Cancel
+            </button>
             
             <button
               onClick={onClose}
@@ -238,7 +239,7 @@ export default function NotificationPopup({ isOpen, onClose }: NotificationPopup
               <Bell size={48} color="#333" style={{ marginBottom: '16px' }} />
               <h3 style={{
                 margin: '0 0 8px 0',
-                fontSize: '18px',
+                fontSize: '16px',
                 fontWeight: '600',
                 color: '#fff',
               }}>
@@ -246,7 +247,7 @@ export default function NotificationPopup({ isOpen, onClose }: NotificationPopup
               </h3>
               <p style={{
                 margin: 0,
-                fontSize: '14px',
+                fontSize: '12px',
                 color: '#9CA3AF',
               }}>
                 You're all caught up! Check back later for new updates.
@@ -308,7 +309,7 @@ export default function NotificationPopup({ isOpen, onClose }: NotificationPopup
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <h4 style={{
                       margin: '0 0 4px 0',
-                      fontSize: '14px',
+                      fontSize: '13px',
                       fontWeight: '600',
                       color: '#fff',
                       lineHeight: '1.4',
@@ -317,7 +318,7 @@ export default function NotificationPopup({ isOpen, onClose }: NotificationPopup
                     </h4>
                     <p style={{
                       margin: '0 0 6px 0',
-                      fontSize: '13px',
+                      fontSize: '12px',
                       color: '#9CA3AF',
                       lineHeight: '1.4',
                     }}>
@@ -389,7 +390,7 @@ export default function NotificationPopup({ isOpen, onClose }: NotificationPopup
               color: '#6366F1',
               backgroundColor: 'transparent',
               border: 'none',
-              fontSize: '14px',
+              fontSize: '12px',
               fontWeight: '600',
               cursor: 'pointer',
               transition: 'color 0.2s ease',

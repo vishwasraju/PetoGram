@@ -71,15 +71,6 @@ export default function ExplorePage() {
     { tag: '#AdoptDontShop', posts: '16.7K' }
   ]
 
-  const categories = [
-    { name: 'All', icon: '🌟', active: true },
-    { name: 'Dogs', icon: '🐕', active: false },
-    { name: 'Cats', icon: '🐱', active: false },
-    { name: 'Training', icon: '🎾', active: false },
-    { name: 'Health', icon: '🏥', active: false },
-    { name: 'Photography', icon: '📸', active: false }
-  ]
-
   return (
     <div style={{
       minHeight: '100vh',
@@ -194,51 +185,6 @@ export default function ExplorePage() {
         margin: '0 auto',
         padding: '24px',
       }}>
-        {/* Categories */}
-        <div style={{
-          display: 'flex',
-          gap: '12px',
-          marginBottom: '32px',
-          overflowX: 'auto',
-          paddingBottom: '8px',
-        }}>
-          {categories.map((category) => (
-            <button
-              key={category.name}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '10px 16px',
-                backgroundColor: category.active ? '#6366F1' : '#222',
-                border: 'none',
-                borderRadius: '20px',
-                color: category.active ? '#fff' : '#9CA3AF',
-                fontSize: '14px',
-                fontWeight: '600',
-                cursor: 'pointer',
-                whiteSpace: 'nowrap',
-                transition: 'all 0.2s ease',
-              }}
-              onMouseEnter={(e) => {
-                if (!category.active) {
-                  e.currentTarget.style.backgroundColor = '#333'
-                  e.currentTarget.style.color = '#fff'
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!category.active) {
-                  e.currentTarget.style.backgroundColor = '#222'
-                  e.currentTarget.style.color = '#9CA3AF'
-                }
-              }}
-            >
-              <span style={{ fontSize: '16px' }}>{category.icon}</span>
-              {category.name}
-            </button>
-          ))}
-        </div>
-
         {/* Trending Section */}
         <div style={{
           backgroundColor: '#111',
@@ -320,99 +266,96 @@ export default function ExplorePage() {
             ))}
           </div>
         </div>
-
-        {/* Explore Grid */}
+        
+        {/* Tab Navigation */}
         <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-          gap: '20px',
+          display: 'flex',
+          borderBottom: '1px solid #333',
+          marginBottom: '24px',
         }}>
-          {exploreContent.map((item) => (
-            <div
-              key={item.id}
-              style={{
-                backgroundColor: '#111',
-                borderRadius: '16px',
-                overflow: 'hidden',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-                border: '1px solid #333',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-4px)'
-                e.currentTarget.style.boxShadow = '0 8px 32px rgba(0, 0, 0, 0.3)'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)'
-                e.currentTarget.style.boxShadow = 'none'
-              }}
-            >
-              <div style={{ position: 'relative' }}>
-                <img 
-                  src={item.image}
-                  alt={item.title}
-                  style={{
-                    width: '100%',
-                    height: '200px',
-                    objectFit: 'cover',
-                  }}
-                />
-                <div style={{
-                  position: 'absolute',
-                  top: '12px',
-                  right: '12px',
-                  padding: '4px 8px',
-                  backgroundColor: 'rgba(0, 0, 0, 0.7)',
-                  borderRadius: '12px',
-                  fontSize: '12px',
-                  color: '#fff',
-                  fontWeight: '600',
-                }}>
-                  {item.category}
+          {/* Explore Grid */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+            gap: '20px',
+          }}>
+            {exploreContent.map((item) => (
+              <div
+                key={item.id}
+                style={{
+                  backgroundColor: '#111',
+                  borderRadius: '16px',
+                  overflow: 'hidden',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  border: '1px solid #333',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-4px)'
+                  e.currentTarget.style.boxShadow = '0 8px 32px rgba(0, 0, 0, 0.3)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)'
+                  e.currentTarget.style.boxShadow = 'none'
+                }}
+              >
+                <div style={{ position: 'relative' }}>
+                  <img 
+                    src={item.image}
+                    alt={item.title}
+                    style={{
+                      width: '100%',
+                      height: '200px',
+                      objectFit: 'cover',
+                    }}
+                  />
+                  <div style={{
+                    position: 'absolute',
+                    top: '12px',
+                    right: '12px',
+                    padding: '4px 8px',
+                    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                    borderRadius: '12px',
+                    fontSize: '12px',
+                    color: '#fff',
+                    fontWeight: '600',
+                  }}>
+                    {item.category}
+                  </div>
                 </div>
-              </div>
-              
-              <div style={{ padding: '16px' }}>
-                <h3 style={{
-                  margin: '0 0 8px 0',
-                  fontSize: '16px',
-                  fontWeight: '600',
-                  color: '#fff',
-                  lineHeight: '1.4',
-                }}>
-                  {item.title}
-                </h3>
                 
                 <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
+                  padding: '16px',
                 }}>
-                  <span style={{
+                  <h3 style={{
+                    margin: '0 0 8px 0',
+                    fontSize: '18px',
+                    fontWeight: '600',
+                    color: '#fff',
+                  }}>
+                    {item.title}
+                  </h3>
+                  <p style={{
+                    margin: '0 0 12px 0',
                     fontSize: '14px',
                     color: '#9CA3AF',
                   }}>
-                    by {item.author}
-                  </span>
-                  
+                    By {item.author}
+                  </p>
                   <div style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '4px',
+                    gap: '8px',
+                    fontSize: '14px',
+                    color: '#9CA3AF',
                   }}>
-                    <span style={{ color: '#EF4444' }}>❤️</span>
-                    <span style={{
-                      fontSize: '14px',
-                      color: '#9CA3AF',
-                      fontWeight: '600',
-                    }}>
-                      {item.likes}
-                    </span>
+                    <Star size={16} color="#F59E0B" fill="#F59E0B" />
+                    <span>{item.likes} Likes</span>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </div>

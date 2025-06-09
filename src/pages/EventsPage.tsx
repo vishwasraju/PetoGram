@@ -81,15 +81,6 @@ export default function EventsPage() {
     }
   ]
 
-  const eventCategories = [
-    { name: 'All', icon: '🌟', active: true },
-    { name: 'Adoption', icon: '🏠', active: false },
-    { name: 'Training', icon: '🎾', active: false },
-    { name: 'Social', icon: '👥', active: false },
-    { name: 'Health', icon: '🏥', active: false },
-    { name: 'Contest', icon: '🏆', active: false }
-  ]
-
   return (
     <div style={{
       minHeight: '100vh',
@@ -201,89 +192,10 @@ export default function EventsPage() {
         margin: '0 auto',
         padding: '24px',
       }}>
-        {/* Event Tabs */}
-        <div style={{
-          display: 'flex',
-          gap: '16px',
-          marginBottom: '32px',
-          borderBottom: '1px solid #333',
-        }}>
-          {['Upcoming', 'My Events', 'Past Events'].map((tab, index) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab.toLowerCase().replace(' ', ''))}
-              style={{
-                padding: '12px 0',
-                backgroundColor: 'transparent',
-                border: 'none',
-                color: index === 0 ? '#F59E0B' : '#9CA3AF',
-                fontSize: '16px',
-                fontWeight: '600',
-                cursor: 'pointer',
-                borderBottom: index === 0 ? '2px solid #F59E0B' : '2px solid transparent',
-                transition: 'all 0.2s ease',
-              }}
-              onMouseEnter={(e) => {
-                if (index !== 0) e.currentTarget.style.color = '#fff'
-              }}
-              onMouseLeave={(e) => {
-                if (index !== 0) e.currentTarget.style.color = '#9CA3AF'
-              }}
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
-
-        {/* Categories */}
-        <div style={{
-          display: 'flex',
-          gap: '12px',
-          marginBottom: '32px',
-          overflowX: 'auto',
-          paddingBottom: '8px',
-        }}>
-          {eventCategories.map((category) => (
-            <button
-              key={category.name}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '10px 16px',
-                backgroundColor: category.active ? '#F59E0B' : '#222',
-                border: 'none',
-                borderRadius: '20px',
-                color: category.active ? '#000' : '#9CA3AF',
-                fontSize: '14px',
-                fontWeight: '600',
-                cursor: 'pointer',
-                whiteSpace: 'nowrap',
-                transition: 'all 0.2s ease',
-              }}
-              onMouseEnter={(e) => {
-                if (!category.active) {
-                  e.currentTarget.style.backgroundColor = '#333'
-                  e.currentTarget.style.color = '#fff'
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!category.active) {
-                  e.currentTarget.style.backgroundColor = '#222'
-                  e.currentTarget.style.color = '#9CA3AF'
-                }
-              }}
-            >
-              <span style={{ fontSize: '16px' }}>{category.icon}</span>
-              {category.name}
-            </button>
-          ))}
-        </div>
-
-        {/* Events Grid */}
+        {/* Event List */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
           gap: '24px',
         }}>
           {upcomingEvents.map((event) => (

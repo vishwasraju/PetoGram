@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { 
   ArrowLeft, 
@@ -14,11 +14,23 @@ import {
   Image,
   Mic
 } from 'lucide-react'
+import EmojiPicker from 'emoji-picker-react'
 import { designTokens } from '../design-system/tokens'
 
 export default function MessagesPage() {
   const [selectedChat, setSelectedChat] = useState<string | null>('1')
   const [messageText, setMessageText] = useState('')
+  const [messages, setMessages] = useState([
+    { id: 1, text: 'Hi there!', senderName: 'Alice', isOwn: false, timestamp: '10:00 AM', type: 'text' },
+    { id: 2, text: 'Hello!', senderName: 'You', isOwn: true, timestamp: '10:01 AM', type: 'text' },
+  ])
+  const messagesEndRef = useRef(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false)
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+  }, [messages])
 
   const conversations = [
     {
@@ -60,55 +72,66 @@ export default function MessagesPage() {
     }
   ]
 
-  const messages = [
-    {
-      id: '1',
-      senderId: '2',
-      senderName: 'Sarah Johnson',
-      text: 'Hey! How is Max doing with his training?',
-      timestamp: '10:30 AM',
-      isOwn: false
-    },
-    {
-      id: '2',
-      senderId: '1',
-      senderName: 'You',
-      text: 'He\'s doing great! He learned to sit and stay this week.',
-      timestamp: '10:32 AM',
-      isOwn: true
-    },
-    {
-      id: '3',
-      senderId: '2',
-      senderName: 'Sarah Johnson',
-      text: 'That\'s amazing! I remember when Luna was learning those commands. It takes patience.',
-      timestamp: '10:33 AM',
-      isOwn: false
-    },
-    {
-      id: '4',
-      senderId: '1',
-      senderName: 'You',
-      text: 'Definitely! The trainer said he\'s a quick learner though.',
-      timestamp: '10:35 AM',
-      isOwn: true
-    },
-    {
-      id: '5',
-      senderId: '2',
-      senderName: 'Sarah Johnson',
-      text: 'Would love to see a video of him doing the commands!',
-      timestamp: '10:36 AM',
-      isOwn: false
-    }
-  ]
-
   const handleSendMessage = () => {
     if (messageText.trim()) {
-      // Handle sending message
-      console.log('Sending message:', messageText)
+      const newMessage = {
+        id: Date.now(),
+        text: messageText,
+        senderName: 'You',
+        isOwn: true,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        type: 'text',
+      }
+      setMessages(prevMessages => [...prevMessages, newMessage])
       setMessageText('')
     }
+  }
+
+  const handleAttachFile = () => {
+    fileInputRef.current?.click()
+  }
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      const maxSize = 2 * 1024 * 1024; // 2MB in bytes
+
+      if (!file.type.startsWith('image/') && !file.type.startsWith('video/')) {
+        alert('Only image and video files are allowed.');
+        e.target.value = '';
+        return;
+      }
+
+      if (file.size > maxSize) {
+        alert('File size exceeds 2MB limit.');
+        e.target.value = '';
+        return;
+      }
+
+      const fileUrl = URL.createObjectURL(file);
+      const fileType = file.type.startsWith('image/') ? 'image' : 'video';
+
+      const newMessage = {
+        id: Date.now(),
+        text: '',
+        senderName: 'You',
+        isOwn: true,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        type: fileType,
+        url: fileUrl,
+      };
+      setMessages(prevMessages => [...prevMessages, newMessage]);
+      e.target.value = ''; // Clear the input after successful attachment
+    }
+  }
+
+  const handleOpenEmojiPicker = () => {
+    setShowEmojiPicker(prev => !prev)
+  }
+
+  const onEmojiClick = (emojiObject: { emoji: string }) => {
+    setMessageText(prevText => prevText + emojiObject.emoji)
+    setShowEmojiPicker(false)
   }
 
   const selectedConversation = conversations.find(conv => conv.id === selectedChat)
@@ -524,11 +547,30 @@ export default function MessagesPage() {
                       }}>
                         {message.text}
                       </p>
+                      {message.type === 'image' && (
+                        <img src={message.url} alt="attached image" style={{
+                          maxWidth: '100%',
+                          borderRadius: '8px',
+                          marginTop: '8px',
+                        }} />
+                      )}
+                      {message.type === 'video' && (
+                        <video src={message.url} controls style={{
+                          maxWidth: '100%',
+                          borderRadius: '8px',
+                          marginTop: '8px',
+                        }} />
+                      )}
+                      <span style={{ fontSize: '12px', color: '#9CA3AF', marginTop: '4px', display: 'block', textAlign: message.isOwn ? 'right' : 'left' }}>
+                        {message.timestamp}
+                      </span>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
+
+            <div ref={messagesEndRef} /> {/* Scroll target */}
 
             {/* Message Input */}
             <div style={{
@@ -560,9 +602,19 @@ export default function MessagesPage() {
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = 'transparent'
                   e.currentTarget.style.color = '#9CA3AF'
-                }}>
+                }}
+                onClick={handleAttachFile}
+                >
                   <Paperclip size={18} />
                 </button>
+                
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  style={{ display: 'none' }}
+                  onChange={handleFileChange}
+                  accept="image/*,video/*"
+                />
                 
                 <input
                   type="text"
@@ -601,9 +653,22 @@ export default function MessagesPage() {
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = 'transparent'
                   e.currentTarget.style.color = '#9CA3AF'
-                }}>
+                }}
+                onClick={handleOpenEmojiPicker}
+                >
                   <Smile size={18} />
                 </button>
+                
+                {showEmojiPicker && (
+                  <div style={{
+                    position: 'absolute',
+                    bottom: '70px',
+                    right: '20px',
+                    zIndex: 1000,
+                  }}>
+                    <EmojiPicker onEmojiClick={onEmojiClick} theme="dark" />
+                  </div>
+                )}
                 
                 {messageText.trim() ? (
                   <button

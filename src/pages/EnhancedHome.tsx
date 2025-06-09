@@ -328,369 +328,556 @@ export default function EnhancedHome() {
   }
 
   return (
-    <div style={{
-      display: 'flex',
-      minHeight: '100vh',
-      backgroundColor: '#2A2D3A',
-      color: '#FFFFFF',
-      fontFamily: designTokens.typography.fontFamily.sans.join(', '),
-    }}>
-      {/* Mobile Overlay */}
-      {/* {isMobile && isSidebarOpen && (
-        <div
-          className="mobile-overlay active"
-          onClick={() => setIsSidebarOpen(false)}
-        ></div>
-      )} */}
-
-      {/* Left Sidebar */}
+    <>
       <div style={{
-        width: isMobile ? '280px' : '280px',
-        height: '100vh',
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        zIndex: designTokens.zIndex.modal,
-        transform: isMobile && !sidebarOpen ? 'translateX(-100%)' : 'translateX(0)',
-        transition: `transform ${designTokens.animation.duration.normal} ${designTokens.animation.easing.ease}`,
-        backgroundColor: '#2A2D3A',
-        borderRight: '1px solid #3A3D4A',
-        padding: '24px',
-        overflowY: 'auto',
-      }}>
-        {/* Profile Section */}
-        <div style={{ marginBottom: '32px', textAlign: 'center' }}>
-          <div style={{ position: 'relative', display: 'inline-block', marginBottom: '16px' }}>
-            <img 
-              src="https://images.pexels.com/photos/1036622/pexels-photo-1036622.jpeg?auto=compress&cs=tinysrgb&w=120&h=120&dpr=2"
-              alt="Cyndy Lillibridge"
-              style={{
-                width: '80px',
-                height: '80px',
-                borderRadius: '50%',
-                objectFit: 'cover',
-                border: '3px solid #4F46E5',
-              }}
-            />
-            <div style={{
-              position: 'absolute',
-              bottom: '2px',
-              right: '2px',
-              width: '20px',
-              height: '20px',
-              backgroundColor: '#10B981',
-              borderRadius: '50%',
-              border: '3px solid #2A2D3A',
-            }} />
-          </div>
-          <h3 style={{
-            margin: '0 0 4px 0',
-            fontSize: '18px',
-            fontWeight: '600',
-            color: '#FFFFFF',
-          }}>
-            Cyndy Lillibridge
-          </h3>
-          <p style={{
-            margin: '0 0 16px 0',
-            fontSize: '14px',
-            color: '#9CA3AF',
-          }}>
-            Torrance, CA, United States
-          </p>
-          
-          {/* Stats */}
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-around',
-            padding: '16px 0',
-            borderTop: '1px dotted #4B5563',
-            borderBottom: '1px dotted #4B5563',
-          }}>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '18px', fontWeight: '700', color: '#FFFFFF' }}>368</div>
-              <div style={{ fontSize: '12px', color: '#9CA3AF' }}>Posts</div>
-            </div>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '18px', fontWeight: '700', color: '#FFFFFF' }}>184.3K</div>
-              <div style={{ fontSize: '12px', color: '#9CA3AF' }}>Followers</div>
-            </div>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '18px', fontWeight: '700', color: '#FFFFFF' }}>1.04M</div>
-              <div style={{ fontSize: '12px', color: '#9CA3AF' }}>Following</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Notifications and Messages */}
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '40px', marginBottom: '28px' }}>
-          <button 
-            onClick={() => setShowNotifications(!showNotifications)}
-            style={{ 
-              background: 'none', 
-              border: 'none', 
-              cursor: 'pointer', 
-              color: '#9CA3AF', 
-              padding: 0,
-              position: 'relative',
-              transition: 'color 0.2s ease',
-            }} 
-            title="Notifications"
-            onMouseEnter={(e) => e.currentTarget.style.color = '#fff'}
-            onMouseLeave={(e) => e.currentTarget.style.color = '#9CA3AF'}
-          >
-            <Bell size={22} />
-            {/* Notification badge */}
-            <div style={{
-              position: 'absolute',
-              top: '-4px',
-              right: '-4px',
-              width: '16px',
-              height: '16px',
-              backgroundColor: '#EF4444',
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '10px',
-              color: '#fff',
-              fontWeight: '600',
-            }}>
-              3
-            </div>
-          </button>
-          <Link to="/messages-page">
-            <button style={{ 
-              background: 'none', 
-              border: 'none', 
-              cursor: 'pointer', 
-              color: '#9CA3AF', 
-              padding: 0,
-              transition: 'color 0.2s ease',
-            }} 
-            title="Messages"
-            onMouseEnter={(e) => e.currentTarget.style.color = '#fff'}
-            onMouseLeave={(e) => e.currentTarget.style.color = '#9CA3AF'}>
-              <MessageCircle size={22} />
-            </button>
-          </Link>
-        </div>
-
-        {/* Navigation */}
-        <nav style={{ marginBottom: '4px' }}>
-          {[ 
-            { icon: '🏠', label: 'Feed', path: '/feed', active: false },
-            { icon: '🔍', label: 'Explore', path: '/explore-page' },
-            { icon: <Calendar size={20} />, label: 'Events', path: '/events-page' },
-            { icon: <Stethoscope size={20} />, label: 'Appointment', path: '/appointment-page' },
-            { icon: '⚙️', label: 'Settings', path: '/settings-page' },
-          ].map((item, index) => (
-            <Link 
-              to={item.path}
-              key={index} 
-              style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-              padding: '12px 16px',
-              borderRadius: '12px',
-              backgroundColor: item.active ? '#4F46E5' : 'transparent',
-              color: item.active ? '#FFFFFF' : '#9CA3AF',
-              cursor: 'pointer',
-              marginBottom: '4px',
-              transition: 'all 0.2s ease',
-              textDecoration: 'none',
-            }}
-            onMouseEnter={(e) => {
-              if (!item.active) {
-                e.currentTarget.style.backgroundColor = '#3A3D4A'
-                e.currentTarget.style.color = '#FFFFFF'
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!item.active) {
-                e.currentTarget.style.backgroundColor = 'transparent'
-                e.currentTarget.style.color = '#9CA3AF'
-              }
-            }}>
-              <span style={{ fontSize: '18px' }}>{item.icon}</span>
-              <span style={{ fontSize: '14px', fontWeight: '500' }}>{item.label}</span>
-            </Link>
-          ))}
-        </nav>
-
-        {/* Log Out Button */}
-        <button
-          onClick={handleLogout}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px',
-            width: '100%',
-            padding: '12px 16px',
-            borderRadius: '12px',
-            color: '#EF4444',
-            fontWeight: '600',
-            fontSize: '16px',
-            border: 'none',
-            cursor: 'pointer',
-            backgroundColor: '#18181b',
-            transition: 'background 0.2s',
-          }}
-          onMouseEnter={e => e.currentTarget.style.backgroundColor = '#27272a'}
-          onMouseLeave={e => e.currentTarget.style.backgroundColor = '#18181b'}
-        >
-          🚪 Log Out
-        </button>
-        <div style={{
-          marginTop: '12px',
-          fontSize: '12px',
-          color: '#6B7280',
-          lineHeight: '1.5',
-        }}>
-          <div style={{ marginBottom: '8px' }}>
-            <a href="#" style={{ color: '#6B7280', textDecoration: 'none', marginRight: '12px' }}>About</a>
-            <a href="#" style={{ color: '#6B7280', textDecoration: 'none' }}>Help Center</a>
-          </div>
-          <div>
-            <a href="#" style={{ color: '#6B7280', textDecoration: 'none' }}>Privacy and Terms</a>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div style={{
-        flex: 1,
-        marginLeft: isMobile ? 0 : '280px',
-        marginRight: isMobile ? 0 : '320px',
-        minHeight: '100vh',
         display: 'flex',
-        flexDirection: 'column',
+        minHeight: '100vh',
+        backgroundColor: '#2A2D3A',
+        color: '#FFFFFF',
+        fontFamily: designTokens.typography.fontFamily.sans.join(', '),
       }}>
-        {/* Header */}
-        <header style={{
-          padding: '16px 24px',
-          borderBottom: '1px solid #3A3D4A',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          backgroundColor: '#2A2D3A',
-          position: 'sticky',
+        {/* Mobile Overlay */}
+        {/* {isMobile && isSidebarOpen && (
+          <div
+            className="mobile-overlay active"
+            onClick={() => setIsSidebarOpen(false)}
+          ></div>
+        )} */}
+
+        {/* Left Sidebar */}
+        <div style={{
+          width: isMobile ? '280px' : '280px',
+          height: '100vh',
+          position: 'fixed',
           top: 0,
-          zIndex: 100,
+          left: 0,
+          zIndex: designTokens.zIndex.modal,
+          transform: isMobile && !sidebarOpen ? 'translateX(-100%)' : 'translateX(0)',
+          transition: `transform ${designTokens.animation.duration.normal} ${designTokens.animation.easing.ease}`,
+          backgroundColor: '#2A2D3A',
+          borderRight: '1px solid #3A3D4A',
+          padding: '24px',
+          overflowY: 'auto',
         }}>
-          {/* Left: Search Bar */}
-          <div style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
-            <div style={{
-              position: 'relative',
-              flex: 1,
-              maxWidth: '250px',
+          {/* Profile Section */}
+          <div style={{ marginBottom: '32px', textAlign: 'center' }}>
+            <div style={{ position: 'relative', display: 'inline-block', marginBottom: '16px' }}>
+              <img 
+                src="https://images.pexels.com/photos/1036622/pexels-photo-1036622.jpeg?auto=compress&cs=tinysrgb&w=120&h=120&dpr=2"
+                alt="Cyndy Lillibridge"
+                style={{
+                  width: '80px',
+                  height: '80px',
+                  borderRadius: '50%',
+                  objectFit: 'cover',
+                  border: '3px solid #4F46E5',
+                }}
+              />
+              <div style={{
+                position: 'absolute',
+                bottom: '2px',
+                right: '2px',
+                width: '20px',
+                height: '20px',
+                backgroundColor: '#10B981',
+                borderRadius: '50%',
+                border: '3px solid #2A2D3A',
+              }} />
+            </div>
+            <h3 style={{
+              margin: '0 0 4px 0',
+              fontSize: '18px',
+              fontWeight: '600',
+              color: '#FFFFFF',
             }}>
-              <Search 
-                size={18} 
-                style={{
-                  position: 'absolute',
-                  left: '12px',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  color: '#9CA3AF',
-                }}
-              />
-              <input
-                type="text"
-                placeholder="Search..."
-                style={{
-                  width: '100%',
-                  padding: '8px 12px 8px 38px',
-                  backgroundColor: '#18181b',
-                  border: '1px solid #4B5563',
-                  borderRadius: '24px',
-                  color: '#FFFFFF',
-                  fontSize: '13px',
-                  outline: 'none',
-                }}
-              />
-              <Mic 
-                size={16} 
-                style={{
-                  position: 'absolute',
-                  right: '12px',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  color: '#9CA3AF',
-                  cursor: 'pointer',
-                }}
-              />
+              Cyndy Lillibridge
+            </h3>
+            <p style={{
+              margin: '0 0 16px 0',
+              fontSize: '14px',
+              color: '#9CA3AF',
+            }}>
+              Torrance, CA, United States
+            </p>
+            
+            {/* Stats */}
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-around',
+              padding: '16px 0',
+              borderTop: '1px dotted #4B5563',
+              borderBottom: '1px dotted #4B5563',
+            }}>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: '18px', fontWeight: '700', color: '#FFFFFF' }}>368</div>
+                <div style={{ fontSize: '12px', color: '#9CA3AF' }}>Posts</div>
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: '18px', fontWeight: '700', color: '#FFFFFF' }}>184.3K</div>
+                <div style={{ fontSize: '12px', color: '#9CA3AF' }}>Followers</div>
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: '18px', fontWeight: '700', color: '#FFFFFF' }}>1.04M</div>
+                <div style={{ fontSize: '12px', color: '#9CA3AF' }}>Following</div>
+              </div>
             </div>
           </div>
-          {/* Center: Logo */}
-          <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
-            <span style={{
-              fontFamily: 'Comic Sans MS, Comic Sans, cursive',
-              fontSize: '2.2rem',
-              fontWeight: 400,
-              color: '#fff',
-              letterSpacing: '1px',
-              userSelect: 'none',
-            }}>
-              PetoGram
-            </span>
-          </div>
-          {/* Right: Create Post Button */}
-          <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
+
+          {/* Notifications and Messages */}
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '40px', marginBottom: '28px' }}>
             <button 
-              onClick={() => navigate('/create-post')}
-              style={{
+              onClick={() => setShowNotifications(!showNotifications)}
+              style={{ 
+                background: 'none', 
+                border: 'none', 
+                cursor: 'pointer', 
+                color: '#9CA3AF', 
+                padding: 0,
+                position: 'relative',
+                transition: 'color 0.2s ease',
+              }} 
+              title="Notifications"
+              onMouseEnter={(e) => e.currentTarget.style.color = '#fff'}
+              onMouseLeave={(e) => e.currentTarget.style.color = '#9CA3AF'}
+            >
+              <Bell size={22} />
+              {/* Notification badge */}
+              <div style={{
+                position: 'absolute',
+                top: '-4px',
+                right: '-4px',
+                width: '16px',
+                height: '16px',
+                backgroundColor: '#EF4444',
+                borderRadius: '50%',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '8px',
-                padding: '10px 24px',
-                backgroundColor: '#6366F1',
-                border: 'none',
-                borderRadius: '24px',
-                color: '#FFFFFF',
-                fontSize: '16px',
+                justifyContent: 'center',
+                fontSize: '10px',
+                color: '#fff',
                 fontWeight: '600',
-                cursor: 'pointer',
-                boxShadow: '0 2px 8px rgba(99,102,241,0.12)',
-                transition: 'background 0.2s',
-              }}
-              onMouseEnter={e => e.currentTarget.style.backgroundColor = '#4F46E5'}
-              onMouseLeave={e => e.currentTarget.style.backgroundColor = '#6366F1'}
-            >
-              <Plus size={20} />
-              Create new post
-            </button>
-          </div>
-        </header>
-
-        {/* Content */}
-        <div style={{
-          padding: '24px',
-          maxWidth: '600px',
-          margin: '0 auto',
-          width: '100%',
-        }}>
-          {/* Feeds Section */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-            {posts.map((post) => (
-              <div key={post.id} style={{
-                backgroundColor: '#374151',
-                borderRadius: '16px',
-                padding: '20px',
-                border: '1px solid #4B5563',
               }}>
-                {/* Post Header */}
-                <div style={{
+                3
+              </div>
+            </button>
+            <Link to="/messages-page">
+              <button style={{ 
+                background: 'none', 
+                border: 'none', 
+                cursor: 'pointer', 
+                color: '#9CA3AF', 
+                padding: 0,
+                transition: 'color 0.2s ease',
+              }} 
+              title="Messages"
+              onMouseEnter={(e) => e.currentTarget.style.color = '#fff'}
+              onMouseLeave={(e) => e.currentTarget.style.color = '#9CA3AF'}>
+                <MessageCircle size={22} />
+              </button>
+            </Link>
+          </div>
+
+          {/* Navigation */}
+          <nav style={{ marginBottom: '4px' }}>
+            {[ 
+              { icon: '🏠', label: 'Feed', path: '/feed', active: false },
+              { icon: '🔍', label: 'Explore', path: '/explore-page' },
+              { icon: <Calendar size={20} />, label: 'Events', path: '/events-page' },
+              { icon: <Stethoscope size={20} />, label: 'Appointment', path: '/appointment-page' },
+              { icon: '⚙️', label: 'Settings', path: '/settings-page' },
+            ].map((item, index) => (
+              <Link 
+                to={item.path}
+                key={index} 
+                style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                padding: '12px 16px',
+                borderRadius: '12px',
+                backgroundColor: item.active ? '#4F46E5' : 'transparent',
+                color: item.active ? '#FFFFFF' : '#9CA3AF',
+                cursor: 'pointer',
+                marginBottom: '4px',
+                transition: 'all 0.2s ease',
+                textDecoration: 'none',
+              }}
+              onMouseEnter={(e) => {
+                if (!item.active) {
+                  e.currentTarget.style.backgroundColor = '#3A3D4A'
+                  e.currentTarget.style.color = '#FFFFFF'
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!item.active) {
+                  e.currentTarget.style.backgroundColor = 'transparent'
+                  e.currentTarget.style.color = '#9CA3AF'
+                }
+              }}>
+                <span style={{ fontSize: '18px' }}>{item.icon}</span>
+                <span style={{ fontSize: '14px', fontWeight: '500' }}>{item.label}</span>
+              </Link>
+            ))}
+          </nav>
+
+          {/* Log Out Button */}
+          <button
+            onClick={handleLogout}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              width: '100%',
+              padding: '12px 16px',
+              borderRadius: '12px',
+              color: '#EF4444',
+              fontWeight: '600',
+              fontSize: '16px',
+              border: 'none',
+              cursor: 'pointer',
+              backgroundColor: '#18181b',
+              transition: 'background 0.2s',
+            }}
+            onMouseEnter={e => e.currentTarget.style.backgroundColor = '#27272a'}
+            onMouseLeave={e => e.currentTarget.style.backgroundColor = '#18181b'}
+          >
+            🚪 Log Out
+          </button>
+          <div style={{
+            marginTop: '12px',
+            fontSize: '12px',
+            color: '#6B7280',
+            lineHeight: '1.5',
+          }}>
+            <div style={{ marginBottom: '8px' }}>
+              <a href="#" style={{ color: '#6B7280', textDecoration: 'none', marginRight: '12px' }}>About</a>
+              <a href="#" style={{ color: '#6B7280', textDecoration: 'none' }}>Help Center</a>
+            </div>
+            <div>
+              <a href="#" style={{ color: '#6B7280', textDecoration: 'none' }}>Privacy and Terms</a>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Content */}
+        <div style={{
+          flex: 1,
+          marginLeft: isMobile ? 0 : '280px',
+          marginRight: isMobile ? 0 : '320px',
+          minHeight: '100vh',
+          display: 'flex',
+          flexDirection: 'column',
+        }}>
+          {/* Header */}
+          <header style={{
+            padding: '16px 24px',
+            borderBottom: '1px solid #3A3D4A',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            backgroundColor: '#2A2D3A',
+            position: 'sticky',
+            top: 0,
+            zIndex: 100,
+          }}>
+            {/* Left: Search Bar */}
+            <div style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
+              <div style={{
+                position: 'relative',
+                flex: 1,
+                maxWidth: '250px',
+              }}>
+                <Search 
+                  size={18} 
+                  style={{
+                    position: 'absolute',
+                    left: '12px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    color: '#9CA3AF',
+                  }}
+                />
+                <input
+                  type="text"
+                  placeholder="Search..."
+                  style={{
+                    width: '100%',
+                    padding: '8px 12px 8px 38px',
+                    backgroundColor: '#18181b',
+                    border: '1px solid #4B5563',
+                    borderRadius: '24px',
+                    color: '#FFFFFF',
+                    fontSize: '13px',
+                    outline: 'none',
+                  }}
+                />
+                <Mic 
+                  size={16} 
+                  style={{
+                    position: 'absolute',
+                    right: '12px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    color: '#9CA3AF',
+                    cursor: 'pointer',
+                  }}
+                />
+              </div>
+            </div>
+            {/* Center: Logo */}
+            <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
+              <span style={{
+                fontFamily: 'Comic Sans MS, Comic Sans, cursive',
+                fontSize: '2.2rem',
+                fontWeight: 400,
+                color: '#fff',
+                letterSpacing: '1px',
+                userSelect: 'none',
+              }}>
+                PetoGram
+              </span>
+            </div>
+            {/* Right: Create Post Button */}
+            <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
+              <button 
+                onClick={() => navigate('/create-post')}
+                style={{
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'space-between',
-                  marginBottom: '16px',
+                  gap: '8px',
+                  padding: '10px 24px',
+                  backgroundColor: '#6366F1',
+                  border: 'none',
+                  borderRadius: '24px',
+                  color: '#FFFFFF',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  boxShadow: '0 2px 8px rgba(99,102,241,0.12)',
+                  transition: 'background 0.2s',
+                }}
+                onMouseEnter={e => e.currentTarget.style.backgroundColor = '#4F46E5'}
+                onMouseLeave={e => e.currentTarget.style.backgroundColor = '#6366F1'}
+              >
+                <Plus size={20} />
+                Create new post
+              </button>
+            </div>
+          </header>
+
+          {/* Content */}
+          <div style={{
+            padding: '24px',
+            maxWidth: '600px',
+            margin: '0 auto',
+            width: '100%',
+          }}>
+            {/* Feeds Section */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              {posts.map((post) => (
+                <div key={post.id} style={{
+                  backgroundColor: '#374151',
+                  borderRadius: '16px',
+                  padding: '20px',
+                  border: '1px solid #4B5563',
                 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  {/* Post Header */}
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    marginBottom: '16px',
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <img 
+                        src={post.user.avatar}
+                        alt={post.user.name}
+                        style={{
+                          width: '40px',
+                          height: '40px',
+                          borderRadius: '50%',
+                          objectFit: 'cover',
+                        }}
+                      />
+                      <div>
+                        <div style={{
+                          fontSize: '14px',
+                          fontWeight: '600',
+                          color: '#FFFFFF',
+                        }}>
+                          {post.user.name}
+                        </div>
+                        <div style={{
+                          fontSize: '12px',
+                          color: '#9CA3AF',
+                        }}>
+                          {post.user.pets}
+                        </div>
+                      </div>
+                    </div>
+                    <button style={{
+                      padding: '8px',
+                      backgroundColor: 'transparent',
+                      border: 'none',
+                      color: '#9CA3AF',
+                      cursor: 'pointer',
+                    }}>
+                      <MoreHorizontal size={20} />
+                    </button>
+                  </div>
+
+                  {/* Post Image */}
+                  <div style={{
+                    borderRadius: '12px',
+                    overflow: 'hidden',
+                    marginBottom: '16px',
+                  }}>
                     <img 
-                      src={post.user.avatar}
-                      alt={post.user.name}
+                      src={post.content.url}
+                      alt="Post content"
+                      style={{
+                        width: '100%',
+                        height: '300px',
+                        objectFit: 'cover',
+                      }}
+                    />
+                  </div>
+
+                  {/* Post Content */}
+                  <div style={{ marginBottom: '16px' }}>
+                    <p style={{
+                      margin: '0 0 8px 0',
+                      fontSize: '14px',
+                      color: '#E5E7EB',
+                      lineHeight: '1.5',
+                    }}>
+                      {post.content.caption}
+                    </p>
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                      {post.content.hashtags.map((tag, index) => (
+                        <span key={index} style={{
+                          fontSize: '14px',
+                          color: '#6366F1',
+                          cursor: 'pointer',
+                        }}>
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Post Actions */}
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    paddingTop: '16px',
+                    borderTop: '1px solid #4B5563',
+                  }}>
+                    <div style={{ display: 'flex', gap: '24px' }}>
+                      <button
+                        onClick={() => handleLike(post.id)}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          backgroundColor: 'transparent',
+                          border: 'none',
+                          color: post.engagement.liked ? '#EF4444' : '#9CA3AF',
+                          cursor: 'pointer',
+                          fontSize: '14px',
+                        }}
+                      >
+                        <Heart size={18} fill={post.engagement.liked ? 'currentColor' : 'none'} />
+                        {post.engagement.likes.toLocaleString()}
+                      </button>
+                      <button style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        backgroundColor: 'transparent',
+                        border: 'none',
+                        color: '#9CA3AF',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                      }}>
+                        <MessageCircle size={18} />
+                        {post.engagement.comments.toLocaleString()}
+                      </button>
+                    </div>
+                    <button
+                      onClick={() => handleSave(post.id)}
+                      style={{
+                        backgroundColor: 'transparent',
+                        border: 'none',
+                        color: post.engagement.saved ? '#6366F1' : '#9CA3AF',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <Bookmark size={18} fill={post.engagement.saved ? 'currentColor' : 'none'} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Right Sidebar */}
+        {!isMobile && (
+          <div style={{
+            width: '320px',
+            height: '100vh',
+            position: 'fixed',
+            top: 0,
+            right: 0,
+            backgroundColor: '#1E1E2D',
+            borderLeft: '1px solid #374151',
+            padding: '24px',
+            overflowY: 'auto',
+          }}>
+            {/* Requests */}
+            <div style={{ marginBottom: '32px' }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginBottom: '16px',
+              }}>
+                <h3 style={{
+                  margin: 0,
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  color: '#FFFFFF',
+                }}>
+                  Requests
+                </h3>
+                <div style={{
+                  backgroundColor: '#6366F1',
+                  color: '#FFFFFF',
+                  borderRadius: '50%',
+                  width: '20px',
+                  height: '20px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '12px',
+                  fontWeight: '600',
+                }}>
+                  2
+                </div>
+              </div>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {requests.map((request) => (
+                  <div key={request.id} style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                  }}>
+                    <img 
+                      src={request.avatar}
+                      alt={request.name}
                       style={{
                         width: '40px',
                         height: '40px',
@@ -698,417 +885,232 @@ export default function EnhancedHome() {
                         objectFit: 'cover',
                       }}
                     />
-                    <div>
-                      <div style={{
-                        fontSize: '14px',
-                        fontWeight: '600',
-                        color: '#FFFFFF',
-                      }}>
-                        {post.user.name}
-                      </div>
-                      <div style={{
-                        fontSize: '12px',
-                        color: '#9CA3AF',
-                      }}>
-                        {post.user.pets}
-                      </div>
-                    </div>
-                  </div>
-                  <button style={{
-                    padding: '8px',
-                    backgroundColor: 'transparent',
-                    border: 'none',
-                    color: '#9CA3AF',
-                    cursor: 'pointer',
-                  }}>
-                    <MoreHorizontal size={20} />
-                  </button>
-                </div>
-
-                {/* Post Image */}
-                <div style={{
-                  borderRadius: '12px',
-                  overflow: 'hidden',
-                  marginBottom: '16px',
-                }}>
-                  <img 
-                    src={post.content.url}
-                    alt="Post content"
-                    style={{
-                      width: '100%',
-                      height: '300px',
-                      objectFit: 'cover',
-                    }}
-                  />
-                </div>
-
-                {/* Post Content */}
-                <div style={{ marginBottom: '16px' }}>
-                  <p style={{
-                    margin: '0 0 8px 0',
-                    fontSize: '14px',
-                    color: '#E5E7EB',
-                    lineHeight: '1.5',
-                  }}>
-                    {post.content.caption}
-                  </p>
-                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                    {post.content.hashtags.map((tag, index) => (
-                      <span key={index} style={{
-                        fontSize: '14px',
-                        color: '#6366F1',
-                        cursor: 'pointer',
-                      }}>
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Post Actions */}
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  paddingTop: '16px',
-                  borderTop: '1px solid #4B5563',
-                }}>
-                  <div style={{ display: 'flex', gap: '24px' }}>
-                    <button
-                      onClick={() => handleLike(post.id)}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        backgroundColor: 'transparent',
-                        border: 'none',
-                        color: post.engagement.liked ? '#EF4444' : '#9CA3AF',
-                        cursor: 'pointer',
-                        fontSize: '14px',
-                      }}
-                    >
-                      <Heart size={18} fill={post.engagement.liked ? 'currentColor' : 'none'} />
-                      {post.engagement.likes.toLocaleString()}
-                    </button>
-                    <button style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      backgroundColor: 'transparent',
-                      border: 'none',
-                      color: '#9CA3AF',
-                      cursor: 'pointer',
-                      fontSize: '14px',
-                    }}>
-                      <MessageCircle size={18} />
-                      {post.engagement.comments.toLocaleString()}
-                    </button>
-                  </div>
-                  <button
-                    onClick={() => handleSave(post.id)}
-                    style={{
-                      backgroundColor: 'transparent',
-                      border: 'none',
-                      color: post.engagement.saved ? '#6366F1' : '#9CA3AF',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    <Bookmark size={18} fill={post.engagement.saved ? 'currentColor' : 'none'} />
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Right Sidebar */}
-      {!isMobile && (
-        <div style={{
-          width: '320px',
-          height: '100vh',
-          position: 'fixed',
-          top: 0,
-          right: 0,
-          backgroundColor: '#1E1E2D',
-          borderLeft: '1px solid #374151',
-          padding: '24px',
-          overflowY: 'auto',
-        }}>
-          {/* Requests */}
-          <div style={{ marginBottom: '32px' }}>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              marginBottom: '16px',
-            }}>
-              <h3 style={{
-                margin: 0,
-                fontSize: '16px',
-                fontWeight: '600',
-                color: '#FFFFFF',
-              }}>
-                Requests
-              </h3>
-              <div style={{
-                backgroundColor: '#6366F1',
-                color: '#FFFFFF',
-                borderRadius: '50%',
-                width: '20px',
-                height: '20px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '12px',
-                fontWeight: '600',
-              }}>
-                2
-              </div>
-            </div>
-            
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              {requests.map((request) => (
-                <div key={request.id} style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                }}>
-                  <img 
-                    src={request.avatar}
-                    alt={request.name}
-                    style={{
-                      width: '40px',
-                      height: '40px',
-                      borderRadius: '50%',
-                      objectFit: 'cover',
-                    }}
-                  />
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{
-                      fontSize: '14px',
-                      fontWeight: '500',
-                      color: '#FFFFFF',
-                      marginBottom: '2px',
-                    }}>
-                      {request.name}
-                    </div>
-                    <div style={{
-                      fontSize: '12px',
-                      color: '#9CA3AF',
-                    }}>
-                      {request.action}
-                    </div>
-                    <div style={{
-                      display: 'flex',
-                      gap: '8px',
-                      marginTop: '8px',
-                    }}>
-                      <button style={{
-                        padding: '4px 12px',
-                        backgroundColor: '#6366F1',
-                        border: 'none',
-                        borderRadius: '16px',
-                        color: '#FFFFFF',
-                        fontSize: '12px',
-                        fontWeight: '500',
-                        cursor: 'pointer',
-                      }}>
-                        Accept
-                      </button>
-                      <button style={{
-                        padding: '4px 12px',
-                        backgroundColor: '#374151',
-                        border: 'none',
-                        borderRadius: '16px',
-                        color: '#9CA3AF',
-                        fontSize: '12px',
-                        fontWeight: '500',
-                        cursor: 'pointer',
-                      }}>
-                        Decline
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Upcoming Events */}
-          <div style={{ marginBottom: '32px' }}>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              marginBottom: '16px',
-            }}>
-              <Calendar size={20} color="#6366F1" />
-              <h3 style={{
-                margin: 0,
-                fontSize: '16px',
-                fontWeight: '600',
-                color: '#FFFFFF',
-              }}>
-                Upcoming Events
-              </h3>
-            </div>
-            
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {upcomingEvents.slice(0, 2).map((event) => (
-                <div key={event.id} style={{
-                  backgroundColor: '#374151',
-                  borderRadius: '10px',
-                  padding: '10px',
-                  border: '1px solid #4B5563',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = '#404756'
-                  e.currentTarget.style.transform = 'translateY(-2px)'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = '#374151'
-                  e.currentTarget.style.transform = 'translateY(0)'
-                }}>
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <img 
-                      src={event.image}
-                      alt={event.title}
-                      style={{
-                        width: '38px',
-                        height: '38px',
-                        borderRadius: '6px',
-                        objectFit: 'cover',
-                      }}
-                    />
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <h4 style={{
-                        margin: '0 0 2px 0',
-                        fontSize: '14px',
-                        fontWeight: '600',
-                        color: '#FFFFFF',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                      }}>
-                        {event.title}
-                      </h4>
                       <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '2px',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        color: '#FFFFFF',
                         marginBottom: '2px',
                       }}>
-                        <Clock size={10} color="#9CA3AF" />
-                        <span style={{ fontSize: '12px' }}>
-                          {event.date} • {event.time}
-                        </span>
+                        {request.name}
+                      </div>
+                      <div style={{
+                        fontSize: '12px',
+                        color: '#9CA3AF',
+                      }}>
+                        {request.action}
                       </div>
                       <div style={{
                         display: 'flex',
-                        alignItems: 'center',
-                        gap: '2px',
-                        marginBottom: '4px',
+                        gap: '8px',
+                        marginTop: '8px',
                       }}>
-                        <MapPin size={10} color="#9CA3AF" />
-                        <span style={{
+                        <button style={{
+                          padding: '4px 12px',
+                          backgroundColor: '#6366F1',
+                          border: 'none',
+                          borderRadius: '16px',
+                          color: '#FFFFFF',
                           fontSize: '12px',
+                          fontWeight: '500',
+                          cursor: 'pointer',
+                        }}>
+                          Accept
+                        </button>
+                        <button style={{
+                          padding: '4px 12px',
+                          backgroundColor: '#374151',
+                          border: 'none',
+                          borderRadius: '16px',
                           color: '#9CA3AF',
+                          fontSize: '12px',
+                          fontWeight: '500',
+                          cursor: 'pointer',
+                        }}>
+                          Decline
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Upcoming Events */}
+            <div style={{ marginBottom: '32px' }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                marginBottom: '16px',
+              }}>
+                <Calendar size={20} color="#6366F1" />
+                <h3 style={{
+                  margin: 0,
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  color: '#FFFFFF',
+                }}>
+                  Upcoming Events
+                </h3>
+              </div>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {upcomingEvents.slice(0, 2).map((event) => (
+                  <div key={event.id} style={{
+                    backgroundColor: '#374151',
+                    borderRadius: '10px',
+                    padding: '10px',
+                    border: '1px solid #4B5563',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#404756'
+                    e.currentTarget.style.transform = 'translateY(-2px)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = '#374151'
+                    e.currentTarget.style.transform = 'translateY(0)'
+                  }}>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <img 
+                        src={event.image}
+                        alt={event.title}
+                        style={{
+                          width: '38px',
+                          height: '38px',
+                          borderRadius: '6px',
+                          objectFit: 'cover',
+                        }}
+                      />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <h4 style={{
+                          margin: '0 0 2px 0',
+                          fontSize: '14px',
+                          fontWeight: '600',
+                          color: '#FFFFFF',
                           overflow: 'hidden',
                           textOverflow: 'ellipsis',
                           whiteSpace: 'nowrap',
                         }}>
-                          {event.location}
-                        </span>
-                      </div>
-                      <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '2px',
-                      }}>
-                        <Users size={10} color="#6366F1" />
-                        <span style={{
-                          fontSize: '12px',
-                          color: '#6366F1',
-                          fontWeight: '500',
+                          {event.title}
+                        </h4>
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '2px',
+                          marginBottom: '2px',
                         }}>
-                          {event.attendees} attending
-                        </span>
+                          <Clock size={10} color="#9CA3AF" />
+                          <span style={{ fontSize: '12px' }}>
+                            {event.date} • {event.time}
+                          </span>
+                        </div>
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '2px',
+                          marginBottom: '4px',
+                        }}>
+                          <MapPin size={10} color="#9CA3AF" />
+                          <span style={{
+                            fontSize: '12px',
+                            color: '#9CA3AF',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                          }}>
+                            {event.location}
+                          </span>
+                        </div>
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '2px',
+                        }}>
+                          <Users size={10} color="#6366F1" />
+                          <span style={{
+                            fontSize: '12px',
+                            color: '#6366F1',
+                            fontWeight: '500',
+                          }}>
+                            {event.attendees} attending
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
+              
+              <button
+                style={{
+                  width: '100%',
+                  padding: '8px',
+                  marginTop: '1px',
+                  backgroundColor: 'transparent',
+                  border: 'none',
+                  color: '#6366F1',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                }}
+                onClick={() => navigate('/events-page')}
+              >
+                Explore more events
+              </button>
             </div>
-            
-            <button
-              style={{
-                width: '100%',
-                padding: '8px',
-                marginTop: '1px',
-                backgroundColor: 'transparent',
-                border: 'none',
-                color: '#6366F1',
-                fontSize: '14px',
-                fontWeight: '500',
-                cursor: 'pointer',
-              }}
-              onClick={() => navigate('/events-page')}
-            >
-              Explore more events
-            </button>
-          </div>
 
-          {/* Trending Topics */}
-          <div style={{ marginBottom: '31px' }}>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              marginBottom: '16px',
-            }}>
-              <TrendingUp size={20} color="#EF4444" />
-              <h3 style={{
-                margin: 0,
-                fontSize: '16px',
-                fontWeight: '600',
-                color: '#FFFFFF',
+            {/* Trending Topics */}
+            <div style={{ marginBottom: '31px' }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                marginBottom: '16px',
               }}>
-                Trending
-              </h3>
-            </div>
-            
-            <div style={{
-              display: 'flex',
-              flexDirection: 'row',
-              flexWrap: 'wrap',
-              gap: '10px',
-            }}>
-              {trendingTopics.slice(0, 3).map(topic => (
-                <div key={topic.id} style={{ marginBottom: '16px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <span style={{ fontSize: '14px', color: '#6366F1', fontWeight: '600' }}>{topic.hashtag}</span>
-                    <span style={{ fontSize: '12px', color: '#9CA3AF' }}>{topic.posts} Posts</span>
+                <TrendingUp size={20} color="#EF4444" />
+                <h3 style={{
+                  margin: 0,
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  color: '#FFFFFF',
+                }}>
+                  Trending
+                </h3>
+              </div>
+              
+              <div style={{
+                display: 'flex',
+                flexDirection: 'row',
+                flexWrap: 'wrap',
+                gap: '10px',
+              }}>
+                {trendingTopics.slice(0, 3).map(topic => (
+                  <div key={topic.id} style={{ marginBottom: '16px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <span style={{ fontSize: '14px', color: '#6366F1', fontWeight: '600' }}>{topic.hashtag}</span>
+                      <span style={{ fontSize: '12px', color: '#9CA3AF' }}>{topic.posts} Posts</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', fontSize: '12px', color: '#9CA3AF' }}>
+                      <TrendingUp size={12} style={{ marginRight: '4px', color: '#22C55E' }} />
+                      <span style={{ color: '#22C55E', marginRight: '8px' }}>{topic.growth}</span>
+                      <span>{topic.category}</span>
+                    </div>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', fontSize: '12px', color: '#9CA3AF' }}>
-                    <TrendingUp size={12} style={{ marginRight: '4px', color: '#22C55E' }} />
-                    <span style={{ color: '#22C55E', marginRight: '8px' }}>{topic.growth}</span>
-                    <span>{topic.category}</span>
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Notification Popup */}
       <NotificationPopup 
         isOpen={showNotifications} 
         onClose={() => setShowNotifications(false)} 
       />
-    </div>
+    </>
   )
 }
