@@ -638,23 +638,25 @@ export default function EnhancedHome() {
           </div>
           {/* Right: Create Post Button */}
           <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
-            <button style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '10px 24px',
-              backgroundColor: '#6366F1',
-              border: 'none',
-              borderRadius: '24px',
-              color: '#FFFFFF',
-              fontSize: '16px',
-              fontWeight: '600',
-              cursor: 'pointer',
-              boxShadow: '0 2px 8px rgba(99,102,241,0.12)',
-              transition: 'background 0.2s',
-            }}
-            onMouseEnter={e => e.currentTarget.style.backgroundColor = '#4F46E5'}
-            onMouseLeave={e => e.currentTarget.style.backgroundColor = '#6366F1'}
+            <button 
+              onClick={() => navigate('/create-post')}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '10px 24px',
+                backgroundColor: '#6366F1',
+                border: 'none',
+                borderRadius: '24px',
+                color: '#FFFFFF',
+                fontSize: '16px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                boxShadow: '0 2px 8px rgba(99,102,241,0.12)',
+                transition: 'background 0.2s',
+              }}
+              onMouseEnter={e => e.currentTarget.style.backgroundColor = '#4F46E5'}
+              onMouseLeave={e => e.currentTarget.style.backgroundColor = '#6366F1'}
             >
               <Plus size={20} />
               Create new post

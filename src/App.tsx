@@ -22,6 +22,7 @@ import EventsPage from './pages/EventsPage'
 import AppointmentPage from './pages/AppointmentPage'
 import SettingsPage from './pages/SettingsPage'
 import MessagesPage from './pages/MessagesPage'
+import CreatePostPage from './pages/CreatePostPage'
 import { isAuthenticated } from './utils/auth'
 import { supabase } from './utils/supabase'
 
@@ -55,7 +56,7 @@ function App() {
     if (!loading && !isSigningUp) { 
       if (isAuth) {
         // Only navigate to /home if not already on /home or other protected routes
-        const protectedRoutes = ['/home', '/feed', '/explore-page', '/events-page', '/appointment-page', '/settings-page', '/messages-page', '/profile', '/messages', '/explore', '/events', '/appointment', '/settings']
+        const protectedRoutes = ['/home', '/feed', '/explore-page', '/events-page', '/appointment-page', '/settings-page', '/messages-page', '/create-post', '/profile', '/messages', '/explore', '/events', '/appointment', '/settings']
         if (!protectedRoutes.includes(window.location.pathname)) {
           setTimeout(() => {
             navigate('/home', { replace: false })
@@ -168,6 +169,10 @@ function App() {
         <Route 
           path="/messages-page" 
           element={<MessagesPage />} 
+        />
+        <Route 
+          path="/create-post" 
+          element={<CreatePostPage />} 
         />
         
         {/* 404 Route */}
