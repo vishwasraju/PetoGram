@@ -4,6 +4,10 @@ import IntroPage from './pages/IntroPage'
 import EnhancedHome from './pages/EnhancedHome'
 import Profile from './pages/Profile'
 import Messages from './pages/Messages'
+import Explore from './pages/Explore'
+import Events from './pages/Events'
+import Appointment from './pages/Appointment'
+import Settings from './pages/Settings'
 import NotFound from './pages/NotFound'
 import AboutPage from './pages/AboutPage'
 import CareersPage from './pages/CareersPage'
@@ -87,36 +91,54 @@ function App() {
   }
 
   return (
-    <Routes>
-      {/* Public Routes */}
-      <Route 
-        path="/" 
-        element={<IntroPage onSignupStart={() => setIsSigningUp(true)} onSignupComplete={() => setIsSigningUp(false)} />} 
-      />
-      <Route path="/about" element={<AboutPage />} />
-      <Route path="/careers" element={<CareersPage />} />
-      <Route path="/blog" element={<BlogPage />} />
-      <Route path="/privacy" element={<PrivacyPolicyPage />} />
-      <Route path="/terms" element={<TermsOfServicePage />} />
-      <Route path="/help" element={<HelpCenterPage />} />
-      
-      {/* Protected Routes */}
-      <Route 
-        path="/home" 
-        element={<EnhancedHome />} 
-      />
-      <Route 
-        path="/profile" 
-        element={<Profile />} 
-      />
-      <Route 
-        path="/messages" 
-        element={<Messages />} 
-      />
-      
-      {/* 404 Route */}
-      <Route path="*" element={<NotFound />} />
-    </Routes>
+    <div>
+      <Routes>
+        {/* Public Routes */}
+        <Route 
+          path="/" 
+          element={<IntroPage onSignupStart={() => setIsSigningUp(true)} onSignupComplete={() => setIsSigningUp(false)} />} 
+        />
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/careers" element={<CareersPage />} />
+        <Route path="/blog" element={<BlogPage />} />
+        <Route path="/privacy" element={<PrivacyPolicyPage />} />
+        <Route path="/terms" element={<TermsOfServicePage />} />
+        <Route path="/help" element={<HelpCenterPage />} />
+        
+        {/* Protected Routes */}
+        <Route 
+          path="/home" 
+          element={<EnhancedHome />} 
+        />
+        <Route 
+          path="/profile" 
+          element={<Profile />} 
+        />
+        <Route 
+          path="/home/messages" 
+          element={<Messages />} 
+        />
+        <Route 
+          path="/explore" 
+          element={<Explore />} 
+        />
+        <Route 
+          path="/events" 
+          element={<Events />} 
+        />
+        <Route 
+          path="/appointment" 
+          element={<Appointment />} 
+        />
+        <Route 
+          path="/settings" 
+          element={<Settings />} 
+        />
+        
+        {/* 404 Route */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </div>
   )
 }
 

@@ -9,7 +9,7 @@ import Badge from '../components/ui/Badge'
 import { SkeletonCard } from '../components/ui/Skeleton'
 import { TrendingUp, Users, Calendar, MapPin, Star, Plus, Search, Mic, Heart, MessageCircle, Bookmark, MoreHorizontal, UserPlus, X, Clock, Siren as Fire, Hash, Bell, Stethoscope } from 'lucide-react'
 import { designTokens } from '../design-system/tokens'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { clearAuthenticationState } from '../utils/auth'
 
 interface PostData {
@@ -82,6 +82,98 @@ const mockPosts: PostData[] = [
       saved: true,
     },
     timestamp: '4h',
+  },
+  {
+    id: '3',
+    user: {
+      name: 'Jane Doe',
+      avatar: 'https://images.pexels.com/photos/1036623/pexels-photo-1036623.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2',
+      pets: '@janedoe_pets',
+      verified: true,
+    },
+    content: {
+      type: 'image',
+      url: 'https://images.pexels.com/photos/1741477/pexels-photo-1741477.jpeg?auto=compress&cs=tinysrgb&w=800',
+      caption: 'My lovely cat enjoying the sun today! #catlife #sunnyday',
+      hashtags: ['#catlife', '#sunnyday', '#petsofinstagram'],
+    },
+    engagement: {
+      likes: 500,
+      comments: 75,
+      shares: 10,
+      liked: false,
+      saved: true,
+    },
+    timestamp: '1h',
+  },
+  {
+    id: '4',
+    user: {
+      name: 'John Smith',
+      avatar: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2',
+      pets: '@john_pets',
+      verified: false,
+    },
+    content: {
+      type: 'video',
+      url: 'https://assets.mixkit.co/videos/preview/mixkit-dog-running-in-the-snow-1406-large.mp4',
+      caption: 'Winter fun with my dog! He loves the snow. #dogsofinstagram #winterfun',
+      hashtags: ['#dogsofinstagram', '#winterfun', '#playtime'],
+    },
+    engagement: {
+      likes: 1200,
+      comments: 150,
+      shares: 20,
+      liked: true,
+      saved: false,
+    },
+    timestamp: '3h',
+  },
+  {
+    id: '5',
+    user: {
+      name: 'Emily White',
+      avatar: 'https://images.pexels.com/photos/1036620/pexels-photo-1036620.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2',
+      pets: '@emily_animals',
+      verified: true,
+    },
+    content: {
+      type: 'image',
+      url: 'https://images.pexels.com/photos/3331505/pexels-photo-3331505.jpeg?auto=compress&cs=tinysrgb&w=800',
+      caption: 'Morning walk with my best friend! Such a beautiful day. #dogwalk #naturelover',
+      hashtags: ['#dogwalk', '#naturelover', '#goldenretriever'],
+    },
+    engagement: {
+      likes: 950,
+      comments: 110,
+      shares: 15,
+      liked: false,
+      saved: false,
+    },
+    timestamp: '6h',
+  },
+  {
+    id: '6',
+    user: {
+      name: 'David Brown',
+      avatar: 'https://images.pexels.com/photos/1040880/pexels-photo-1040880.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2',
+      pets: '@david_wildlife',
+      verified: false,
+    },
+    content: {
+      type: 'image',
+      url: 'https://images.pexels.com/photos/1660721/pexels-photo-1660721.jpeg?auto=compress&cs=tinysrgb&w=800',
+      caption: 'Enjoying the serene view with my parrot. He loves to sit by the window. #parrotlife #birdwatching',
+      hashtags: ['#parrotlife', '#birdwatching', '#exoticpets'],
+    },
+    engagement: {
+      likes: 720,
+      comments: 80,
+      shares: 8,
+      liked: true,
+      saved: true,
+    },
+    timestamp: '8h',
   },
 ]
 
@@ -182,7 +274,6 @@ export default function EnhancedHome() {
   const [loading, setLoading] = useState(false)
   const [activeTab, setActiveTab] = useState('Popular')
   const navigate = useNavigate()
-  const [showAllTrending, setShowAllTrending] = useState(false)
 
   useEffect(() => {
     const updateLayout = () => {
@@ -243,18 +334,12 @@ export default function EnhancedHome() {
       fontFamily: designTokens.typography.fontFamily.sans.join(', '),
     }}>
       {/* Mobile Overlay */}
-      {isMobile && sidebarOpen && (
-        <div 
-          style={{
-            position: 'fixed',
-            inset: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
-            backdropFilter: 'blur(8px)',
-            zIndex: designTokens.zIndex.overlay,
-          }}
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
+      {/* {isMobile && isSidebarOpen && (
+        <div
+          className="mobile-overlay active"
+          onClick={() => setIsSidebarOpen(false)}
+        ></div>
+      )} */}
 
       {/* Left Sidebar */}
       <div style={{
@@ -269,6 +354,7 @@ export default function EnhancedHome() {
         backgroundColor: '#2A2D3A',
         borderRight: '1px solid #3A3D4A',
         padding: '24px',
+        overflowY: 'auto',
       }}>
         {/* Profile Section */}
         <div style={{ marginBottom: '32px', textAlign: 'center' }}>
@@ -339,21 +425,26 @@ export default function EnhancedHome() {
           <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9CA3AF', padding: 0 }} title="Notifications">
             <Bell size={22} />
           </button>
-          <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9CA3AF', padding: 0 }} title="Messages">
-            <MessageCircle size={22} />
-          </button>
+          <Link to="/home/messages">
+            <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9CA3AF', padding: 0 }} title="Messages">
+              <MessageCircle size={22} />
+            </button>
+          </Link>
         </div>
 
         {/* Navigation */}
         <nav style={{ marginBottom: '4px' }}>
           {[ 
-            { icon: '🏠', label: 'Feed', active: true },
-            { icon: '🔍', label: 'Explore' },
-            { icon: <Calendar size={20} />, label: 'Events' },
-            { icon: <Stethoscope size={20} />, label: 'Appointment' },
-            { icon: '⚙️', label: 'Settings' },
+            { icon: '🏠', label: 'Feed', path: '/home', active: true },
+            { icon: '🔍', label: 'Explore', path: '/explore' },
+            { icon: <Calendar size={20} />, label: 'Events', path: '/events' },
+            { icon: <Stethoscope size={20} />, label: 'Appointment', path: '/appointment' },
+            { icon: '⚙️', label: 'Settings', path: '/settings' },
           ].map((item, index) => (
-            <div key={index} style={{
+            <Link 
+              to={item.path}
+              key={index} 
+              style={{
               display: 'flex',
               alignItems: 'center',
               gap: '12px',
@@ -364,10 +455,11 @@ export default function EnhancedHome() {
               cursor: 'pointer',
               marginBottom: '4px',
               transition: 'all 0.2s ease',
+              textDecoration: 'none',
             }}>
               <span style={{ fontSize: '18px' }}>{item.icon}</span>
               <span style={{ fontSize: '14px', fontWeight: '500' }}>{item.label}</span>
-            </div>
+            </Link>
           ))}
         </nav>
 
@@ -680,8 +772,8 @@ export default function EnhancedHome() {
           position: 'fixed',
           top: 0,
           right: 0,
-          backgroundColor: '#2A2D3A',
-          borderLeft: '1px solid #3A3D4A',
+          backgroundColor: '#1E1E2D',
+          borderLeft: '1px solid #374151',
           padding: '24px',
         }}>
           {/* Requests */}
@@ -835,7 +927,7 @@ export default function EnhancedHome() {
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <h4 style={{
                         margin: '0 0 2px 0',
-                        fontSize: '12px',
+                        fontSize: '14px',
                         fontWeight: '600',
                         color: '#FFFFFF',
                         overflow: 'hidden',
@@ -851,7 +943,7 @@ export default function EnhancedHome() {
                         marginBottom: '2px',
                       }}>
                         <Clock size={10} color="#9CA3AF" />
-                        <span style={{ fontSize: '10px' }}>
+                        <span style={{ fontSize: '12px' }}>
                           {event.date} • {event.time}
                         </span>
                       </div>
@@ -863,7 +955,7 @@ export default function EnhancedHome() {
                       }}>
                         <MapPin size={10} color="#9CA3AF" />
                         <span style={{
-                          fontSize: '10px',
+                          fontSize: '12px',
                           color: '#9CA3AF',
                           overflow: 'hidden',
                           textOverflow: 'ellipsis',
@@ -879,7 +971,7 @@ export default function EnhancedHome() {
                       }}>
                         <Users size={10} color="#6366F1" />
                         <span style={{
-                          fontSize: '10px',
+                          fontSize: '12px',
                           color: '#6366F1',
                           fontWeight: '500',
                         }}>
@@ -896,7 +988,7 @@ export default function EnhancedHome() {
               style={{
                 width: '100%',
                 padding: '8px',
-                marginTop: '16px',
+                marginTop: '1px',
                 backgroundColor: 'transparent',
                 border: 'none',
                 color: '#6366F1',
@@ -911,7 +1003,7 @@ export default function EnhancedHome() {
           </div>
 
           {/* Trending Topics */}
-          <div style={{ marginBottom: '32px' }}>
+          <div style={{ marginBottom: '31px' }}>
             <div style={{
               display: 'flex',
               alignItems: 'center',
@@ -929,57 +1021,26 @@ export default function EnhancedHome() {
               </h3>
             </div>
             
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {(showAllTrending ? trendingTopics : trendingTopics.slice(0, 3)).map((topic) => (
-                <div key={topic.id} style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  padding: '6px 0',
-                  borderRadius: '6px',
-                  transition: 'background-color 0.2s ease',
-                }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#23242b'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
-                  <span style={{
-                    fontSize: '13px',
-                    fontWeight: '600',
-                    color: '#6366F1',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                    cursor: 'pointer',
-                  }}>{topic.hashtag}</span>
-                  <span style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '2px',
-                    fontSize: '12px',
-                    fontWeight: '600',
-                    color: '#10B981',
-                  }}>
-                    <TrendingUp size={12} /> {topic.growth}
-                  </span>
+            <div style={{
+              display: 'flex',
+              flexDirection: 'row',
+              flexWrap: 'wrap',
+              gap: '10px',
+            }}>
+              {trendingTopics.slice(0, 3).map(topic => (
+                <div key={topic.id} style={{ marginBottom: '16px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <span style={{ fontSize: '14px', color: '#6366F1', fontWeight: '600' }}>{topic.hashtag}</span>
+                    <span style={{ fontSize: '12px', color: '#9CA3AF' }}>{topic.posts} Posts</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', fontSize: '12px', color: '#9CA3AF' }}>
+                    <TrendingUp size={12} style={{ marginRight: '4px', color: '#22C55E' }} />
+                    <span style={{ color: '#22C55E', marginRight: '8px' }}>{topic.growth}</span>
+                    <span>{topic.category}</span>
+                  </div>
                 </div>
               ))}
             </div>
-            
-            <button
-              style={{
-                width: '100%',
-                padding: '8px',
-                marginTop: '16px',
-                backgroundColor: 'transparent',
-                border: 'none',
-                color: '#6366F1',
-                fontSize: '14px',
-                fontWeight: '500',
-                cursor: 'pointer',
-              }}
-              onClick={() => setShowAllTrending((prev) => !prev)}
-            >
-              {showAllTrending ? 'Show Less' : 'Show More'}
-            </button>
           </div>
         </div>
       )}

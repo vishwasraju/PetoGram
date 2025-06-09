@@ -5,6 +5,7 @@ import Button from '../ui/Button'
 import Input from '../ui/Input'
 import Dropdown from '../ui/Dropdown'
 import { designTokens } from '../../design-system/tokens'
+import { Link } from 'react-router-dom'
 
 interface HeaderProps {
   onMenuClick: () => void
@@ -91,9 +92,25 @@ export default function EnhancedHeader({ onMenuClick, isMobile }: HeaderProps) {
           
           {/* Messages */}
           <div style={{ position: 'relative' }}>
-            <Button variant="ghost" size="sm">
+            <Link 
+              to="/messages" 
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '40px',
+                height: '40px',
+                borderRadius: designTokens.borderRadius.full,
+                cursor: 'pointer',
+                color: designTokens.colors.gray[600],
+                transition: 'background-color 150ms cubic-bezier(0.4, 0, 0.2, 1)',
+                backgroundColor: 'transparent',
+              }} 
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = designTokens.colors.gray[100]}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+            >
               <MessageCircle size={20} />
-            </Button>
+            </Link>
             <div style={{
               position: 'absolute',
               top: '-2px',
@@ -109,6 +126,7 @@ export default function EnhancedHeader({ onMenuClick, isMobile }: HeaderProps) {
               justifyContent: 'center',
               fontWeight: designTokens.typography.fontWeight.bold,
               border: `2px solid ${designTokens.colors.white}`,
+              pointerEvents: 'none',
             }}>
               2
             </div>

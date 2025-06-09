@@ -79,14 +79,6 @@ export default function Post({ post, onLike, onSave }: PostProps) {
         <div className="px-4 pb-3">
           <p className="text-gray-900 leading-relaxed">
             {showFullCaption ? post.content.caption : truncateCaption(post.content.caption)}
-            {post.content.caption.length > 150 && (
-              <button
-                onClick={() => setShowFullCaption(!showFullCaption)}
-                className="ml-2 text-gray-500 hover:text-gray-700 font-medium"
-              >
-                {showFullCaption ? 'Show less' : 'Show more'}
-              </button>
-            )}
           </p>
           
           {post.content.hashtags.length > 0 && (

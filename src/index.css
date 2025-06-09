@@ -60,6 +60,10 @@ body {
   width: 100%;
 }
 
+a, button, input, textarea, select, [role="button"], [tabindex]:not([tabindex="-1"]) {
+  pointer-events: auto !important;
+}
+
 /* Layout Classes */
 .app-container {
   display: flex;

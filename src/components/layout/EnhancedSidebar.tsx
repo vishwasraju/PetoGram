@@ -107,24 +107,25 @@ export default function EnhancedSidebar({ isOpen, onClose, isMobile }: SidebarPr
         style={{
           display: 'flex',
           alignItems: 'center',
-          gap: designTokens.spacing[4],
-          padding: `${designTokens.spacing[3]} ${designTokens.spacing[4]}`,
-          borderRadius: designTokens.borderRadius.xl,
+          gap: designTokens.spacing[3],
+          padding: `${designTokens.spacing[2]} ${designTokens.spacing[3]}`,
+          borderRadius: designTokens.borderRadius.md,
           textDecoration: 'none',
           transition: `all ${designTokens.animation.duration.normal} ${designTokens.animation.easing.ease}`,
-          backgroundColor: isActive ? designTokens.colors.primary[50] : 'transparent',
-          color: isActive ? designTokens.colors.primary[700] : designTokens.colors.gray[600],
+          backgroundColor: isActive ? designTokens.colors.primary[600] : hoveredItem === item.id ? designTokens.colors.gray[800] : 'transparent',
+          color: isActive ? designTokens.colors.white : designTokens.colors.gray[300],
           fontWeight: isActive ? designTokens.typography.fontWeight.semibold : designTokens.typography.fontWeight.medium,
           margin: `${designTokens.spacing[1]} 0`,
           position: 'relative',
-          transform: hoveredItem === item.id ? 'translateX(4px)' : 'translateX(0)',
+          boxShadow: isActive ? designTokens.boxShadow.md : 'none',
+          cursor: 'pointer',
         }}
       >
         <div style={{
           padding: designTokens.spacing[2],
-          borderRadius: designTokens.borderRadius.lg,
-          backgroundColor: isActive ? designTokens.colors.primary[500] : designTokens.colors.gray[100],
-          color: isActive ? designTokens.colors.white : designTokens.colors.gray[600],
+          borderRadius: designTokens.borderRadius.md,
+          backgroundColor: isActive ? designTokens.colors.primary[500] : 'transparent',
+          color: isActive ? designTokens.colors.white : designTokens.colors.gray[400],
           transition: `all ${designTokens.animation.duration.fast} ${designTokens.animation.easing.ease}`,
           display: 'flex',
           alignItems: 'center',
@@ -171,19 +172,6 @@ export default function EnhancedSidebar({ isOpen, onClose, isMobile }: SidebarPr
             </div>
           )}
         </div>
-        
-        {isActive && (
-          <div style={{
-            position: 'absolute',
-            right: 0,
-            top: '50%',
-            transform: 'translateY(-50%)',
-            width: '3px',
-            height: '24px',
-            backgroundColor: designTokens.colors.primary[500],
-            borderRadius: designTokens.borderRadius.full,
-          }} />
-        )}
       </Link>
     )
   }
