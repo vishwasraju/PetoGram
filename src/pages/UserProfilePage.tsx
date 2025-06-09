@@ -1,25 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
-import { 
-  ArrowLeft, 
-  MessageCircle, 
-  UserPlus, 
-  UserMinus,
-  MoreHorizontal,
-  MapPin,
-  Calendar,
-  Shield,
-  Lock,
-  Globe,
-  Users,
-  Grid3X3,
-  Heart,
-  Share,
-  Phone,
-  Video,
-  Block,
-  Flag
-} from 'lucide-react'
+import { ArrowLeft, MessageCircle, UserPlus, UserMinus, MoreHorizontal, MapPin, Calendar, Shield, Lock, Globe, Users, Grid3X3, Heart, Share, Phone, Video, Blocks as Block, Flag } from 'lucide-react'
 import { designTokens } from '../design-system/tokens'
 import { supabase } from '../utils/supabase'
 
