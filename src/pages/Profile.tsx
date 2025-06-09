@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { Link } from 'react-router-dom'
+import React, { useState, useEffect } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import { 
   ArrowLeft, 
   Settings, 
@@ -27,6 +27,50 @@ import Button from '../components/ui/Button'
 import Card from '../components/ui/Card'
 import Badge from '../components/ui/Badge'
 import { designTokens } from '../design-system/tokens'
+import { supabase } from '../utils/supabase'
+import { getCurrentUser, getUserProfile, getUserPets } from '../utils/auth'
+
+interface UserProfile {
+  id: string
+  user_id: string
+  username: string
+  bio: string
+  profile_picture: string
+  location: string
+  birth_date: string
+  phone: string
+  website: string
+  social_media: {
+    instagram: string
+    twitter: string
+    facebook: string
+  }
+  interests: string[]
+  is_public: boolean
+  allow_messages: boolean
+  show_email: boolean
+  created_at: string
+  updated_at: string
+}
+
+interface Post {
+  id: string
+  content_type: string
+  caption: string
+  media_urls: string[]
+  likes_count: number
+  comments_count: number
+  created_at: string
+}
+
+interface UserPet {
+  id: string
+  name: string
+  type: string
+  breed: string
+  age: string
+  photo: string
+}
 
 const profilePosts = [
   {
@@ -73,35 +117,118 @@ const profilePosts = [
   },
 ]
 
-const highlights = [
-  { id: '1', title: 'Max', image: 'https://images.pexels.com/photos/1805164/pexels-photo-1805164.jpeg?auto=compress&cs=tinysrgb&w=100' },
-  { id: '2', title: 'Luna', image: 'https://images.pexels.com/photos/1170986/pexels-photo-1170986.jpeg?auto=compress&cs=tinysrgb&w=100' },
-  { id: '3', title: 'Adventures', image: 'https://images.pexels.com/photos/2023384/pexels-photo-2023384.jpeg?auto=compress&cs=tinysrgb&w=100' },
-  { id: '4', title: 'Training', image: 'https://images.pexels.com/photos/1851164/pexels-photo-1851164.jpeg?auto=compress&cs=tinysrgb&w=100' },
-]
-
 export default function Profile() {
+  const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState('posts')
-  const [isFollowing, setIsFollowing] = useState(false)
+  const [profile, setProfile] = useState<UserProfile | null>(null)
+  const [posts, setPosts] = useState<Post[]>([])
+  const [pets, setPets] = useState<UserPet[]>([])
+  const [loading, setLoading] = useState(true)
+  const [followersCount, setFollowersCount] = useState(0)
+  const [followingCount, setFollowingCount] = useState(0)
+  const [currentUser, setCurrentUser] = useState<any>(null)
+
+  useEffect(() => {
+    fetchCurrentUserData()
+  }, [])
+
+  const fetchCurrentUserData = async () => {
+    try {
+      const user = await getCurrentUser()
+      if (!user) {
+        navigate('/')
+        return
+      }
+
+      setCurrentUser(user)
+
+      // Fetch user profile
+      const userProfile = await getUserProfile(user.id)
+      if (userProfile) {
+        setProfile(userProfile)
+      }
+
+      // Fetch user pets
+      const userPets = await getUserPets(user.id)
+      setPets(userPets)
+
+      // Fetch user posts
+      const { data: userPosts } = await supabase
+        .from('posts')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('is_active', true)
+        .order('created_at', { ascending: false })
+
+      if (userPosts) {
+        setPosts(userPosts)
+      }
+
+      // Fetch followers count
+      const { count: followers } = await supabase
+        .from('user_connections')
+        .select('*', { count: 'exact', head: true })
+        .eq('requested_id', user.id)
+        .eq('status', 'accepted')
+
+      // Fetch following count
+      const { count: following } = await supabase
+        .from('user_connections')
+        .select('*', { count: 'exact', head: true })
+        .eq('requester_id', user.id)
+        .eq('status', 'accepted')
+
+      setFollowersCount(followers || 0)
+      setFollowingCount(following || 0)
+
+    } catch (error) {
+      console.error('Error fetching user data:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const tabs = [
-    { id: 'posts', name: 'Posts', icon: Grid3X3, count: 42 },
-    { id: 'tagged', name: 'Tagged', icon: Tag, count: 18 },
-    { id: 'saved', name: 'Saved', icon: Bookmark, count: 156 },
+    { id: 'posts', name: 'Posts', icon: Grid3X3, count: posts.length },
+    { id: 'pets', name: 'Pets', icon: Tag, count: pets.length },
+    { id: 'saved', name: 'Saved', icon: Bookmark, count: 0 },
   ]
+
+  if (loading) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        backgroundColor: '#000',
+        color: '#fff',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}>
+        <div style={{
+          width: '40px',
+          height: '40px',
+          border: '4px solid #333',
+          borderTop: '4px solid #6366F1',
+          borderRadius: '50%',
+          animation: 'spin 1s linear infinite',
+        }} />
+      </div>
+    )
+  }
 
   return (
     <div style={{
       minHeight: '100vh',
-      backgroundColor: designTokens.colors.gray[50],
+      backgroundColor: '#000',
+      color: '#fff',
     }}>
       {/* Header */}
       <div style={{
-        backgroundColor: designTokens.colors.white,
-        borderBottom: `1px solid ${designTokens.colors.gray[100]}`,
+        backgroundColor: '#111',
+        borderBottom: '1px solid #333',
         position: 'sticky',
         top: 0,
-        zIndex: designTokens.zIndex.sticky,
+        zIndex: 100,
         padding: `${designTokens.spacing[4]} ${designTokens.spacing[6]}`,
       }}>
         <div style={{
@@ -113,13 +240,13 @@ export default function Profile() {
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: designTokens.spacing[4] }}>
             <Link 
-              to="/" 
+              to="/home" 
               style={{
-                color: designTokens.colors.gray[600],
+                color: '#9CA3AF',
                 transition: `color ${designTokens.animation.duration.fast} ${designTokens.animation.easing.ease}`,
               }}
-              onMouseEnter={(e) => e.currentTarget.style.color = designTokens.colors.primary[600]}
-              onMouseLeave={(e) => e.currentTarget.style.color = designTokens.colors.gray[600]}
+              onMouseEnter={(e) => e.currentTarget.style.color = '#fff'}
+              onMouseLeave={(e) => e.currentTarget.style.color = '#9CA3AF'}
             >
               <ArrowLeft size={24} />
             </Link>
@@ -128,17 +255,17 @@ export default function Profile() {
                 margin: 0,
                 fontSize: designTokens.typography.fontSize['2xl'],
                 fontWeight: designTokens.typography.fontWeight.bold,
-                color: designTokens.colors.gray[900],
+                color: '#fff',
                 fontFamily: designTokens.typography.fontFamily.display.join(', '),
               }}>
-                John Doe
+                {profile?.username || 'My Profile'}
               </h1>
               <p style={{
                 margin: 0,
                 fontSize: designTokens.typography.fontSize.sm,
-                color: designTokens.colors.gray[500],
+                color: '#9CA3AF',
               }}>
-                @johndoe
+                @{profile?.username || 'username'}
               </p>
             </div>
           </div>
@@ -161,7 +288,7 @@ export default function Profile() {
         padding: designTokens.spacing[6],
       }}>
         {/* Profile Header Section */}
-        <Card style={{ marginBottom: designTokens.spacing[6] }}>
+        <Card style={{ marginBottom: designTokens.spacing[6], backgroundColor: '#111', border: '1px solid #333' }}>
           <div style={{
             display: 'grid',
             gridTemplateColumns: 'auto 1fr auto',
@@ -181,14 +308,14 @@ export default function Profile() {
                 justifyContent: 'center',
               }}>
                 <img 
-                  src="https://images.pexels.com/photos/1036622/pexels-photo-1036622.jpeg?auto=compress&cs=tinysrgb&w=300&h=300&dpr=2"
-                  alt="John Doe"
+                  src={profile?.profile_picture || 'https://images.pexels.com/photos/1036622/pexels-photo-1036622.jpeg?auto=compress&cs=tinysrgb&w=300&h=300&dpr=2'}
+                  alt={profile?.username || 'Profile'}
                   style={{
                     width: '142px',
                     height: '142px',
                     borderRadius: '50%',
                     objectFit: 'cover',
-                    border: `3px solid ${designTokens.colors.white}`,
+                    border: `3px solid #000`,
                   }}
                 />
               </div>
@@ -205,10 +332,10 @@ export default function Profile() {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                border: `3px solid ${designTokens.colors.white}`,
+                border: `3px solid #000`,
                 boxShadow: designTokens.boxShadow.md,
               }}>
-                <Shield size={16} color={designTokens.colors.white} />
+                <Shield size={16} color='#fff' />
               </div>
             </div>
 
@@ -224,10 +351,10 @@ export default function Profile() {
                   margin: 0,
                   fontSize: designTokens.typography.fontSize['3xl'],
                   fontWeight: designTokens.typography.fontWeight.bold,
-                  color: designTokens.colors.gray[900],
+                  color: '#fff',
                   fontFamily: designTokens.typography.fontFamily.display.join(', '),
                 }}>
-                  John Doe
+                  {profile?.username || 'User'}
                 </h2>
                 <Badge variant="primary" size="md">
                   <Star size={14} />
@@ -249,13 +376,13 @@ export default function Profile() {
                   <div style={{
                     fontSize: designTokens.typography.fontSize['2xl'],
                     fontWeight: designTokens.typography.fontWeight.bold,
-                    color: designTokens.colors.gray[900],
+                    color: '#fff',
                   }}>
-                    42
+                    {posts.length}
                   </div>
                   <div style={{
                     fontSize: designTokens.typography.fontSize.sm,
-                    color: designTokens.colors.gray[500],
+                    color: '#9CA3AF',
                     fontWeight: designTokens.typography.fontWeight.medium,
                   }}>
                     Posts
@@ -265,13 +392,13 @@ export default function Profile() {
                   <div style={{
                     fontSize: designTokens.typography.fontSize['2xl'],
                     fontWeight: designTokens.typography.fontWeight.bold,
-                    color: designTokens.colors.gray[900],
+                    color: '#fff',
                   }}>
-                    1.2K
+                    {followersCount}
                   </div>
                   <div style={{
                     fontSize: designTokens.typography.fontSize.sm,
-                    color: designTokens.colors.gray[500],
+                    color: '#9CA3AF',
                     fontWeight: designTokens.typography.fontWeight.medium,
                   }}>
                     Followers
@@ -281,13 +408,13 @@ export default function Profile() {
                   <div style={{
                     fontSize: designTokens.typography.fontSize['2xl'],
                     fontWeight: designTokens.typography.fontWeight.bold,
-                    color: designTokens.colors.gray[900],
+                    color: '#fff',
                   }}>
-                    389
+                    {followingCount}
                   </div>
                   <div style={{
                     fontSize: designTokens.typography.fontSize.sm,
-                    color: designTokens.colors.gray[500],
+                    color: '#9CA3AF',
                     fontWeight: designTokens.typography.fontWeight.medium,
                   }}>
                     Following
@@ -300,13 +427,11 @@ export default function Profile() {
                 <p style={{
                   margin: 0,
                   fontSize: designTokens.typography.fontSize.base,
-                  color: designTokens.colors.gray[700],
+                  color: '#E5E7EB',
                   lineHeight: designTokens.typography.lineHeight.relaxed,
                   marginBottom: designTokens.spacing[2],
                 }}>
-                  Proud pet parent to Max 🐕 and Luna 🐱. Love sharing their adventures and connecting with fellow pet lovers! 
-                  <br />
-                  📍 New York, NY • 🎂 Joined March 2023
+                  {profile?.bio || 'Pet lover sharing amazing moments with my furry friends! 🐕🐱'}
                 </p>
                 
                 <div style={{
@@ -314,15 +439,17 @@ export default function Profile() {
                   alignItems: 'center',
                   gap: designTokens.spacing[4],
                   fontSize: designTokens.typography.fontSize.sm,
-                  color: designTokens.colors.gray[500],
+                  color: '#9CA3AF',
                 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: designTokens.spacing[1] }}>
-                    <MapPin size={16} />
-                    <span>New York, NY</span>
-                  </div>
+                  {profile?.location && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: designTokens.spacing[1] }}>
+                      <MapPin size={16} />
+                      <span>{profile.location}</span>
+                    </div>
+                  )}
                   <div style={{ display: 'flex', alignItems: 'center', gap: designTokens.spacing[1] }}>
                     <Calendar size={16} />
-                    <span>Joined March 2023</span>
+                    <span>Joined {new Date(profile?.created_at || Date.now()).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</span>
                   </div>
                 </div>
               </div>
@@ -335,19 +462,34 @@ export default function Profile() {
               gap: designTokens.spacing[3],
               minWidth: '200px',
             }}>
-              <Button variant="primary" size="lg" style={{ width: '100%' }}>
+              <Button 
+                variant="primary" 
+                size="lg" 
+                style={{ width: '100%' }}
+                onClick={() => navigate('/edit-profile')}
+              >
                 <Edit3 size={18} />
                 <span>Edit Profile</span>
               </Button>
               
               <div style={{ display: 'flex', gap: designTokens.spacing[2] }}>
-                <Button variant="secondary" size="md" style={{ flex: 1 }}>
+                <Button 
+                  variant="secondary" 
+                  size="md" 
+                  style={{ flex: 1 }}
+                  onClick={() => navigate('/messages-page')}
+                >
                   <MessageCircle size={16} />
                 </Button>
                 <Button variant="secondary" size="md" style={{ flex: 1 }}>
                   <UserPlus size={16} />
                 </Button>
-                <Button variant="secondary" size="md" style={{ flex: 1 }}>
+                <Button 
+                  variant="secondary" 
+                  size="md" 
+                  style={{ flex: 1 }}
+                  onClick={() => navigate('/settings-page')}
+                >
                   <Settings size={16} />
                 </Button>
               </div>
@@ -355,122 +497,12 @@ export default function Profile() {
           </div>
         </Card>
 
-        {/* Story Highlights */}
-        <Card style={{ marginBottom: designTokens.spacing[6] }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: designTokens.spacing[2],
-            marginBottom: designTokens.spacing[4],
-          }}>
-            <h3 style={{
-              margin: 0,
-              fontSize: designTokens.typography.fontSize.lg,
-              fontWeight: designTokens.typography.fontWeight.semibold,
-              color: designTokens.colors.gray[900],
-            }}>
-              Story Highlights
-            </h3>
-            <Badge variant="info" size="sm">
-              {highlights.length}
-            </Badge>
-          </div>
-          
-          <div style={{
-            display: 'flex',
-            gap: designTokens.spacing[4],
-            overflowX: 'auto',
-            paddingBottom: designTokens.spacing[2],
-          }}>
-            {/* Add New Highlight */}
-            <div style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: designTokens.spacing[2],
-              minWidth: '80px',
-            }}>
-              <div style={{
-                width: '80px',
-                height: '80px',
-                borderRadius: '50%',
-                border: `2px dashed ${designTokens.colors.gray[300]}`,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer',
-                transition: `all ${designTokens.animation.duration.fast} ${designTokens.animation.easing.ease}`,
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = designTokens.colors.primary[500]
-                e.currentTarget.style.backgroundColor = designTokens.colors.primary[50]
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = designTokens.colors.gray[300]
-                e.currentTarget.style.backgroundColor = 'transparent'
-              }}>
-                <Camera size={24} color={designTokens.colors.gray[400]} />
-              </div>
-              <span style={{
-                fontSize: designTokens.typography.fontSize.xs,
-                color: designTokens.colors.gray[500],
-                textAlign: 'center',
-              }}>
-                New
-              </span>
-            </div>
-
-            {/* Existing Highlights */}
-            {highlights.map((highlight) => (
-              <div key={highlight.id} style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: designTokens.spacing[2],
-                minWidth: '80px',
-                cursor: 'pointer',
-              }}>
-                <div style={{
-                  width: '80px',
-                  height: '80px',
-                  borderRadius: '50%',
-                  background: `linear-gradient(45deg, ${designTokens.colors.primary[500]}, ${designTokens.colors.primary[600]})`,
-                  padding: '3px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}>
-                  <img 
-                    src={highlight.image}
-                    alt={highlight.title}
-                    style={{
-                      width: '74px',
-                      height: '74px',
-                      borderRadius: '50%',
-                      objectFit: 'cover',
-                      border: `2px solid ${designTokens.colors.white}`,
-                    }}
-                  />
-                </div>
-                <span style={{
-                  fontSize: designTokens.typography.fontSize.xs,
-                  color: designTokens.colors.gray[700],
-                  fontWeight: designTokens.typography.fontWeight.medium,
-                  textAlign: 'center',
-                }}>
-                  {highlight.title}
-                </span>
-              </div>
-            ))}
-          </div>
-        </Card>
-
         {/* Content Tabs */}
-        <Card>
+        <Card style={{ backgroundColor: '#111', border: '1px solid #333' }}>
           {/* Tab Navigation */}
           <div style={{
             display: 'flex',
-            borderBottom: `1px solid ${designTokens.colors.gray[100]}`,
+            borderBottom: `1px solid #333`,
             marginBottom: designTokens.spacing[6],
           }}>
             {tabs.map((tab) => {
@@ -491,7 +523,7 @@ export default function Profile() {
                     backgroundColor: 'transparent',
                     border: 'none',
                     borderBottom: `3px solid ${isActive ? designTokens.colors.primary[500] : 'transparent'}`,
-                    color: isActive ? designTokens.colors.primary[600] : designTokens.colors.gray[500],
+                    color: isActive ? designTokens.colors.primary[600] : '#9CA3AF',
                     fontWeight: isActive ? designTokens.typography.fontWeight.semibold : designTokens.typography.fontWeight.medium,
                     fontSize: designTokens.typography.fontSize.base,
                     cursor: 'pointer',
@@ -499,13 +531,13 @@ export default function Profile() {
                   }}
                   onMouseEnter={(e) => {
                     if (!isActive) {
-                      e.currentTarget.style.color = designTokens.colors.gray[700]
-                      e.currentTarget.style.backgroundColor = designTokens.colors.gray[50]
+                      e.currentTarget.style.color = '#E5E7EB'
+                      e.currentTarget.style.backgroundColor = '#222'
                     }
                   }}
                   onMouseLeave={(e) => {
                     if (!isActive) {
-                      e.currentTarget.style.color = designTokens.colors.gray[500]
+                      e.currentTarget.style.color = '#9CA3AF'
                       e.currentTarget.style.backgroundColor = 'transparent'
                     }
                   }}
@@ -527,7 +559,7 @@ export default function Profile() {
               gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
               gap: designTokens.spacing[4],
             }}>
-              {profilePosts.map((post) => (
+              {posts.length > 0 ? posts.map((post) => (
                 <div key={post.id} style={{
                   position: 'relative',
                   aspectRatio: '1',
@@ -542,24 +574,38 @@ export default function Profile() {
                 onMouseLeave={(e) => {
                   e.currentTarget.style.transform = 'scale(1)'
                 }}>
-                  <img 
-                    src={post.url}
-                    alt={`Post ${post.id}`}
-                    style={{
+                  {post.media_urls && post.media_urls.length > 0 ? (
+                    <img 
+                      src={post.media_urls[0]}
+                      alt={`Post ${post.id}`}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                      }}
+                    />
+                  ) : (
+                    <div style={{
                       width: '100%',
                       height: '100%',
-                      objectFit: 'cover',
-                    }}
-                  />
+                      backgroundColor: '#222',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: '#9CA3AF',
+                    }}>
+                      <Grid3X3 size={32} />
+                    </div>
+                  )}
                   
                   {/* Post Type Indicator */}
-                  {post.type === 'video' && (
+                  {post.content_type === 'video' && (
                     <div style={{
                       position: 'absolute',
                       top: designTokens.spacing[3],
                       right: designTokens.spacing[3],
                       backgroundColor: 'rgba(0, 0, 0, 0.7)',
-                      color: designTokens.colors.white,
+                      color: '#fff',
                       padding: designTokens.spacing[1],
                       borderRadius: designTokens.borderRadius.md,
                     }}>
@@ -589,30 +635,164 @@ export default function Profile() {
                       display: 'flex',
                       alignItems: 'center',
                       gap: designTokens.spacing[1],
-                      color: designTokens.colors.white,
+                      color: '#fff',
                       fontWeight: designTokens.typography.fontWeight.semibold,
                     }}>
                       <Heart size={20} fill="currentColor" />
-                      <span>{post.likes}</span>
+                      <span>{post.likes_count}</span>
                     </div>
                     <div style={{
                       display: 'flex',
                       alignItems: 'center',
                       gap: designTokens.spacing[1],
-                      color: designTokens.colors.white,
+                      color: '#fff',
                       fontWeight: designTokens.typography.fontWeight.semibold,
                     }}>
                       <MessageCircle size={20} fill="currentColor" />
-                      <span>{post.comments}</span>
+                      <span>{post.comments_count}</span>
                     </div>
                   </div>
                 </div>
-              ))}
+              )) : (
+                <div style={{
+                  gridColumn: '1 / -1',
+                  textAlign: 'center',
+                  padding: `${designTokens.spacing[16]} ${designTokens.spacing[8]}`,
+                }}>
+                  <div style={{
+                    width: '80px',
+                    height: '80px',
+                    backgroundColor: '#222',
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    margin: `0 auto ${designTokens.spacing[4]}`,
+                  }}>
+                    <Grid3X3 size={32} color='#9CA3AF' />
+                  </div>
+                  <h3 style={{
+                    margin: `0 0 ${designTokens.spacing[2]} 0`,
+                    fontSize: designTokens.typography.fontSize.xl,
+                    fontWeight: designTokens.typography.fontWeight.semibold,
+                    color: '#fff',
+                  }}>
+                    No posts yet
+                  </h3>
+                  <p style={{
+                    margin: 0,
+                    fontSize: designTokens.typography.fontSize.base,
+                    color: '#9CA3AF',
+                    lineHeight: designTokens.typography.lineHeight.relaxed,
+                  }}>
+                    Share your first post to get started!
+                  </p>
+                  <Button 
+                    variant="primary" 
+                    style={{ marginTop: designTokens.spacing[4] }}
+                    onClick={() => navigate('/create-post')}
+                  >
+                    <Camera size={16} />
+                    Create Post
+                  </Button>
+                </div>
+              )}
             </div>
           )}
 
-          {/* Empty State for Other Tabs */}
-          {activeTab !== 'posts' && (
+          {/* Pets Tab */}
+          {activeTab === 'pets' && (
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
+              gap: designTokens.spacing[4],
+            }}>
+              {pets.length > 0 ? pets.map((pet) => (
+                <div key={pet.id} style={{
+                  backgroundColor: '#222',
+                  borderRadius: designTokens.borderRadius.xl,
+                  padding: designTokens.spacing[4],
+                  border: '1px solid #333',
+                  textAlign: 'center',
+                }}>
+                  <img 
+                    src={pet.photo || 'https://images.pexels.com/photos/1805164/pexels-photo-1805164.jpeg?auto=compress&cs=tinysrgb&w=200'}
+                    alt={pet.name}
+                    style={{
+                      width: '80px',
+                      height: '80px',
+                      borderRadius: '50%',
+                      objectFit: 'cover',
+                      margin: '0 auto 16px',
+                      border: '3px solid #6366F1',
+                    }}
+                  />
+                  <h4 style={{
+                    margin: '0 0 8px 0',
+                    fontSize: designTokens.typography.fontSize.lg,
+                    fontWeight: designTokens.typography.fontWeight.semibold,
+                    color: '#fff',
+                  }}>
+                    {pet.name}
+                  </h4>
+                  <p style={{
+                    margin: '0 0 4px 0',
+                    fontSize: designTokens.typography.fontSize.sm,
+                    color: '#9CA3AF',
+                  }}>
+                    {pet.type} {pet.breed && `• ${pet.breed}`}
+                  </p>
+                  {pet.age && (
+                    <p style={{
+                      margin: 0,
+                      fontSize: designTokens.typography.fontSize.sm,
+                      color: '#9CA3AF',
+                    }}>
+                      {pet.age} old
+                    </p>
+                  )}
+                </div>
+              )) : (
+                <div style={{
+                  gridColumn: '1 / -1',
+                  textAlign: 'center',
+                  padding: `${designTokens.spacing[16]} ${designTokens.spacing[8]}`,
+                }}>
+                  <div style={{
+                    width: '80px',
+                    height: '80px',
+                    backgroundColor: '#222',
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    margin: `0 auto ${designTokens.spacing[4]}`,
+                  }}>
+                    <Tag size={32} color='#9CA3AF' />
+                  </div>
+                  <h3 style={{
+                    margin: `0 0 ${designTokens.spacing[2]} 0`,
+                    fontSize: designTokens.typography.fontSize.xl,
+                    fontWeight: designTokens.typography.fontWeight.semibold,
+                    color: '#fff',
+                  }}>
+                    No pets added yet
+                  </h3>
+                  <p style={{
+                    margin: 0,
+                    fontSize: designTokens.typography.fontSize.base,
+                    color: '#9CA3AF',
+                    lineHeight: designTokens.typography.lineHeight.relaxed,
+                  }}>
+                    Add your pets to share their adorable moments!
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Saved Tab */}
+          {activeTab === 'saved' && (
             <div style={{
               textAlign: 'center',
               padding: `${designTokens.spacing[16]} ${designTokens.spacing[8]}`,
@@ -620,37 +800,42 @@ export default function Profile() {
               <div style={{
                 width: '80px',
                 height: '80px',
-                backgroundColor: designTokens.colors.gray[100],
+                backgroundColor: '#222',
                 borderRadius: '50%',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 margin: `0 auto ${designTokens.spacing[4]}`,
               }}>
-                {activeTab === 'tagged' && <Tag size={32} color={designTokens.colors.gray[400]} />}
-                {activeTab === 'saved' && <Bookmark size={32} color={designTokens.colors.gray[400]} />}
+                <Bookmark size={32} color='#9CA3AF' />
               </div>
               <h3 style={{
                 margin: `0 0 ${designTokens.spacing[2]} 0`,
                 fontSize: designTokens.typography.fontSize.xl,
                 fontWeight: designTokens.typography.fontWeight.semibold,
-                color: designTokens.colors.gray[900],
+                color: '#fff',
               }}>
-                No {activeTab} yet
+                No saved posts yet
               </h3>
               <p style={{
                 margin: 0,
                 fontSize: designTokens.typography.fontSize.base,
-                color: designTokens.colors.gray[500],
+                color: '#9CA3AF',
                 lineHeight: designTokens.typography.lineHeight.relaxed,
               }}>
-                {activeTab === 'tagged' && "Posts you're tagged in will appear here."}
-                {activeTab === 'saved' && "Posts you've saved will appear here."}
+                Posts you save will appear here.
               </p>
             </div>
           )}
         </Card>
       </div>
+
+      <style>{`
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   )
 }

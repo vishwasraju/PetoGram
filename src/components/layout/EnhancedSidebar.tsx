@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { 
   Home, 
@@ -24,6 +24,7 @@ import Avatar from '../ui/Avatar'
 import Badge from '../ui/Badge'
 import { designTokens } from '../../design-system/tokens'
 import { clearAuthenticationState } from '../../utils/auth'
+import { supabase } from '../../utils/supabase'
 
 interface SidebarProps {
   isOpen: boolean
@@ -36,7 +37,7 @@ const navigationItems = [
     id: 'book-appointment', 
     name: 'Book Appointment', 
     icon: Stethoscope,
-    path: '/book-appointment',
+    path: '/appointment-page',
     badge: null,
     description: 'Schedule an appointment'
   },
@@ -44,7 +45,7 @@ const navigationItems = [
     id: 'events', 
     name: 'Events', 
     icon: Calendar, 
-    path: '/events',
+    path: '/events-page',
     badge: null,
     description: 'Join/Create event'
   },
@@ -65,7 +66,7 @@ const quickActions = [
 ]
 
 const bottomItems = [
-  { id: 'settings', name: 'Settings', icon: Settings, path: '/settings' },
+  { id: 'settings', name: 'Settings', icon: Settings, path: '/settings-page' },
   { id: 'help', name: 'Help & Support', icon: HelpCircle, path: '/help' },
 ]
 
@@ -73,6 +74,28 @@ export default function EnhancedSidebar({ isOpen, onClose, isMobile }: SidebarPr
   const location = useLocation()
   const navigate = useNavigate()
   const [hoveredItem, setHoveredItem] = useState<string | null>(null)
+  const [userProfile, setUserProfile] = useState<any>(null)
+
+  useEffect(() => {
+    fetchUserProfile()
+  }, [])
+
+  const fetchUserProfile = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        const { data } = await supabase
+          .from('user_profiles')
+          .select('*')
+          .eq('user_id', user.id)
+          .single()
+        
+        setUserProfile(data)
+      }
+    } catch (error) {
+      console.error('Error fetching user profile:', error)
+    }
+  }
 
   const handleLogout = () => {
     // Clear authentication data
@@ -246,25 +269,29 @@ export default function EnhancedSidebar({ isOpen, onClose, isMobile }: SidebarPr
         flexShrink: 0,
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: designTokens.spacing[3] }}>
-          <Avatar 
-            src="https://images.pexels.com/photos/1036622/pexels-photo-1036622.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2"
-            alt="John Doe"
-            size="xl"
-            status="online"
-            verified
-          />
+          <Link to="/profile" style={{ textDecoration: 'none' }}>
+            <Avatar 
+              src={userProfile?.profile_picture || "https://images.pexels.com/photos/1036622/pexels-photo-1036622.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2"}
+              alt={userProfile?.username || "User"}
+              size="xl"
+              status="online"
+              verified
+            />
+          </Link>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <h3 style={{ 
-              fontWeight: designTokens.typography.fontWeight.semibold, 
-              color: designTokens.colors.gray[900], 
-              margin: 0,
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-              fontSize: designTokens.typography.fontSize.lg,
-            }}>
-              John Doe
-            </h3>
+            <Link to="/profile" style={{ textDecoration: 'none' }}>
+              <h3 style={{ 
+                fontWeight: designTokens.typography.fontWeight.semibold, 
+                color: designTokens.colors.gray[900], 
+                margin: 0,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                fontSize: designTokens.typography.fontSize.lg,
+              }}>
+                {userProfile?.username || "User"}
+              </h3>
+            </Link>
             <p style={{ 
               fontSize: designTokens.typography.fontSize.sm, 
               color: designTokens.colors.gray[500], 
@@ -273,7 +300,7 @@ export default function EnhancedSidebar({ isOpen, onClose, isMobile }: SidebarPr
               textOverflow: 'ellipsis',
               whiteSpace: 'nowrap',
             }}>
-              @johndoe
+              @{userProfile?.username?.toLowerCase() || "username"}
             </p>
             <Badge variant="primary" size="sm" style={{ marginTop: designTokens.spacing[1] }}>
               Pro Member

@@ -1,16 +1,19 @@
 import React, { useState, useEffect } from 'react'
 import { X, Heart, MessageCircle, UserPlus, Calendar, Bell, Check } from 'lucide-react'
 import { designTokens } from '../../design-system/tokens'
+import { supabase } from '../../utils/supabase'
 
 interface Notification {
   id: string
-  type: 'like' | 'comment' | 'follow' | 'event' | 'general'
+  type: 'like' | 'comment' | 'follow' | 'friend_request' | 'event' | 'appointment' | 'general'
   title: string
-  message: string
+  content: string
   timestamp: string
   read: boolean
   avatar?: string
   actionUrl?: string
+  related_id?: string
+  related_type?: string
 }
 
 interface NotificationPopupProps {
@@ -19,51 +22,66 @@ interface NotificationPopupProps {
 }
 
 export default function NotificationPopup({ isOpen, onClose }: NotificationPopupProps) {
-  const [notifications, setNotifications] = useState<Notification[]>([
-    {
-      id: '1',
-      type: 'like',
-      title: 'Sarah Johnson liked your post',
-      message: 'Your photo of Max got a new like!',
-      timestamp: '2 minutes ago',
-      read: false,
-      avatar: 'https://images.pexels.com/photos/733872/pexels-photo-733872.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2'
-    },
-    {
-      id: '2',
-      type: 'comment',
-      title: 'Mike Chen commented on your post',
-      message: '"Such a beautiful dog! What breed is he?"',
-      timestamp: '15 minutes ago',
-      read: false,
-      avatar: 'https://images.pexels.com/photos/1212984/pexels-photo-1212984.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2'
-    },
-    {
-      id: '3',
-      type: 'follow',
-      title: 'Emma Wilson started following you',
-      message: 'You have a new follower!',
-      timestamp: '1 hour ago',
-      read: false,
-      avatar: 'https://images.pexels.com/photos/1564506/pexels-photo-1564506.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2'
-    },
-    {
-      id: '4',
-      type: 'event',
-      title: 'Pet Adoption Fair Tomorrow',
-      message: 'Don\'t forget about the event you\'re attending!',
-      timestamp: '2 hours ago',
-      read: true
-    },
-    {
-      id: '5',
-      type: 'general',
-      title: 'Weekly Pet Care Tips',
-      message: 'Check out this week\'s featured tips for pet health',
-      timestamp: '1 day ago',
-      read: true
+  const [notifications, setNotifications] = useState<Notification[]>([])
+  const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchNotifications()
     }
-  ])
+  }, [isOpen])
+
+  const fetchNotifications = async () => {
+    setLoading(true)
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
+      const { data, error } = await supabase
+        .from('notifications')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(10)
+
+      if (error) throw error
+
+      // Transform to our notification format
+      const formattedNotifications = data.map(notification => ({
+        id: notification.id,
+        type: notification.type as any,
+        title: notification.title,
+        content: notification.content,
+        timestamp: formatTimestamp(notification.created_at),
+        read: notification.is_read,
+        related_id: notification.related_id,
+        related_type: notification.related_type
+      }))
+
+      setNotifications(formattedNotifications)
+    } catch (error) {
+      console.error('Error fetching notifications:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const formatTimestamp = (timestamp: string) => {
+    const date = new Date(timestamp)
+    const now = new Date()
+    const diffMs = now.getTime() - date.getTime()
+    const diffMins = Math.round(diffMs / 60000)
+    const diffHours = Math.round(diffMs / 3600000)
+    const diffDays = Math.round(diffMs / 86400000)
+
+    if (diffMins < 60) {
+      return `${diffMins} minute${diffMins !== 1 ? 's' : ''} ago`
+    } else if (diffHours < 24) {
+      return `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`
+    } else {
+      return `${diffDays} day${diffDays !== 1 ? 's' : ''} ago`
+    }
+  }
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
@@ -72,34 +90,73 @@ export default function NotificationPopup({ isOpen, onClose }: NotificationPopup
       case 'comment':
         return <MessageCircle size={20} color="#6366F1" />
       case 'follow':
+      case 'friend_request':
         return <UserPlus size={20} color="#10B981" />
       case 'event':
+      case 'appointment':
         return <Calendar size={20} color="#F59E0B" />
       default:
         return <Bell size={20} color="#9CA3AF" />
     }
   }
 
-  const markAsRead = (notificationId: string) => {
-    setNotifications(prev =>
-      prev.map(notification =>
-        notification.id === notificationId
-          ? { ...notification, read: true }
-          : notification
+  const markAsRead = async (notificationId: string) => {
+    try {
+      const { error } = await supabase
+        .from('notifications')
+        .update({ is_read: true })
+        .eq('id', notificationId)
+
+      if (error) throw error
+
+      setNotifications(prev =>
+        prev.map(notification =>
+          notification.id === notificationId
+            ? { ...notification, read: true }
+            : notification
+        )
       )
-    )
+    } catch (error) {
+      console.error('Error marking notification as read:', error)
+    }
   }
 
-  const markAllAsRead = () => {
-    setNotifications(prev =>
-      prev.map(notification => ({ ...notification, read: true }))
-    )
+  const markAllAsRead = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
+      const { error } = await supabase
+        .from('notifications')
+        .update({ is_read: true })
+        .eq('user_id', user.id)
+        .eq('is_read', false)
+
+      if (error) throw error
+
+      setNotifications(prev =>
+        prev.map(notification => ({ ...notification, read: true }))
+      )
+    } catch (error) {
+      console.error('Error marking all notifications as read:', error)
+    }
   }
 
-  const deleteNotification = (notificationId: string) => {
-    setNotifications(prev =>
-      prev.filter(notification => notification.id !== notificationId)
-    )
+  const deleteNotification = async (notificationId: string) => {
+    try {
+      const { error } = await supabase
+        .from('notifications')
+        .delete()
+        .eq('id', notificationId)
+
+      if (error) throw error
+
+      setNotifications(prev =>
+        prev.filter(notification => notification.id !== notificationId)
+      )
+    } catch (error) {
+      console.error('Error deleting notification:', error)
+    }
   }
 
   const unreadCount = notifications.filter(n => !n.read).length
@@ -108,20 +165,6 @@ export default function NotificationPopup({ isOpen, onClose }: NotificationPopup
 
   return (
     <>
-      {/* Backdrop */}
-      {/* The following div was removed to prevent the black overlay when the notification popup is active. */}
-      {/*
-      <div
-        style={{
-          position: 'fixed',
-          inset: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.5)',
-          zIndex: 1000,
-        }}
-        onClick={onClose}
-      />
-      */}
-      
       {/* Notification Popup */}
       <div
         style={{
@@ -231,7 +274,29 @@ export default function NotificationPopup({ isOpen, onClose }: NotificationPopup
           maxHeight: '500px',
           overflowY: 'auto',
         }}>
-          {notifications.length === 0 ? (
+          {loading ? (
+            <div style={{
+              padding: '40px 20px',
+              textAlign: 'center',
+            }}>
+              <div style={{
+                width: '40px',
+                height: '40px',
+                border: '3px solid #333',
+                borderTop: '3px solid #6366F1',
+                borderRadius: '50%',
+                animation: 'spin 1s linear infinite',
+                margin: '0 auto 16px',
+              }} />
+              <p style={{
+                margin: 0,
+                fontSize: '14px',
+                color: '#9CA3AF',
+              }}>
+                Loading notifications...
+              </p>
+            </div>
+          ) : notifications.length === 0 ? (
             <div style={{
               padding: '40px 20px',
               textAlign: 'center',
@@ -322,7 +387,7 @@ export default function NotificationPopup({ isOpen, onClose }: NotificationPopup
                       color: '#9CA3AF',
                       lineHeight: '1.4',
                     }}>
-                      {notification.message}
+                      {notification.content}
                     </p>
                     <span style={{
                       fontSize: '12px',
@@ -366,7 +431,7 @@ export default function NotificationPopup({ isOpen, onClose }: NotificationPopup
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.color = '#EF4444'
-                    e.currentTarget.parentElement!.style.opacity = '1'
+                    e.currentTarget.style.opacity = '1'
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.color = '#9CA3AF'
@@ -386,18 +451,21 @@ export default function NotificationPopup({ isOpen, onClose }: NotificationPopup
             borderTop: '1px solid #333',
             textAlign: 'center',
           }}>
-            <button style={{
-              color: '#6366F1',
-              backgroundColor: 'transparent',
-              border: 'none',
-              fontSize: '12px',
-              fontWeight: '600',
-              cursor: 'pointer',
-              transition: 'color 0.2s ease',
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.color = '#4F46E5'}
-            onMouseLeave={(e) => e.currentTarget.style.color = '#6366F1'}>
-              View all notifications
+            <button 
+              onClick={markAllAsRead}
+              style={{
+                color: '#6366F1',
+                backgroundColor: 'transparent',
+                border: 'none',
+                fontSize: '12px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                transition: 'color 0.2s ease',
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.color = '#4F46E5'}
+              onMouseLeave={(e) => e.currentTarget.style.color = '#6366F1'}
+            >
+              Mark all as read
             </button>
           </div>
         )}
@@ -413,6 +481,11 @@ export default function NotificationPopup({ isOpen, onClose }: NotificationPopup
             opacity: 1;
             transform: translateY(0) scale(1);
           }
+        }
+        
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
         }
         
         .notification-item:hover .delete-button {

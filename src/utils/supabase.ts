@@ -1,11 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
-
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables. Please check your .env file.')
-}
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://your-supabase-url.supabase.co'
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'your-anon-key'
 
 // Add error handling and retry logic for better connection reliability
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
@@ -62,8 +58,8 @@ export interface UserProfile {
   is_public: boolean
   allow_messages: boolean
   show_email: boolean
-  created_at: string
-  updated_at: string
+  created_at?: string
+  updated_at?: string
 }
 
 export interface UserPet {
@@ -74,6 +70,69 @@ export interface UserPet {
   breed: string
   age: string
   photo: string
+  created_at?: string
+  updated_at?: string
+}
+
+export interface Post {
+  id: string
+  user_id: string
+  content_type: 'text' | 'image' | 'video' | 'poll'
+  caption: string
+  media_urls: string[]
+  hashtags: string[]
+  location: string
+  privacy_level: 'public' | 'friends' | 'private'
+  likes_count: number
+  comments_count: number
+  shares_count: number
+  created_at: string
+  updated_at: string
+}
+
+export interface UserConnection {
+  id: string
+  requester_id: string
+  requested_id: string
+  status: 'pending' | 'accepted' | 'rejected' | 'blocked'
+  connection_type: 'friend' | 'follow'
+  created_at: string
+  updated_at: string
+}
+
+export interface Notification {
+  id: string
+  user_id: string
+  type: 'like' | 'comment' | 'follow' | 'friend_request' | 'message' | 'event' | 'appointment'
+  title: string
+  content: string
+  related_id?: string
+  related_type?: string
+  is_read: boolean
+  created_at: string
+}
+
+export interface Conversation {
+  id: string
+  type: 'direct' | 'group'
+  name?: string
+  description?: string
+  avatar_url?: string
+  created_by: string
+  created_at: string
+  updated_at: string
+}
+
+export interface Message {
+  id: string
+  conversation_id: string
+  sender_id: string
+  content?: string
+  message_type: 'text' | 'image' | 'video' | 'audio' | 'file'
+  media_url?: string
+  reply_to_id?: string
+  is_edited: boolean
+  is_deleted: boolean
   created_at: string
   updated_at: string
 }
@@ -81,8 +140,25 @@ export interface UserPet {
 // Auth types
 export interface AuthUser {
   id: string
-  email: string
-  user_metadata: {
+  email?: string
+  user_metadata?: {
     full_name?: string
+  }
+}
+
+// Create RPC functions for incrementing/decrementing post likes
+export const createRpcFunctions = async () => {
+  try {
+    // Create increment_post_likes function
+    await supabase.rpc('create_increment_post_likes_function', {})
+    
+    // Create decrement_post_likes function
+    await supabase.rpc('create_decrement_post_likes_function', {})
+    
+    console.log('RPC functions created successfully')
+    return true
+  } catch (error) {
+    console.error('Error creating RPC functions:', error)
+    return false
   }
 }

@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react'
 import { X, ChevronLeft, ChevronRight } from 'lucide-react'
 import { registerUser, createUserProfile, createUserPets, setAuthenticationState } from '../utils/auth'
+import { supabase } from '../utils/supabase'
 
 interface SignupModalProps {
   isOpen: boolean;

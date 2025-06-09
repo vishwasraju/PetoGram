@@ -11,7 +11,8 @@ import { SkeletonCard } from '../components/ui/Skeleton'
 import { TrendingUp, Users, Calendar, MapPin, Star, Plus, Search, Mic, Heart, MessageCircle, Bookmark, MoreHorizontal, UserPlus, X, Clock, Siren as Fire, Hash, Bell, Stethoscope } from 'lucide-react'
 import { designTokens } from '../design-system/tokens'
 import { useNavigate, Link } from 'react-router-dom'
-import { clearAuthenticationState } from '../utils/auth'
+import { clearAuthenticationState, getCurrentUser, getUserProfile } from '../utils/auth'
+import { supabase } from '../utils/supabase'
 
 interface PostData {
   id: string
@@ -275,6 +276,8 @@ export default function EnhancedHome() {
   const [loading, setLoading] = useState(false)
   const [activeTab, setActiveTab] = useState('Popular')
   const [showNotifications, setShowNotifications] = useState(false)
+  const [currentUser, setCurrentUser] = useState<any>(null)
+  const [userProfile, setUserProfile] = useState<any>(null)
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -286,6 +289,23 @@ export default function EnhancedHome() {
     window.addEventListener('resize', updateLayout)
     return () => window.removeEventListener('resize', updateLayout)
   }, [])
+
+  useEffect(() => {
+    fetchCurrentUserData()
+  }, [])
+
+  const fetchCurrentUserData = async () => {
+    try {
+      const user = await getCurrentUser()
+      if (user) {
+        setCurrentUser(user)
+        const profile = await getUserProfile(user.id)
+        setUserProfile(profile)
+      }
+    } catch (error) {
+      console.error('Error fetching user data:', error)
+    }
+  }
 
   const handleLike = (postId: string) => {
     setPosts(currentPosts =>
@@ -327,6 +347,16 @@ export default function EnhancedHome() {
     navigate('/')
   }
 
+  const handleAcceptRequest = async (requestId: string) => {
+    // Handle friend request acceptance
+    console.log('Accepting request:', requestId)
+  }
+
+  const handleDeclineRequest = async (requestId: string) => {
+    // Handle friend request decline
+    console.log('Declining request:', requestId)
+  }
+
   return (
     <>
       <div style={{
@@ -363,8 +393,8 @@ export default function EnhancedHome() {
           <div style={{ marginBottom: '32px', textAlign: 'center' }}>
             <div style={{ position: 'relative', display: 'inline-block', marginBottom: '16px' }}>
               <img 
-                src="https://images.pexels.com/photos/1036622/pexels-photo-1036622.jpeg?auto=compress&cs=tinysrgb&w=120&h=120&dpr=2"
-                alt="Cyndy Lillibridge"
+                src={userProfile?.profile_picture || "https://images.pexels.com/photos/1036622/pexels-photo-1036622.jpeg?auto=compress&cs=tinysrgb&w=120&h=120&dpr=2"}
+                alt={userProfile?.username || "User"}
                 style={{
                   width: '80px',
                   height: '80px',
@@ -390,14 +420,14 @@ export default function EnhancedHome() {
               fontWeight: '600',
               color: '#FFFFFF',
             }}>
-              Cyndy Lillibridge
+              {userProfile?.username || 'User'}
             </h3>
             <p style={{
               margin: '0 0 16px 0',
               fontSize: '14px',
               color: '#9CA3AF',
             }}>
-              Torrance, CA, United States
+              {userProfile?.location || 'Location'}
             </p>
             
             {/* Stats */}
@@ -689,24 +719,28 @@ export default function EnhancedHome() {
                     marginBottom: '16px',
                   }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <img 
-                        src={post.user.avatar}
-                        alt={post.user.name}
-                        style={{
-                          width: '40px',
-                          height: '40px',
-                          borderRadius: '50%',
-                          objectFit: 'cover',
-                        }}
-                      />
+                      <Link to={`/user-profile/123`} style={{ textDecoration: 'none' }}>
+                        <img 
+                          src={post.user.avatar}
+                          alt={post.user.name}
+                          style={{
+                            width: '40px',
+                            height: '40px',
+                            borderRadius: '50%',
+                            objectFit: 'cover',
+                          }}
+                        />
+                      </Link>
                       <div>
-                        <div style={{
-                          fontSize: '14px',
-                          fontWeight: '600',
-                          color: '#FFFFFF',
-                        }}>
-                          {post.user.name}
-                        </div>
+                        <Link to={`/user-profile/123`} style={{ textDecoration: 'none' }}>
+                          <div style={{
+                            fontSize: '14px',
+                            fontWeight: '600',
+                            color: '#FFFFFF',
+                          }}>
+                            {post.user.name}
+                          </div>
+                        </Link>
                         <div style={{
                           fontSize: '12px',
                           color: '#9CA3AF',
@@ -875,25 +909,29 @@ export default function EnhancedHome() {
                     alignItems: 'center',
                     gap: '12px',
                   }}>
-                    <img 
-                      src={request.avatar}
-                      alt={request.name}
-                      style={{
-                        width: '40px',
-                        height: '40px',
-                        borderRadius: '50%',
-                        objectFit: 'cover',
-                      }}
-                    />
+                    <Link to={`/user-profile/${request.id}`} style={{ textDecoration: 'none' }}>
+                      <img 
+                        src={request.avatar}
+                        alt={request.name}
+                        style={{
+                          width: '40px',
+                          height: '40px',
+                          borderRadius: '50%',
+                          objectFit: 'cover',
+                        }}
+                      />
+                    </Link>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{
-                        fontSize: '14px',
-                        fontWeight: '500',
-                        color: '#FFFFFF',
-                        marginBottom: '2px',
-                      }}>
-                        {request.name}
-                      </div>
+                      <Link to={`/user-profile/${request.id}`} style={{ textDecoration: 'none' }}>
+                        <div style={{
+                          fontSize: '14px',
+                          fontWeight: '500',
+                          color: '#FFFFFF',
+                          marginBottom: '2px',
+                        }}>
+                          {request.name}
+                        </div>
+                      </Link>
                       <div style={{
                         fontSize: '12px',
                         color: '#9CA3AF',
@@ -905,28 +943,34 @@ export default function EnhancedHome() {
                         gap: '8px',
                         marginTop: '8px',
                       }}>
-                        <button style={{
-                          padding: '4px 12px',
-                          backgroundColor: '#6366F1',
-                          border: 'none',
-                          borderRadius: '16px',
-                          color: '#FFFFFF',
-                          fontSize: '12px',
-                          fontWeight: '500',
-                          cursor: 'pointer',
-                        }}>
+                        <button 
+                          onClick={() => handleAcceptRequest(request.id)}
+                          style={{
+                            padding: '4px 12px',
+                            backgroundColor: '#6366F1',
+                            border: 'none',
+                            borderRadius: '16px',
+                            color: '#FFFFFF',
+                            fontSize: '12px',
+                            fontWeight: '500',
+                            cursor: 'pointer',
+                          }}
+                        >
                           Accept
                         </button>
-                        <button style={{
-                          padding: '4px 12px',
-                          backgroundColor: '#374151',
-                          border: 'none',
-                          borderRadius: '16px',
-                          color: '#9CA3AF',
-                          fontSize: '12px',
-                          fontWeight: '500',
-                          cursor: 'pointer',
-                        }}>
+                        <button 
+                          onClick={() => handleDeclineRequest(request.id)}
+                          style={{
+                            padding: '4px 12px',
+                            backgroundColor: '#374151',
+                            border: 'none',
+                            borderRadius: '16px',
+                            color: '#9CA3AF',
+                            fontSize: '12px',
+                            fontWeight: '500',
+                            cursor: 'pointer',
+                          }}
+                        >
                           Decline
                         </button>
                       </div>

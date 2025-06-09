@@ -1,8 +1,11 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Heart, MessageCircle, Share, Bookmark, MoreHorizontal, Play, Volume2, VolumeX } from 'lucide-react'
 import Avatar from '../ui/Avatar'
 import Button from '../ui/Button'
 import Card from '../ui/Card'
+import { Link } from 'react-router-dom'
+import { supabase } from '../../utils/supabase'
+import { getCurrentUser } from '../../utils/auth'
 
 interface PostProps {
   post: {
@@ -12,6 +15,7 @@ interface PostProps {
       avatar: string
       pets: string
       verified?: boolean
+      id?: string
     }
     content: {
       type: 'image' | 'video'
@@ -36,6 +40,17 @@ export default function Post({ post, onLike, onSave }: PostProps) {
   const [showFullCaption, setShowFullCaption] = useState(false)
   const [isMuted, setIsMuted] = useState(true)
   const [commentText, setCommentText] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [currentUser, setCurrentUser] = useState<any>(null)
+
+  useEffect(() => {
+    fetchCurrentUser()
+  }, [])
+
+  const fetchCurrentUser = async () => {
+    const user = await getCurrentUser()
+    setCurrentUser(user)
+  }
 
   const formatNumber = (num: number) => {
     if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`
@@ -48,20 +63,68 @@ export default function Post({ post, onLike, onSave }: PostProps) {
     return text.substring(0, maxLength) + '...'
   }
 
+  const handlePostComment = async () => {
+    if (!commentText.trim() || !currentUser || isSubmitting) return
+    
+    setIsSubmitting(true)
+    
+    try {
+      // Add comment to database
+      const { error } = await supabase
+        .from('post_comments')
+        .insert({
+          post_id: post.id,
+          user_id: currentUser.id,
+          content: commentText
+        })
+        
+      if (error) throw error
+      
+      // Create notification for post owner
+      if (post.user.id && post.user.id !== currentUser.id) {
+        await supabase
+          .from('notifications')
+          .insert({
+            user_id: post.user.id,
+            type: 'comment',
+            title: 'New Comment',
+            content: `${currentUser.user_metadata?.full_name || 'Someone'} commented on your post`,
+            related_id: post.id,
+            related_type: 'post'
+          })
+      }
+      
+      // Clear comment text
+      setCommentText('')
+      
+      // Update comment count (in a real app, you'd update the state)
+      onLike(post.id) // This is just to trigger a re-render
+      
+    } catch (error) {
+      console.error('Error posting comment:', error)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
   return (
     <Card padding="none" className="mb-6 overflow-hidden">
       {/* Post Header */}
       <div className="flex items-center justify-between p-4">
         <div className="flex items-center gap-3">
-          <Avatar 
-            src={post.user.avatar}
-            alt={post.user.name}
-            size="md"
-            verified={post.user.verified}
-          />
+          <Link to={`/user-profile/${post.user.id || '123'}`}>
+            <Avatar 
+              src={post.user.avatar}
+              alt={post.user.name}
+              size="md"
+              verified={post.user.verified}
+            />
+          </Link>
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="font-semibold text-gray-900">{post.user.name}</h3>
+              <Link to={`/user-profile/${post.user.id || '123'}`} className="font-semibold text-gray-900">
+                {post.user.name}
+              </Link>
               <span className="text-gray-500">•</span>
               <span className="text-sm text-gray-500">{post.timestamp}</span>
             </div>
@@ -79,6 +142,14 @@ export default function Post({ post, onLike, onSave }: PostProps) {
         <div className="px-4 pb-3">
           <p className="text-gray-900 leading-relaxed">
             {showFullCaption ? post.content.caption : truncateCaption(post.content.caption)}
+            {post.content.caption.length > 150 && !showFullCaption && (
+              <button 
+                onClick={() => setShowFullCaption(true)}
+                className="text-purple-600 hover:text-purple-700 ml-1 font-medium"
+              >
+                more
+              </button>
+            )}
           </p>
           
           {post.content.hashtags.length > 0 && (
@@ -196,8 +267,13 @@ export default function Post({ post, onLike, onSave }: PostProps) {
             />
           </div>
           {commentText.trim() && (
-            <Button variant="primary" size="sm">
-              Post
+            <Button 
+              variant="primary" 
+              size="sm"
+              onClick={handlePostComment}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Posting...' : 'Post'}
             </Button>
           )}
         </div>
