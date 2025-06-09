@@ -53,14 +53,16 @@ function App() {
   useEffect(() => {
     if (!loading && !isSigningUp) { 
       if (isAuth) {
-        // Only navigate to /home if not already on /home
-        if (window.location.pathname !== '/home') {
+        // Only navigate to /home if not already on /home or other protected routes
+        const protectedRoutes = ['/home', '/feed', '/explore-page', '/events-page', '/appointment-page', '/settings-page', '/profile', '/messages', '/explore', '/events', '/appointment', '/settings']
+        if (!protectedRoutes.includes(window.location.pathname)) {
           setTimeout(() => {
             navigate('/home', { replace: false })
           }, 0); // Use setTimeout with 0ms to defer navigation
         }
       } else {
-        if (window.location.pathname !== '/' && window.location.pathname !== '/about' && window.location.pathname !== '/careers' && window.location.pathname !== '/blog' && window.location.pathname !== '/privacy' && window.location.pathname !== '/terms' && window.location.pathname !== '/help') {
+        const publicRoutes = ['/', '/about', '/careers', '/blog', '/privacy', '/terms', '/help']
+        if (!publicRoutes.includes(window.location.pathname)) {
           setTimeout(() => {
             navigate('/', { replace: false })
           }, 0); // Use setTimeout with 0ms to defer navigation
@@ -111,7 +113,7 @@ function App() {
         <Route path="/terms" element={<TermsOfServicePage />} />
         <Route path="/help" element={<HelpCenterPage />} />
         
-        {/* Protected Routes */}
+        {/* Protected Routes - Original */}
         <Route 
           path="/home" 
           element={<EnhancedHome />} 
