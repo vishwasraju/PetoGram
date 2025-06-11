@@ -33,11 +33,11 @@ import { getCurrentUser, getUserProfile, getUserPets } from '../utils/auth'
 interface UserProfile {
   id: string
   user_id: string
-  username: string
+  username?: string
   bio: string
   profile_picture: string
   location: string
-  birth_date: string
+  birth_date?: string
   phone: string
   website: string
   social_media: {
@@ -49,8 +49,8 @@ interface UserProfile {
   is_public: boolean
   allow_messages: boolean
   show_email: boolean
-  created_at: string
-  updated_at: string
+  created_at?: string
+  updated_at?: string
 }
 
 interface Post {
@@ -61,6 +61,7 @@ interface Post {
   likes_count: number
   comments_count: number
   created_at: string
+  username?: string
 }
 
 interface UserPet {
@@ -127,10 +128,31 @@ export default function Profile() {
   const [followersCount, setFollowersCount] = useState(0)
   const [followingCount, setFollowingCount] = useState(0)
   const [currentUser, setCurrentUser] = useState<any>(null)
+  const [isFollowing, setIsFollowing] = useState(false)
+  const isOwnProfile = currentUser && profile && currentUser.id === profile.user_id
+  const [showProfileCard, setShowProfileCard] = useState(false)
+
+  const fetchPosts = async () => {
+    if (!currentUser) return;
+    setLoading(true);
+    try {
+      const { data: postsData, error: postsError } = await supabase
+        .from('posts')
+        .select('*')
+        .eq('is_active', true)
+        .order('created_at', { ascending: false });
+      setPosts(postsData || []);
+    } catch (error) {
+      console.error('Error fetching posts:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    fetchCurrentUserData()
-  }, [])
+    fetchCurrentUserData();
+    fetchPosts();
+  }, []);
 
   const fetchCurrentUserData = async () => {
     try {
@@ -188,10 +210,13 @@ export default function Profile() {
     }
   }
 
+  const handleFollowToggle = () => {
+    setIsFollowing((prev) => !prev)
+    // Here you would also call your backend to follow/unfollow
+  }
+
   const tabs = [
     { id: 'posts', name: 'Posts', icon: Grid3X3, count: posts.length },
-    { id: 'pets', name: 'Pets', icon: Tag, count: pets.length },
-    { id: 'saved', name: 'Saved', icon: Bookmark, count: 0 },
   ]
 
   if (loading) {
@@ -343,27 +368,41 @@ export default function Profile() {
             <div style={{ flex: 1 }}>
               <div style={{
                 display: 'flex',
+                flexDirection: 'row',
                 alignItems: 'center',
-                gap: designTokens.spacing[3],
-                marginBottom: designTokens.spacing[4],
+                justifyContent: 'space-between',
+                width: '100%',
               }}>
-                <h2 style={{
-                  margin: 0,
-                  fontSize: designTokens.typography.fontSize['3xl'],
-                  fontWeight: designTokens.typography.fontWeight.bold,
-                  color: '#fff',
-                  fontFamily: designTokens.typography.fontFamily.display.join(', '),
-                }}>
-                  {profile?.username || 'User'}
-                </h2>
-                <Badge variant="primary" size="md">
-                  <Star size={14} />
-                  <span style={{ marginLeft: designTokens.spacing[1] }}>Pro</span>
-                </Badge>
-                <Badge variant="success" size="md">
-                  <Award size={14} />
-                  <span style={{ marginLeft: designTokens.spacing[1] }}>Verified</span>
-                </Badge>
+                <div style={{ flex: 1 }}>
+                  <h2 style={{
+                    margin: 0,
+                    fontSize: designTokens.typography.fontSize['3xl'],
+                    fontWeight: designTokens.typography.fontWeight.bold,
+                    color: '#fff',
+                    fontFamily: designTokens.typography.fontFamily.display.join(', '),
+                  }}>
+                    {profile?.username || 'User'}
+                  </h2>
+                  <p style={{
+                    margin: 0,
+                    fontSize: designTokens.typography.fontSize.base,
+                    color: '#9CA3AF',
+                    fontWeight: 500,
+                  }}>
+                    @{profile?.username || 'username'}
+                  </p>
+                </div>
+                {isOwnProfile && (
+                  <Button 
+                    variant="primary" 
+                    size="lg" 
+                    style={{ marginLeft: designTokens.spacing[6] }}
+                    onClick={() => navigate('/edit-profile')}
+                  >
+                    <Edit3 size={18} />
+                    <span>Edit Profile</span>
+                  </Button>
+                )}
               </div>
 
               {/* Stats */}
@@ -462,37 +501,38 @@ export default function Profile() {
               gap: designTokens.spacing[3],
               minWidth: '200px',
             }}>
-              <Button 
-                variant="primary" 
-                size="lg" 
-                style={{ width: '100%' }}
-                onClick={() => navigate('/edit-profile')}
-              >
-                <Edit3 size={18} />
-                <span>Edit Profile</span>
-              </Button>
-              
-              <div style={{ display: 'flex', gap: designTokens.spacing[2] }}>
+              {isOwnProfile ? (
                 <Button 
-                  variant="secondary" 
-                  size="md" 
-                  style={{ flex: 1 }}
-                  onClick={() => navigate('/messages-page')}
+                  variant="primary" 
+                  size="lg" 
+                  style={{ width: '100%' }}
+                  onClick={() => navigate('/edit-profile')}
                 >
-                  <MessageCircle size={16} />
+                  <Edit3 size={18} />
+                  <span>Edit Profile</span>
                 </Button>
-                <Button variant="secondary" size="md" style={{ flex: 1 }}>
-                  <UserPlus size={16} />
-                </Button>
-                <Button 
-                  variant="secondary" 
-                  size="md" 
-                  style={{ flex: 1 }}
-                  onClick={() => navigate('/settings-page')}
-                >
-                  <Settings size={16} />
-                </Button>
-              </div>
+              ) : (
+                <>
+                  <Button 
+                    variant={isFollowing ? 'secondary' : 'primary'} 
+                    size="lg" 
+                    style={{ width: '100%' }}
+                    onClick={handleFollowToggle}
+                  >
+                    <UserPlus size={18} />
+                    <span>{isFollowing ? 'Following' : 'Follow'}</span>
+                  </Button>
+                  <Button 
+                    variant="secondary" 
+                    size="lg" 
+                    style={{ width: '100%', marginTop: designTokens.spacing[2] }}
+                    onClick={() => navigate('/messages-page')}
+                  >
+                    <MessageCircle size={18} />
+                    <span>Message</span>
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         </Card>
@@ -699,136 +739,16 @@ export default function Profile() {
               )}
             </div>
           )}
-
-          {/* Pets Tab */}
-          {activeTab === 'pets' && (
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
-              gap: designTokens.spacing[4],
-            }}>
-              {pets.length > 0 ? pets.map((pet) => (
-                <div key={pet.id} style={{
-                  backgroundColor: '#222',
-                  borderRadius: designTokens.borderRadius.xl,
-                  padding: designTokens.spacing[4],
-                  border: '1px solid #333',
-                  textAlign: 'center',
-                }}>
-                  <img 
-                    src={pet.photo || 'https://images.pexels.com/photos/1805164/pexels-photo-1805164.jpeg?auto=compress&cs=tinysrgb&w=200'}
-                    alt={pet.name}
-                    style={{
-                      width: '80px',
-                      height: '80px',
-                      borderRadius: '50%',
-                      objectFit: 'cover',
-                      margin: '0 auto 16px',
-                      border: '3px solid #6366F1',
-                    }}
-                  />
-                  <h4 style={{
-                    margin: '0 0 8px 0',
-                    fontSize: designTokens.typography.fontSize.lg,
-                    fontWeight: designTokens.typography.fontWeight.semibold,
-                    color: '#fff',
-                  }}>
-                    {pet.name}
-                  </h4>
-                  <p style={{
-                    margin: '0 0 4px 0',
-                    fontSize: designTokens.typography.fontSize.sm,
-                    color: '#9CA3AF',
-                  }}>
-                    {pet.type} {pet.breed && `• ${pet.breed}`}
-                  </p>
-                  {pet.age && (
-                    <p style={{
-                      margin: 0,
-                      fontSize: designTokens.typography.fontSize.sm,
-                      color: '#9CA3AF',
-                    }}>
-                      {pet.age} old
-                    </p>
-                  )}
-                </div>
-              )) : (
-                <div style={{
-                  gridColumn: '1 / -1',
-                  textAlign: 'center',
-                  padding: `${designTokens.spacing[16]} ${designTokens.spacing[8]}`,
-                }}>
-                  <div style={{
-                    width: '80px',
-                    height: '80px',
-                    backgroundColor: '#222',
-                    borderRadius: '50%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    margin: `0 auto ${designTokens.spacing[4]}`,
-                  }}>
-                    <Tag size={32} color='#9CA3AF' />
-                  </div>
-                  <h3 style={{
-                    margin: `0 0 ${designTokens.spacing[2]} 0`,
-                    fontSize: designTokens.typography.fontSize.xl,
-                    fontWeight: designTokens.typography.fontWeight.semibold,
-                    color: '#fff',
-                  }}>
-                    No pets added yet
-                  </h3>
-                  <p style={{
-                    margin: 0,
-                    fontSize: designTokens.typography.fontSize.base,
-                    color: '#9CA3AF',
-                    lineHeight: designTokens.typography.lineHeight.relaxed,
-                  }}>
-                    Add your pets to share their adorable moments!
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Saved Tab */}
-          {activeTab === 'saved' && (
-            <div style={{
-              textAlign: 'center',
-              padding: `${designTokens.spacing[16]} ${designTokens.spacing[8]}`,
-            }}>
-              <div style={{
-                width: '80px',
-                height: '80px',
-                backgroundColor: '#222',
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                margin: `0 auto ${designTokens.spacing[4]}`,
-              }}>
-                <Bookmark size={32} color='#9CA3AF' />
-              </div>
-              <h3 style={{
-                margin: `0 0 ${designTokens.spacing[2]} 0`,
-                fontSize: designTokens.typography.fontSize.xl,
-                fontWeight: designTokens.typography.fontWeight.semibold,
-                color: '#fff',
-              }}>
-                No saved posts yet
-              </h3>
-              <p style={{
-                margin: 0,
-                fontSize: designTokens.typography.fontSize.base,
-                color: '#9CA3AF',
-                lineHeight: designTokens.typography.lineHeight.relaxed,
-              }}>
-                Posts you save will appear here.
-              </p>
-            </div>
-          )}
         </Card>
       </div>
+
+      {showProfileCard && (
+        <div className="modal-overlay">
+          <div className="profile-card">
+            {/* Profile card content here */}
+          </div>
+        </div>
+      )}
 
       <style>{`
         @keyframes spin {

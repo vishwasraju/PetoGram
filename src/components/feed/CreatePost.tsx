@@ -5,8 +5,9 @@ import Button from '../ui/Button'
 import Card from '../ui/Card'
 import { supabase } from '../../utils/supabase'
 import { getCurrentUser } from '../../utils/auth'
+import { useNavigate } from 'react-router-dom'
 
-export default function CreatePost() {
+export default function CreatePost({ onPostCreated }: { onPostCreated?: () => void }) {
   const [postText, setPostText] = useState('')
   const [isExpanded, setIsExpanded] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -15,6 +16,7 @@ export default function CreatePost() {
   const [location, setLocation] = useState('')
   const [contentType, setContentType] = useState<'text' | 'image' | 'video'>('text')
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const navigate = useNavigate()
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -49,37 +51,41 @@ export default function CreatePost() {
   }
 
   const handleSubmit = async () => {
-    if ((!postText.trim() && previewUrls.length === 0) || isSubmitting) return
-    
-    setIsSubmitting(true)
-    
+    if (!postText.trim() && previewUrls.length === 0) {
+      alert('Please add a description or upload at least one file');
+      return;
+    }
+
     try {
-      const user = await getCurrentUser()
+      const user = await getCurrentUser();
       if (!user) {
-        throw new Error('User not authenticated')
+        alert('User not authenticated');
+        return;
       }
-      
-      // Upload media files if any
-      const mediaUrls: string[] = []
-      
+
+      // Upload files to Supabase Storage
+      let mediaUrls = [];
       if (selectedFiles.length > 0) {
         for (const file of selectedFiles) {
-          const fileName = `${user.id}/${Date.now()}-${file.name}`
-          const { data, error } = await supabase.storage
+          const fileName = `${user.id}/${Date.now()}-${file.name}`;
+          const { error: uploadError } = await supabase.storage
             .from('post-media')
-            .upload(fileName, file)
-            
-          if (error) throw error
-          
+            .upload(fileName, file);
+
+          if (uploadError) {
+            alert('File upload failed: ' + uploadError.message);
+            return;
+          }
+
           const { data: { publicUrl } } = supabase.storage
             .from('post-media')
-            .getPublicUrl(fileName)
-            
-          mediaUrls.push(publicUrl)
+            .getPublicUrl(fileName);
+
+          mediaUrls.push(publicUrl);
         }
       }
-      
-      // Create post
+
+      // Insert post into Supabase
       const { error } = await supabase
         .from('posts')
         .insert({
@@ -87,28 +93,41 @@ export default function CreatePost() {
           content_type: contentType,
           caption: postText,
           media_urls: mediaUrls,
-          location: location || null,
-          privacy_level: 'public',
-        })
-        
-      if (error) throw error
-      
-      // Reset form
-      setPostText('')
-      setIsExpanded(false)
-      setSelectedFiles([])
-      setPreviewUrls([])
-      setLocation('')
-      setContentType('text')
-      
-      // Refresh the feed (you would typically do this through a state update in the parent component)
-      window.location.reload()
-      
-    } catch (error) {
-      console.error('Error creating post:', error)
-      alert('Failed to create post. Please try again.')
-    } finally {
-      setIsSubmitting(false)
+          location,
+          privacy_level: 'everyone',
+          is_active: true,
+          created_at: new Date().toISOString(),
+          likes_count: 0,
+          comments_count: 0,
+          shares_count: 0,
+        });
+
+      if (error) {
+        alert('Failed to create post: ' + error.message);
+        return;
+      }
+
+      alert('Post created!');
+      if (onPostCreated) {
+        onPostCreated();
+      }
+      console.log('Creating post:', {
+        user_id: user.id,
+        content_type: contentType,
+        caption: postText,
+        media_urls: mediaUrls,
+        location,
+        privacy_level: 'everyone',
+        is_active: true,
+        created_at: new Date().toISOString(),
+        likes_count: 0,
+        comments_count: 0,
+        shares_count: 0,
+      });
+      navigate('/home');
+    } catch (err) {
+      alert('Unexpected error: ' + err.message);
+      console.error(err);
     }
   }
 

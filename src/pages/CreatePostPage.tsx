@@ -21,6 +21,8 @@ import {
   Pause
 } from 'lucide-react'
 import { designTokens } from '../design-system/tokens'
+import { supabase } from '../utils/supabase'
+import { getCurrentUser } from '../utils/auth'
 
 type PostType = 'image' | 'video' | 'poll' | 'text'
 
@@ -160,53 +162,73 @@ export default function CreatePostPage() {
     }
   }
 
-  const handleSubmit = () => {
-    // Validate form
-    if (!description.trim() && postType !== 'poll') {
-      alert('Please add a description')
-      return
+  const handleSubmit = async () => {
+    if (!description.trim()) {
+      alert('Please add a description');
+      return;
     }
-
-    if (postType === 'poll' && !pollQuestion.trim()) {
-      alert('Please add a poll question')
-      return
-    }
-
-    if (postType === 'poll' && pollOptions.some(option => !option.text.trim())) {
-      alert('Please fill in all poll options')
-      return
-    }
-
     if ((postType === 'image' || postType === 'video') && uploadedFiles.length === 0) {
-      alert('Please upload at least one file')
-      return
+      alert('Please upload at least one file');
+      return;
     }
 
-    // Create post data
-    const postData = {
-      type: postType,
-      description,
-      hashtags,
-      location,
-      privacy,
-      scheduledPost,
-      scheduleDate: scheduledPost ? scheduleDate : null,
-      scheduleTime: scheduledPost ? scheduleTime : null,
-      files: uploadedFiles,
-      poll: postType === 'poll' ? {
-        question: pollQuestion,
-        options: pollOptions,
-        duration: pollDuration,
-        allowMultipleChoices
-      } : null
-    }
+    try {
+      const user = await getCurrentUser();
+      if (!user) {
+        alert('User not authenticated');
+        return;
+      }
 
-    console.log('Creating post:', postData)
-    
-    // Here you would typically send the data to your backend
-    // For now, we'll just navigate back
-    navigate('/home')
-  }
+      // Upload files to Supabase Storage
+      let mediaUrls = [];
+      for (const file of uploadedFiles) {
+        const fileName = `${user.id}/${Date.now()}-${file.name}`;
+        const { error: uploadError } = await supabase.storage
+          .from('post-media')
+          .upload(fileName, file);
+
+        if (uploadError) {
+          alert('File upload failed: ' + uploadError.message);
+          return;
+        }
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('post-media')
+          .getPublicUrl(fileName);
+
+        mediaUrls.push(publicUrl);
+      }
+
+      // Insert post into Supabase
+      const { error } = await supabase
+        .from('posts')
+        .insert({
+          user_id: user.id,
+          content_type: postType,
+          caption: description,
+          media_urls: mediaUrls,
+          hashtags,
+          location,
+          privacy_level: privacy,
+          is_active: true,
+          created_at: new Date().toISOString(),
+          likes_count: 0,
+          comments_count: 0,
+          shares_count: 0,
+        });
+
+      if (error) {
+        alert('Failed to create post: ' + error.message);
+        return;
+      }
+
+      alert('Post created!');
+      navigate('/home');
+    } catch (err) {
+      alert('Unexpected error: ' + err.message);
+      console.error(err);
+    }
+  };
 
   return (
     <div style={{

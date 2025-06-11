@@ -16,7 +16,6 @@ import PrivacyPolicyPage from './pages/PrivacyPolicyPage'
 import TermsOfServicePage from './pages/TermsOfServicePage'
 import HelpCenterPage from './pages/HelpCenterPage'
 // Import new pages
-import FeedPage from './pages/FeedPage'
 import ExplorePage from './pages/ExplorePage'
 import EventsPage from './pages/EventsPage'
 import AppointmentPage from './pages/AppointmentPage'
@@ -27,6 +26,8 @@ import UserProfilePage from './pages/UserProfilePage'
 import EditProfilePage from './pages/EditProfilePage'
 import PasswordChangePage from './pages/PasswordChangePage'
 import DeleteAccountPage from './pages/DeleteAccountPage'
+import ProfileInfoCardPage from './pages/ProfileInfoCardPage'
+import PasswordSecurityPage from './pages/PasswordSecurityPage'
 import { isAuthenticated } from './utils/auth'
 import { supabase } from './utils/supabase'
 
@@ -156,10 +157,6 @@ function App() {
         
         {/* New dedicated pages */}
         <Route 
-          path="/feed" 
-          element={<FeedPage />} 
-        />
-        <Route 
           path="/explore-page" 
           element={<ExplorePage />} 
         />
@@ -200,6 +197,18 @@ function App() {
         <Route 
           path="/delete-account" 
           element={<DeleteAccountPage />} 
+        />
+        
+        {/* New dedicated profile card page */}
+        <Route 
+          path="/profile-info" 
+          element={<ProfileInfoCardPage />} 
+        />
+        
+        {/* New password security page */}
+        <Route 
+          path="/password-security" 
+          element={<PasswordSecurityPage />} 
         />
         
         {/* 404 Route */}

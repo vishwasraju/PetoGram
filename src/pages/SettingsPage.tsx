@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { 
   ArrowLeft, 
   Settings, 
@@ -35,7 +35,7 @@ export default function SettingsPage() {
       title: 'Account',
       items: [
         { icon: User, label: 'Profile Information', description: 'Update your personal details', action: 'navigate' },
-        { icon: Lock, label: 'Password & Security', description: 'Change password and security settings', action: 'navigate' },
+        { icon: Lock, label: 'Password & Security', description: 'Change your password', action: 'navigate' },
         { icon: CreditCard, label: 'Billing & Payments', description: 'Manage payment methods', action: 'navigate' },
         { icon: Download, label: 'Download Data', description: 'Export your account data', action: 'button' }
       ]
@@ -84,9 +84,20 @@ export default function SettingsPage() {
         // Handle data download
         console.log('Downloading data...')
       }
+    } else if (item.action === 'navigate') {
+      if (item.label === 'Profile Information') {
+        navigate('/profile');
+        return;
+      }
+      if (item.label === 'Password & Security') {
+        navigate('/password-security');
+        return;
+      }
+      // Add more navigation cases as needed
     }
-    // For 'navigate' actions, you would typically use router navigation
   }
+
+  const navigate = useNavigate();
 
   return (
     <div style={{
@@ -140,13 +151,10 @@ export default function SettingsPage() {
         padding: '24px',
       }}>
         {/* Profile Summary */}
-        <div style={{
-          backgroundColor: '#111',
-          borderRadius: '16px',
-          padding: '24px',
-          marginBottom: '32px',
-          border: '1px solid #333',
-        }}>
+        <div
+          style={{ backgroundColor: '#111', borderRadius: '16px', padding: '24px', marginBottom: '32px', border: '1px solid #333', cursor: 'pointer' }}
+          onClick={() => navigate('/profile')}
+        >
           <div style={{
             display: 'flex',
             alignItems: 'center',

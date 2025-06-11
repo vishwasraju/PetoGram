@@ -270,7 +270,7 @@ const trendingTopics = [
 ]
 
 export default function EnhancedHome() {
-  const [posts, setPosts] = useState(mockPosts)
+  const [posts, setPosts] = useState<PostData[]>([])
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -292,7 +292,68 @@ export default function EnhancedHome() {
 
   useEffect(() => {
     fetchCurrentUserData()
+    fetchPosts()
   }, [])
+
+  // Set up polling to refresh posts every 5 seconds
+  useEffect(() => {
+    const pollInterval = setInterval(() => {
+      fetchPosts()
+    }, 5000)
+
+    return () => clearInterval(pollInterval)
+  }, [])
+
+  const fetchPosts = async () => {
+    setLoading(true);
+    try {
+      const { data: postsData, error: postsError } = await supabase
+        .from('posts')
+        .select('*')
+        .eq('is_active', true)
+        .order('created_at', { ascending: false });
+      
+      if (postsError) throw postsError;
+
+      // Get current user for post author info
+      const user = await getCurrentUser();
+
+      // Transform the data to match PostData interface
+      const transformedPosts = (postsData || []).map(post => ({
+        id: post.id,
+        user: {
+          name: post.user_id === user?.id ? user?.email?.split('@')[0] || 'You' : 'Unknown User',
+          avatar: 'https://images.pexels.com/photos/1036622/pexels-photo-1036622.jpeg?auto=compress&cs=tinysrgb&w=120&h=120&dpr=2',
+          pets: 'No pets',
+        },
+        content: {
+          type: post.content_type || 'image',
+          url: post.media_urls?.[0] || '',
+          caption: post.caption || '',
+          hashtags: post.hashtags || [],
+        },
+        engagement: {
+          likes: post.likes_count || 0,
+          comments: post.comments_count || 0,
+          shares: post.shares_count || 0,
+          liked: post.liked || false,
+          saved: post.saved || false,
+        },
+        timestamp: post.created_at,
+      }));
+      
+      setPosts(transformedPosts);
+    } catch (error) {
+      console.error('Error fetching posts:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Add a refresh function that can be called manually
+  const refreshPosts = () => {
+    fetchPosts()
+  }
 
   const fetchCurrentUserData = async () => {
     try {
