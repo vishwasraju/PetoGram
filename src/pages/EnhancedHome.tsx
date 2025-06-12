@@ -11,8 +11,9 @@ import { SkeletonCard } from '../components/ui/Skeleton'
 import { TrendingUp, Users, Calendar, MapPin, Star, Plus, Search, Mic, Heart, MessageCircle, Bookmark, MoreHorizontal, UserPlus, X, Clock, Siren as Fire, Hash, Bell, Stethoscope } from 'lucide-react'
 import { designTokens } from '../design-system/tokens'
 import { useNavigate, Link } from 'react-router-dom'
-import { clearAuthenticationState, getCurrentUser, getUserProfile } from '../utils/auth'
+import { clearAuthenticationState, getCurrentUser, getUserProfile, getUserPets, savePost, unsavePost, getSavedPostIds } from '../utils/auth'
 import { supabase } from '../utils/supabase'
+import CommentModal from '../components/feed/CommentModal'
 
 interface PostData {
   id: string
@@ -279,6 +280,8 @@ export default function EnhancedHome() {
   const [currentUser, setCurrentUser] = useState<any>(null)
   const [userProfile, setUserProfile] = useState<any>(null)
   const navigate = useNavigate()
+  const [showCommentModal, setShowCommentModal] = useState(false);
+  const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
 
   useEffect(() => {
     const updateLayout = () => {
@@ -315,32 +318,53 @@ export default function EnhancedHome() {
       
       if (postsError) throw postsError;
 
-      // Get current user for post author info
-      const user = await getCurrentUser();
+      const currentUserAuth = await getCurrentUser(); // Get current user here
+      const savedPostIds = currentUserAuth ? await getSavedPostIds(currentUserAuth.id) : [];
+
+      // Fetch profiles and pets for all unique user_ids in posts
+      const userIds = [...new Set((postsData || []).map(post => post.user_id) || [])];
+      const profilesMap = new Map();
+      const petsMap = new Map();
+
+      for (const userId of userIds) {
+        const profile = await getUserProfile(userId);
+        if (profile) {
+          profilesMap.set(userId, profile);
+        }
+        const pets = await getUserPets(userId);
+        if (pets && pets.length > 0) {
+          petsMap.set(userId, pets.map(pet => pet.name).join(', ')); // Join pet names
+        }
+      }
 
       // Transform the data to match PostData interface
-      const transformedPosts = (postsData || []).map(post => ({
-        id: post.id,
-        user: {
-          name: post.user_id === user?.id ? user?.email?.split('@')[0] || 'You' : 'Unknown User',
-          avatar: 'https://images.pexels.com/photos/1036622/pexels-photo-1036622.jpeg?auto=compress&cs=tinysrgb&w=120&h=120&dpr=2',
-          pets: 'No pets',
-        },
-        content: {
-          type: post.content_type || 'image',
-          url: post.media_urls?.[0] || '',
-          caption: post.caption || '',
-          hashtags: post.hashtags || [],
-        },
-        engagement: {
-          likes: post.likes_count || 0,
-          comments: post.comments_count || 0,
-          shares: post.shares_count || 0,
-          liked: post.liked || false,
-          saved: post.saved || false,
-        },
-        timestamp: post.created_at,
-      }));
+      const transformedPosts = (postsData || []).map(post => {
+        const userProfile = profilesMap.get(post.user_id);
+        const userPets = petsMap.get(post.user_id);
+
+        return {
+          id: post.id,
+          user: {
+            name: userProfile?.username || userProfile?.email?.split('@')[0] || 'Unknown User',
+            avatar: userProfile?.profile_picture || 'https://images.pexels.com/photos/1036622/pexels-photo-1036622.jpeg?auto=compress&cs=tinysrgb&w=120&h=120&dpr=2',
+            pets: userPets || 'No pets',
+          },
+          content: {
+            type: post.content_type || 'image',
+            url: post.media_urls?.[0] || '',
+            caption: post.caption || '',
+            hashtags: post.hashtags || [],
+          },
+          engagement: {
+            likes: post.likes_count || 0,
+            comments: post.comments_count || 0,
+            shares: post.shares_count || 0,
+            liked: post.liked || false,
+            saved: savedPostIds.includes(post.id), // Set saved status here
+          },
+          timestamp: post.created_at,
+        };
+      });
       
       setPosts(transformedPosts);
     } catch (error) {
@@ -368,40 +392,144 @@ export default function EnhancedHome() {
     }
   }
 
-  const handleLike = (postId: string) => {
-    setPosts(currentPosts =>
-      currentPosts.map(post =>
-        post.id === postId
-          ? {
-              ...post,
-              engagement: {
-                ...post.engagement,
-                liked: !post.engagement.liked,
-                likes: post.engagement.liked 
-                  ? post.engagement.likes - 1 
-                  : post.engagement.likes + 1,
-              },
-            }
-          : post
-      )
-    )
-  }
+  const handleLike = async (postId: string) => {
+    if (!currentUser) {
+      alert('Please log in to like posts.');
+      return;
+    }
 
-  const handleSave = (postId: string) => {
-    setPosts(currentPosts =>
-      currentPosts.map(post =>
-        post.id === postId
-          ? {
-              ...post,
-              engagement: {
-                ...post.engagement,
-                saved: !post.engagement.saved,
-              },
-            }
-          : post
-      )
-    )
-  }
+    const postToLike = posts.find(p => p.id === postId);
+    if (!postToLike) return;
+
+    try {
+      if (postToLike.engagement.liked) {
+        // If currently liked, unlike it
+        const { error } = await supabase
+          .from('post_likes')
+          .delete()
+          .eq('post_id', postId)
+          .eq('user_id', currentUser.id);
+
+        if (error) throw error;
+
+        // Decrement likes_count in posts table
+        const { error: updateError } = await supabase
+          .from('posts')
+          .update({ likes_count: postToLike.engagement.likes - 1 })
+          .eq('id', postId);
+
+        if (updateError) throw updateError;
+
+        setPosts(currentPosts =>
+          currentPosts.map(post =>
+            post.id === postId
+              ? {
+                  ...post,
+                  engagement: {
+                    ...post.engagement,
+                    liked: false,
+                    likes: post.engagement.likes - 1,
+                  },
+                }
+              : post
+          )
+        );
+      } else {
+        // If not liked, like it
+        const { error } = await supabase
+          .from('post_likes')
+          .insert({
+            post_id: postId,
+            user_id: currentUser.id,
+          });
+
+        if (error) throw error;
+
+        // Increment likes_count in posts table
+        const { error: updateError } = await supabase
+          .from('posts')
+          .update({ likes_count: postToLike.engagement.likes + 1 })
+          .eq('id', postId);
+
+        if (updateError) throw updateError;
+
+        setPosts(currentPosts =>
+          currentPosts.map(post =>
+            post.id === postId
+              ? {
+                  ...post,
+                  engagement: {
+                    ...post.engagement,
+                    liked: true,
+                    likes: post.engagement.likes + 1,
+                  },
+                }
+              : post
+          )
+        );
+      }
+    } catch (error) {
+      console.error('Error liking/unliking post:', error);
+      alert('An error occurred while liking/unliking the post. Please try again.');
+    }
+  };
+
+  const handleSave = async (postId: string) => {
+    if (!currentUser) {
+      alert('Please log in to save posts.');
+      return;
+    }
+
+    const postToSave = posts.find(p => p.id === postId);
+    if (!postToSave) return;
+
+    try {
+      if (postToSave.engagement.saved) {
+        // If currently saved, unsave it
+        const success = await unsavePost(currentUser.id, postId);
+        if (success) {
+          setPosts(currentPosts =>
+            currentPosts.map(post =>
+              post.id === postId
+                ? {
+                    ...post,
+                    engagement: {
+                      ...post.engagement,
+                      saved: false,
+                    },
+                  }
+                : post
+            )
+          );
+        } else {
+          alert('Failed to unsave post. Please try again.');
+        }
+      } else {
+        // If not saved, save it
+        const success = await savePost(currentUser.id, postId);
+        if (success) {
+          setPosts(currentPosts =>
+            currentPosts.map(post =>
+              post.id === postId
+                ? {
+                    ...post,
+                    engagement: {
+                      ...post.engagement,
+                      saved: true,
+                    },
+                  }
+                : post
+            )
+          );
+        } else {
+          alert('Failed to save post. Please try again.');
+        }
+      }
+    } catch (error) {
+      console.error('Error saving/unsaving post:', error);
+      alert('An error occurred while saving/unsaving the post.');
+    }
+  };
 
   const handleLogout = () => {
     clearAuthenticationState()
@@ -886,16 +1014,22 @@ export default function EnhancedHome() {
                         <Heart size={18} fill={post.engagement.liked ? 'currentColor' : 'none'} />
                         {post.engagement.likes.toLocaleString()}
                       </button>
-                      <button style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        backgroundColor: 'transparent',
-                        border: 'none',
-                        color: '#9CA3AF',
-                        cursor: 'pointer',
-                        fontSize: '14px',
-                      }}>
+                      <button 
+                        onClick={() => {
+                          setSelectedPostId(post.id);
+                          setShowCommentModal(true);
+                        }}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          backgroundColor: 'transparent',
+                          border: 'none',
+                          color: '#9CA3AF',
+                          cursor: 'pointer',
+                          fontSize: '14px',
+                        }}
+                      >
                         <MessageCircle size={18} />
                         {post.engagement.comments.toLocaleString()}
                       </button>
@@ -1216,6 +1350,29 @@ export default function EnhancedHome() {
         isOpen={showNotifications} 
         onClose={() => setShowNotifications(false)} 
       />
+
+      {showCommentModal && selectedPostId && (
+        <CommentModal
+          postId={selectedPostId}
+          onClose={() => {
+            setShowCommentModal(false);
+            setSelectedPostId(null);
+            fetchPosts(); // Refresh posts to update comment counts
+          }}
+          currentUser={currentUser}
+          userProfile={userProfile}
+          onCommentPosted={(postId, newCommentCount) => {
+            console.log(`Comment posted for post ${postId}. New count: ${newCommentCount}`);
+            setPosts(currentPosts =>
+              currentPosts.map(post =>
+                post.id === postId
+                  ? { ...post, engagement: { ...post.engagement, comments: newCommentCount } }
+                  : post
+              )
+            );
+          }}
+        />
+      )}
     </>
   )
 }

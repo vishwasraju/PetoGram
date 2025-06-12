@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import { 
   ArrowLeft, 
   Settings, 
@@ -20,17 +21,19 @@ import {
   Users,
   Image as ImageIcon,
   Video,
-  Tag
+  Tag,
+  X
 } from 'lucide-react'
 import Avatar from '../components/ui/Avatar'
 import Button from '../components/ui/Button'
 import Card from '../components/ui/Card'
 import Badge from '../components/ui/Badge'
+import ProfileCard from '../components/ProfileCard'
 import { designTokens } from '../design-system/tokens'
 import { supabase } from '../utils/supabase'
-import { getCurrentUser, getUserProfile, getUserPets } from '../utils/auth'
+import { getCurrentUser, getUserProfile, getUserPets, getSavedPostIds, unsavePost, savePost } from '../utils/auth'
 
-interface UserProfile {
+export interface UserProfile {
   id: string
   user_id: string
   username?: string
@@ -55,16 +58,30 @@ interface UserProfile {
 
 interface Post {
   id: string
+  user_id: string
   content_type: string
   caption: string
   media_urls: string[]
+  hashtags?: string[]
+  location?: string
+  privacy_level?: string
   likes_count: number
   comments_count: number
+  shares_count?: number
+  is_active?: boolean
   created_at: string
   username?: string
+  profile_picture?: string
+  pets_info?: string
+  is_saved?: boolean
+  user: {
+    name: string
+    avatar: string
+    pets: string
+  }
 }
 
-interface UserPet {
+export interface UserPet {
   id: string
   name: string
   type: string
@@ -120,9 +137,11 @@ const profilePosts = [
 
 export default function Profile() {
   const navigate = useNavigate()
+  const { profileId } = useParams()
   const [activeTab, setActiveTab] = useState('posts')
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [posts, setPosts] = useState<Post[]>([])
+  const [savedPosts, setSavedPosts] = useState<Post[]>([])
   const [pets, setPets] = useState<UserPet[]>([])
   const [loading, setLoading] = useState(true)
   const [followersCount, setFollowersCount] = useState(0)
@@ -132,16 +151,68 @@ export default function Profile() {
   const isOwnProfile = currentUser && profile && currentUser.id === profile.user_id
   const [showProfileCard, setShowProfileCard] = useState(false)
 
-  const fetchPosts = async () => {
-    if (!currentUser) return;
+  useEffect(() => {
+    if (profileId) {
+      fetchCurrentUserData(profileId)
+      fetchPosts(profileId)
+      fetchSavedPosts(profileId)
+      fetchFollowData(profileId)
+    } else if (currentUser) {
+      fetchCurrentUserData(currentUser.id)
+      fetchPosts(currentUser.id)
+      fetchSavedPosts(currentUser.id)
+      fetchFollowData(currentUser.id)
+    } else {
+      setLoading(false);
+    }
+  }, [profileId, currentUser]);
+
+  const fetchPosts = async (targetUserId: string) => {
+    if (!targetUserId) return;
     setLoading(true);
     try {
       const { data: postsData, error: postsError } = await supabase
         .from('posts')
         .select('*')
         .eq('is_active', true)
+        .eq('user_id', targetUserId)
         .order('created_at', { ascending: false });
-      setPosts(postsData || []);
+      
+      if (postsError) throw postsError;
+
+      const savedPostIds = await getSavedPostIds(currentUser?.id || '');
+
+      const uniqueUserIdsInPosts = [...new Set((postsData || []).map(post => post.user_id))];
+      const userProfilesMap = new Map<string, UserProfile>();
+      const userPetsMap = new Map<string, string>();
+
+      await Promise.all(uniqueUserIdsInPosts.map(async (userId) => {
+        const profileData = await getUserProfile(userId);
+        if (profileData) {
+          userProfilesMap.set(userId, profileData);
+        }
+        const petsData = await getUserPets(userId);
+        if (petsData && petsData.length > 0) {
+          userPetsMap.set(userId, petsData.map(pet => pet.name).join(', '));
+        }
+      }));
+
+      const postsWithUserData = (postsData || []).map(post => {
+        const profile = userProfilesMap.get(post.user_id);
+        const petsInfo = userPetsMap.get(post.user_id);
+
+        return {
+          ...post,
+          is_saved: savedPostIds.includes(post.id),
+          user: {
+            name: profile?.username || (post.user_id === currentUser?.id ? currentUser.email?.split('@')[0] || 'You' : 'Unknown User'),
+            avatar: profile?.profile_picture || 'https://images.pexels.com/photos/1036622/pexels-photo-1036622.jpeg?auto=compress&cs=tinysrgb&w=120&h=120&dpr=2',
+            pets: petsInfo || 'No pets',
+          },
+        };
+      });
+
+      setPosts(postsWithUserData);
     } catch (error) {
       console.error('Error fetching posts:', error);
     } finally {
@@ -149,97 +220,303 @@ export default function Profile() {
     }
   };
 
-  useEffect(() => {
-    fetchCurrentUserData();
-    fetchPosts();
-  }, []);
-
-  const fetchCurrentUserData = async () => {
+  const fetchSavedPosts = async (targetUserId: string) => {
+    if (!currentUser || !targetUserId) return;
+    setLoading(true);
     try {
-      const user = await getCurrentUser()
-      if (!user) {
-        navigate('/')
-        return
+      const savedPostIds = await getSavedPostIds(currentUser.id);
+      if (savedPostIds.length === 0) {
+        setSavedPosts([]);
+        setLoading(false);
+        return;
       }
 
-      setCurrentUser(user)
-
-      // Fetch user profile
-      const userProfile = await getUserProfile(user.id)
-      if (userProfile) {
-        setProfile(userProfile)
-      }
-
-      // Fetch user pets
-      const userPets = await getUserPets(user.id)
-      setPets(userPets)
-
-      // Fetch user posts
-      const { data: userPosts } = await supabase
+      const { data: fetchedSavedPosts, error: savedPostsError } = await supabase
         .from('posts')
         .select('*')
-        .eq('user_id', user.id)
+        .in('id', savedPostIds)
         .eq('is_active', true)
-        .order('created_at', { ascending: false })
+        .order('created_at', { ascending: false });
 
-      if (userPosts) {
-        setPosts(userPosts)
+      if (savedPostsError) throw savedPostsError;
+      
+      const uniqueUserIdsInSavedPosts = [...new Set((fetchedSavedPosts || []).map(post => post.user_id))];
+      const userProfilesMap = new Map<string, UserProfile>();
+      const userPetsMap = new Map<string, string>();
+
+      await Promise.all(uniqueUserIdsInSavedPosts.map(async (userId) => {
+        const profileData = await getUserProfile(userId);
+        if (profileData) {
+          userProfilesMap.set(userId, profileData);
+        }
+        const petsData = await getUserPets(userId);
+        if (petsData && petsData.length > 0) {
+          userPetsMap.set(userId, petsData.map(pet => pet.name).join(', '));
+        }
+      }));
+
+      const savedPostsWithUserData = (fetchedSavedPosts || []).map(post => {
+        const profile = userProfilesMap.get(post.user_id);
+        const petsInfo = userPetsMap.get(post.user_id);
+
+        return {
+          ...post,
+          is_saved: true,
+          user: {
+            name: profile?.username || (post.user_id === currentUser.id ? currentUser.email?.split('@')[0] || 'You' : 'Unknown User'),
+            avatar: profile?.profile_picture || 'https://images.pexels.com/photos/1036622/pexels-photo-1036622.jpeg?auto=compress&cs=tinysrgb&w=120&h=120&dpr=2',
+            pets: petsInfo || 'No pets',
+          },
+        };
+      });
+
+      setSavedPosts(savedPostsWithUserData);
+    } catch (error) {
+      console.error('Error fetching saved posts:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUnsavePost = async (postId: string) => {
+    if (!currentUser) {
+      alert('Please log in to unsave posts.');
+      return;
+    }
+
+    try {
+      const success = await unsavePost(currentUser.id, postId);
+      if (success) {
+        // Remove from savedPosts state
+        setSavedPosts(prevSavedPosts => prevSavedPosts.filter(post => post.id !== postId));
+        // Update the original posts array if this post is also in it
+        setPosts(prevPosts => 
+          prevPosts.map(post =>
+            post.id === postId ? { ...post, is_saved: false } : post
+          )
+        );
+      } else {
+        alert('Failed to unsave post. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error unsaving post:', error);
+      alert('An error occurred while unsaving the post.');
+    }
+  };
+
+  const handleSave = async (postId: string) => {
+    if (!currentUser) {
+      alert('Please log in to save posts.');
+      return;
+    }
+
+    const postToToggle = posts.find(p => p.id === postId) || savedPosts.find(p => p.id === postId);
+    if (!postToToggle) return;
+
+    try {
+      if (postToToggle.is_saved) {
+        // If currently saved, unsave it
+        const success = await unsavePost(currentUser.id, postId);
+        if (success) {
+          setPosts(currentPosts =>
+            currentPosts.map(post =>
+              post.id === postId
+                ? {
+                    ...post,
+                    is_saved: false,
+                  }
+                : post
+            )
+          );
+          setSavedPosts(currentSavedPosts =>
+            currentSavedPosts.filter(post => post.id !== postId)
+          );
+        } else {
+          alert('Failed to unsave post. Please try again.');
+        }
+      } else {
+        // If not saved, save it
+        const success = await savePost(currentUser.id, postId);
+        if (success) {
+          setPosts(currentPosts =>
+            currentPosts.map(post =>
+              post.id === postId
+                ? {
+                    ...post,
+                    is_saved: true,
+                  }
+                : post
+            )
+          );
+          // No need to add to savedPosts here, fetchSavedPosts will handle it on tab switch/refresh
+        } else {
+          alert('Failed to save post. Please try again.');
+        }
+      }
+    } catch (error) {
+      console.error('Error saving/unsaving post:', error);
+      alert('An error occurred while saving/unsaving the post.');
+    }
+  };
+
+  const fetchCurrentUserData = async (targetUserId?: string) => {
+    setLoading(true);
+    try {
+      let userToFetchId = targetUserId;
+      if (!userToFetchId) {
+        const user = await getCurrentUser();
+        if (user) {
+          setCurrentUser(user);
+          userToFetchId = user.id;
+        } else {
+          navigate('/');
+          return;
+        }
       }
 
-      // Fetch followers count
+      if (!userToFetchId) {
+        setLoading(false);
+        return;
+      }
+
+      const profileData = await getUserProfile(userToFetchId);
+      if (profileData) {
+        setProfile(profileData);
+        // Fetch pets for the displayed profile
+        const petsData = await getUserPets(userToFetchId);
+        if (petsData) {
+          setPets(petsData);
+        }
+      } else {
+        setProfile(null);
+      }
+
+      // No longer fetching followers/following here, handled by fetchFollowData
+
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchFollowData = async (targetUserId: string) => {
+    if (!targetUserId) return;
+    try {
       const { count: followers } = await supabase
         .from('user_connections')
         .select('*', { count: 'exact', head: true })
-        .eq('requested_id', user.id)
-        .eq('status', 'accepted')
-
-      // Fetch following count
+        .eq('requested_id', targetUserId)
+        .eq('status', 'accepted');
       const { count: following } = await supabase
         .from('user_connections')
         .select('*', { count: 'exact', head: true })
-        .eq('requester_id', user.id)
-        .eq('status', 'accepted')
+        .eq('requester_id', targetUserId)
+        .eq('status', 'accepted');
 
-      setFollowersCount(followers || 0)
-      setFollowingCount(following || 0)
-
+      setFollowersCount(followers || 0);
+      setFollowingCount(following || 0);
     } catch (error) {
-      console.error('Error fetching user data:', error)
-    } finally {
-      setLoading(false)
+      console.error('Error fetching follow data:', error);
     }
-  }
+  };
 
-  const handleFollowToggle = () => {
-    setIsFollowing((prev) => !prev)
-    // Here you would also call your backend to follow/unfollow
-  }
+  const handleFollowToggle = async () => {
+    if (!currentUser || !profile) return;
 
-  const tabs = [
-    { id: 'posts', name: 'Posts', icon: Grid3X3, count: posts.length },
-  ]
+    try {
+      const { data, error } = await supabase
+        .from('user_connections')
+        .select('*')
+        .eq('requester_id', currentUser.id)
+        .eq('requested_id', profile.user_id)
+        .single();
 
-  if (loading) {
+      if (error && error.message.includes('rows not found')) {
+        // Not following, so follow
+        const { error: insertError } = await supabase.from('user_connections').insert({
+          requester_id: currentUser.id,
+          requested_id: profile.user_id,
+          status: 'accepted',
+        });
+        if (insertError) throw insertError;
+        setIsFollowing(true);
+        setFollowersCount(prev => prev + 1);
+      } else if (data) {
+        // Already following, so unfollow
+        const { error: deleteError } = await supabase
+          .from('user_connections')
+          .delete()
+          .eq('requester_id', currentUser.id)
+          .eq('requested_id', profile.user_id);
+        if (deleteError) throw deleteError;
+        setIsFollowing(false);
+        setFollowersCount(prev => prev - 1);
+      } else if (error) {
+        throw error;
+      }
+    } catch (error) {
+      console.error('Error toggling follow status:', error);
+      alert('An error occurred while changing follow status.');
+    }
+  };
+
+  // Initial fetch of current user for isOwnProfile
+  useEffect(() => {
+    const fetchInitialCurrentUser = async () => {
+      const user = await getCurrentUser();
+      setCurrentUser(user);
+    };
+    fetchInitialCurrentUser();
+  }, []);
+
+  if (loading && !profile) {
     return (
-      <div style={{
-        minHeight: '100vh',
-        backgroundColor: '#000',
-        color: '#fff',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}>
-        <div style={{
-          width: '40px',
-          height: '40px',
-          border: '4px solid #333',
-          borderTop: '4px solid #6366F1',
-          borderRadius: '50%',
-          animation: 'spin 1s linear infinite',
-        }} />
+      <div style={{ minHeight: '100vh', backgroundColor: '#2A2D3A', color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ width: '40px', height: '40px', border: '4px solid #333', borderTop: '4px solid #6366F1', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+      </div>
+    );
+  }
+
+  if (!profile && !loading) {
+    return (
+      <div style={{ minHeight: '100vh', backgroundColor: '#2A2D3A', color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
+        <h2 style={{ color: '#EF4444', fontSize: '24px', marginBottom: '20px' }}>User Not Found</h2>
+        <p style={{ color: '#9CA3AF', fontSize: '16px', marginBottom: '30px' }}>The profile you are looking for does not exist or is unavailable.</p>
+        <Button variant="primary" onClick={() => navigate('/home')}>Go to Home</Button>
+      </div>
+    );
+  }
+
+  // Ensure current user is set before rendering the profile
+  if (!currentUser && !profileId && !loading) {
+    return (
+      <div style={{ minHeight: '100vh', backgroundColor: '#2A2D3A', color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ width: '40px', height: '40px', border: '4px solid #333', borderTop: '4px solid #6366F1', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
       </div>
     )
   }
+
+  const tabs = [
+    {
+      id: 'posts',
+      name: 'Posts',
+      icon: Grid3X3,
+      count: posts.length,
+    },
+    {
+      id: 'saved',
+      name: 'Saved',
+      icon: Bookmark,
+      count: savedPosts.length,
+    },
+    {
+      id: 'tagged',
+      name: 'Tagged',
+      icon: Tag,
+      count: 0,
+    },
+  ]
 
   return (
     <div style={{
@@ -286,12 +563,24 @@ export default function Profile() {
                 {profile?.username || 'My Profile'}
               </h1>
               <p style={{
-                margin: 0,
-                fontSize: designTokens.typography.fontSize.sm,
+                margin: '0 0 16px 0',
+                fontSize: '16px',
                 color: '#9CA3AF',
               }}>
-                @{profile?.username || 'username'}
+                @{profile?.username || (currentUser?.email ? currentUser.email.split('@')[0] : 'username')}
               </p>
+              
+              {/* Pets Display */}
+              {pets.length > 0 && (
+                <p style={{
+                  margin: '0 0 16px 0',
+                  fontSize: '14px',
+                  color: '#E5E7EB',
+                  lineHeight: '1.5',
+                }}>
+                  Pets: {pets.map(pet => pet.name).join(', ')}
+                </p>
+              )}
             </div>
           </div>
           
@@ -545,7 +834,7 @@ export default function Profile() {
             borderBottom: `1px solid #333`,
             marginBottom: designTokens.spacing[6],
           }}>
-            {tabs.map((tab) => {
+            {tabs.filter(tab => isOwnProfile || tab.id !== 'saved').map((tab) => {
               const IconComponent = tab.icon
               const isActive = activeTab === tab.id
               
@@ -592,161 +881,244 @@ export default function Profile() {
             })}
           </div>
 
-          {/* Posts Grid */}
-          {activeTab === 'posts' && (
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-              gap: designTokens.spacing[4],
-            }}>
-              {posts.length > 0 ? posts.map((post) => (
-                <div key={post.id} style={{
-                  position: 'relative',
-                  aspectRatio: '1',
-                  borderRadius: designTokens.borderRadius.xl,
-                  overflow: 'hidden',
-                  cursor: 'pointer',
-                  transition: `transform ${designTokens.animation.duration.fast} ${designTokens.animation.easing.ease}`,
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'scale(1.02)'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'scale(1)'
-                }}>
-                  {post.media_urls && post.media_urls.length > 0 ? (
-                    <img 
-                      src={post.media_urls[0]}
-                      alt={`Post ${post.id}`}
-                      style={{
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'cover',
-                      }}
-                    />
-                  ) : (
-                    <div style={{
-                      width: '100%',
-                      height: '100%',
+          {/* Content Area */}
+          <div style={{
+            maxWidth: '800px',
+            margin: '24px auto',
+            padding: '0 24px',
+          }}>
+            {activeTab === 'posts' && (
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+                gap: '16px',
+              }}>
+                {posts.length > 0 ? (posts.map((post) => (
+                  <div
+                    key={post.id}
+                    style={{
+                      position: 'relative',
+                      borderRadius: '12px',
+                      overflow: 'hidden',
+                      aspectRatio: '1',
                       backgroundColor: '#222',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      color: '#9CA3AF',
-                    }}>
-                      <Grid3X3 size={32} />
-                    </div>
-                  )}
-                  
-                  {/* Post Type Indicator */}
-                  {post.content_type === 'video' && (
+                      flexDirection: 'column',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {post.content_type === 'image' && (
+                      <img
+                        src={post.media_urls[0]}
+                        alt="Post"
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                        }}
+                      />
+                    )}
+                    {post.content_type === 'video' && (
+                      <video
+                        src={post.media_urls[0]}
+                        controls
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                        }}
+                      />
+                    )}
+                    {/* Overlay for likes/comments */}
                     <div style={{
                       position: 'absolute',
-                      top: designTokens.spacing[3],
-                      right: designTokens.spacing[3],
-                      backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                      top: 0,
+                      left: 0,
+                      width: '100%',
+                      height: '100%',
+                      backgroundColor: 'rgba(0, 0, 0, 0.5)',
                       color: '#fff',
-                      padding: designTokens.spacing[1],
-                      borderRadius: designTokens.borderRadius.md,
-                    }}>
-                      <Video size={16} />
-                    </div>
-                  )}
-                  
-                  {/* Hover Overlay */}
-                  <div style={{
-                    position: 'absolute',
-                    inset: 0,
-                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: designTokens.spacing[6],
-                    opacity: 0,
-                    transition: `opacity ${designTokens.animation.duration.fast} ${designTokens.animation.easing.ease}`,
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.opacity = '1'
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.opacity = '0'
-                  }}>
-                    <div style={{
                       display: 'flex',
                       alignItems: 'center',
-                      gap: designTokens.spacing[1],
-                      color: '#fff',
-                      fontWeight: designTokens.typography.fontWeight.semibold,
-                    }}>
-                      <Heart size={20} fill="currentColor" />
-                      <span>{post.likes_count}</span>
+                      justifyContent: 'center',
+                      flexDirection: 'column',
+                      opacity: 0,
+                      transition: 'opacity 0.2s ease',
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
+                    onMouseLeave={(e) => e.currentTarget.style.opacity = '0'}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <Heart size={20} fill="currentColor" /> {post.likes_count}
+                        <MessageCircle size={20} /> {post.comments_count}
+                      </div>
                     </div>
-                    <div style={{
+                  </div>
+                ))): (
+                  <div style={{
+                    gridColumn: '1 / -1',
+                    textAlign: 'center',
+                    padding: '40px',
+                    backgroundColor: '#111',
+                    borderRadius: '16px',
+                    border: '1px solid #333',
+                  }}>
+                    <Grid3X3 size={48} color="#9CA3AF" style={{ marginBottom: '20px' }} />
+                    <h3 style={{ margin: '0 0 10px 0', fontSize: '18px', color: '#fff' }}>No posts yet</h3>
+                    <p style={{ margin: '0 0 20px 0', fontSize: '14px', color: '#9CA3AF' }}>Share your first post to get started!</p>
+                    <Button variant="primary" size="md" onClick={() => navigate('/create-post')}>
+                      <Camera size={18} style={{ marginRight: '8px' }} />
+                      Create Post
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {activeTab === 'saved' && (
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+                gap: '16px',
+              }}>
+                {savedPosts.length > 0 ? (savedPosts.map((post) => (
+                  <div
+                    key={post.id}
+                    style={{
+                      position: 'relative',
+                      borderRadius: '12px',
+                      overflow: 'hidden',
+                      aspectRatio: '1',
+                      backgroundColor: '#222',
                       display: 'flex',
                       alignItems: 'center',
-                      gap: designTokens.spacing[1],
-                      color: '#fff',
-                      fontWeight: designTokens.typography.fontWeight.semibold,
-                    }}>
-                      <MessageCircle size={20} fill="currentColor" />
-                      <span>{post.comments_count}</span>
-                    </div>
-                  </div>
-                </div>
-              )) : (
-                <div style={{
-                  gridColumn: '1 / -1',
-                  textAlign: 'center',
-                  padding: `${designTokens.spacing[16]} ${designTokens.spacing[8]}`,
-                }}>
-                  <div style={{
-                    width: '80px',
-                    height: '80px',
-                    backgroundColor: '#222',
-                    borderRadius: '50%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    margin: `0 auto ${designTokens.spacing[4]}`,
-                  }}>
-                    <Grid3X3 size={32} color='#9CA3AF' />
-                  </div>
-                  <h3 style={{
-                    margin: `0 0 ${designTokens.spacing[2]} 0`,
-                    fontSize: designTokens.typography.fontSize.xl,
-                    fontWeight: designTokens.typography.fontWeight.semibold,
-                    color: '#fff',
-                  }}>
-                    No posts yet
-                  </h3>
-                  <p style={{
-                    margin: 0,
-                    fontSize: designTokens.typography.fontSize.base,
-                    color: '#9CA3AF',
-                    lineHeight: designTokens.typography.lineHeight.relaxed,
-                  }}>
-                    Share your first post to get started!
-                  </p>
-                  <Button 
-                    variant="primary" 
-                    style={{ marginTop: designTokens.spacing[4] }}
-                    onClick={() => navigate('/create-post')}
+                      justifyContent: 'center',
+                      flexDirection: 'column',
+                      cursor: 'pointer',
+                    }}
                   >
-                    <Camera size={16} />
-                    Create Post
-                  </Button>
-                </div>
-              )}
-            </div>
-          )}
+                    {post.content_type === 'image' && (
+                      <img
+                        src={post.media_urls[0]}
+                        alt="Post"
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                        }}
+                      />
+                    )}
+                    {post.content_type === 'video' && (
+                      <video
+                        src={post.media_urls[0]}
+                        controls
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                        }}
+                      />
+                    )}
+                    {/* Overlay for likes/comments and save button */}
+                    <div style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: '100%',
+                      height: '100%',
+                      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                      color: '#fff',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexDirection: 'column',
+                      opacity: 0,
+                      transition: 'opacity 0.2s ease',
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
+                    onMouseLeave={(e) => e.currentTarget.style.opacity = '0'}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '10px' }}>
+                        <Heart size={20} fill="currentColor" /> {post.likes_count}
+                        <MessageCircle size={20} /> {post.comments_count}
+                      </div>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleSave(post.id);
+                        }}
+                        style={{
+                          backgroundColor: 'transparent',
+                          border: 'none',
+                          color: post.is_saved ? designTokens.colors.primary[500] : '#9CA3AF',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        <Bookmark size={20} fill={post.is_saved ? 'currentColor' : 'none'} />
+                      </button>
+                    </div>
+                  </div>
+                ))) : (
+                  <div style={{
+                    gridColumn: '1 / -1',
+                    textAlign: 'center',
+                    padding: '40px',
+                    backgroundColor: '#111',
+                    borderRadius: '16px',
+                    border: '1px solid #333',
+                  }}>
+                    <Bookmark size={48} color="#9CA3AF" style={{ marginBottom: '20px' }} />
+                    <h3 style={{ margin: '0 0 10px 0', fontSize: '18px', color: '#fff' }}>No saved posts yet</h3>
+                    <p style={{ margin: '0 0 20px 0', fontSize: '14px', color: '#9CA3AF' }}>Save posts from your feed to view them here!</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </Card>
       </div>
 
+      {/* Profile Card Overlay */}
       {showProfileCard && (
-        <div className="modal-overlay">
-          <div className="profile-card">
-            {/* Profile card content here */}
-          </div>
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          backgroundColor: 'rgba(0, 0, 0, 0.7)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: designTokens.zIndex.modal,
+        }}>
+          <Card style={{
+            width: '90%',
+            maxWidth: '500px',
+            backgroundColor: '#2A2D3A',
+            border: '1px solid #3A3D4A',
+            borderRadius: '16px',
+            padding: '32px',
+            position: 'relative',
+          }}>
+            <button
+              onClick={() => setShowProfileCard(false)}
+              style={{
+                position: 'absolute',
+                top: '16px',
+                right: '16px',
+                backgroundColor: 'transparent',
+                border: 'none',
+                color: '#9CA3AF',
+                cursor: 'pointer',
+              }}
+            >
+              <X size={24} />
+            </button>
+            <ProfileCard profile={profile} pets={pets} followersCount={followersCount} followingCount={followingCount} onEditProfile={() => navigate('/edit-profile')} />
+          </Card>
         </div>
       )}
 
