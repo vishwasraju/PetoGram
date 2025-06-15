@@ -56,7 +56,6 @@ export interface UserProfile {
   }
   interests: string[]
   is_public: boolean
-  allow_messages: boolean
   show_email: boolean
   created_at?: string
   updated_at?: string
@@ -103,7 +102,7 @@ export interface UserConnection {
 export interface Notification {
   id: string
   user_id: string
-  type: 'like' | 'comment' | 'follow' | 'friend_request' | 'message' | 'event' | 'appointment'
+  type: 'like' | 'comment' | 'follow' | 'friend_request' | 'event' | 'appointment'
   title: string
   content: string
   related_id?: string
@@ -119,20 +118,6 @@ export interface Conversation {
   description?: string
   avatar_url?: string
   created_by: string
-  created_at: string
-  updated_at: string
-}
-
-export interface Message {
-  id: string
-  conversation_id: string
-  sender_id: string
-  content?: string
-  message_type: 'text' | 'image' | 'video' | 'audio' | 'file'
-  media_url?: string
-  reply_to_id?: string
-  is_edited: boolean
-  is_deleted: boolean
   created_at: string
   updated_at: string
 }

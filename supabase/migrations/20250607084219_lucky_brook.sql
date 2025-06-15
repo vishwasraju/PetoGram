@@ -8,6 +8,6 @@
 
 -- Allow public registration by permitting unauthenticated users to insert into users table
 CREATE POLICY "Allow public registration"
-  ON users
+  ON auth.users
   FOR INSERT
   WITH CHECK (true);

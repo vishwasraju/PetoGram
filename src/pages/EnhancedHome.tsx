@@ -8,10 +8,10 @@ import Button from '../components/ui/Button'
 import Badge from '../components/ui/Badge'
 import NotificationPopup from '../components/ui/NotificationPopup'
 import { SkeletonCard } from '../components/ui/Skeleton'
-import { TrendingUp, Users, Calendar, MapPin, Star, Plus, Search, Mic, Heart, MessageCircle, Bookmark, MoreHorizontal, UserPlus, X, Clock, Siren as Fire, Hash, Bell, Stethoscope } from 'lucide-react'
+import { TrendingUp, Users, Calendar, MapPin, Star, Plus, Search, Mic, Heart, Bookmark, MoreHorizontal, UserPlus, X, Clock, Siren as Fire, Hash, Bell, Stethoscope } from 'lucide-react'
 import { designTokens } from '../design-system/tokens'
-import { useNavigate, Link } from 'react-router-dom'
-import { clearAuthenticationState, getCurrentUser, getUserProfile, getUserPets, savePost, unsavePost, getSavedPostIds } from '../utils/auth'
+import { useNavigate, Link, useParams } from 'react-router-dom'
+import { clearAuthenticationState, getCurrentUser, getUserProfile, getUserPets, savePost, unsavePost, getSavedPostIds, createPost } from '../utils/auth'
 import { supabase } from '../utils/supabase'
 import CommentModal from '../components/feed/CommentModal'
 
@@ -22,6 +22,7 @@ interface PostData {
     avatar: string
     pets: string
     verified?: boolean
+    user_id: string
   }
   content: {
     type: 'image' | 'video'
@@ -37,6 +38,7 @@ interface PostData {
     saved?: boolean
   }
   timestamp: string
+  user_id: string
 }
 
 const mockPosts: PostData[] = [
@@ -47,6 +49,7 @@ const mockPosts: PostData[] = [
       avatar: 'https://images.pexels.com/photos/1036622/pexels-photo-1036622.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2',
       pets: '@alexsamdrovonzi',
       verified: true,
+      user_id: '1',
     },
     content: {
       type: 'image',
@@ -62,6 +65,7 @@ const mockPosts: PostData[] = [
       saved: false,
     },
     timestamp: '2h',
+    user_id: '1',
   },
   {
     id: '2',
@@ -70,6 +74,7 @@ const mockPosts: PostData[] = [
       avatar: 'https://images.pexels.com/photos/733872/pexels-photo-733872.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2',
       pets: '@amandadasilva',
       verified: false,
+      user_id: '2',
     },
     content: {
       type: 'image',
@@ -85,6 +90,7 @@ const mockPosts: PostData[] = [
       saved: true,
     },
     timestamp: '4h',
+    user_id: '2',
   },
   {
     id: '3',
@@ -93,6 +99,7 @@ const mockPosts: PostData[] = [
       avatar: 'https://images.pexels.com/photos/1036623/pexels-photo-1036623.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2',
       pets: '@janedoe_pets',
       verified: true,
+      user_id: '3',
     },
     content: {
       type: 'image',
@@ -108,6 +115,7 @@ const mockPosts: PostData[] = [
       saved: true,
     },
     timestamp: '1h',
+    user_id: '3',
   },
   {
     id: '4',
@@ -116,6 +124,7 @@ const mockPosts: PostData[] = [
       avatar: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2',
       pets: '@john_pets',
       verified: false,
+      user_id: '4',
     },
     content: {
       type: 'video',
@@ -131,6 +140,7 @@ const mockPosts: PostData[] = [
       saved: false,
     },
     timestamp: '3h',
+    user_id: '4',
   },
   {
     id: '5',
@@ -139,6 +149,7 @@ const mockPosts: PostData[] = [
       avatar: 'https://images.pexels.com/photos/1036620/pexels-photo-1036620.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2',
       pets: '@emily_animals',
       verified: true,
+      user_id: '5',
     },
     content: {
       type: 'image',
@@ -154,6 +165,7 @@ const mockPosts: PostData[] = [
       saved: false,
     },
     timestamp: '6h',
+    user_id: '5',
   },
   {
     id: '6',
@@ -162,6 +174,7 @@ const mockPosts: PostData[] = [
       avatar: 'https://images.pexels.com/photos/1040880/pexels-photo-1040880.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2',
       pets: '@david_wildlife',
       verified: false,
+      user_id: '6',
     },
     content: {
       type: 'image',
@@ -177,6 +190,7 @@ const mockPosts: PostData[] = [
       saved: true,
     },
     timestamp: '8h',
+    user_id: '6',
   },
 ]
 
@@ -282,6 +296,9 @@ export default function EnhancedHome() {
   const navigate = useNavigate()
   const [showCommentModal, setShowCommentModal] = useState(false);
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
+  const [followersCount, setFollowersCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
+  const [postsCount, setPostsCount] = useState(0);
 
   useEffect(() => {
     const updateLayout = () => {
@@ -293,10 +310,23 @@ export default function EnhancedHome() {
     return () => window.removeEventListener('resize', updateLayout)
   }, [])
 
+  // New useEffect to initialize user data and fetch stats
   useEffect(() => {
-    fetchCurrentUserData()
-    fetchPosts()
-  }, [])
+    const initializeUserData = async () => {
+      const user = await getCurrentUser()
+      if (user) {
+        setCurrentUser(user)
+        const profile = await getUserProfile(user.id) // Fetch profile using user.id
+        setUserProfile(profile)
+
+        if (profile) {
+          fetchUserStats(user.id) // Call fetchUserStats with user.id
+        }
+        fetchPosts(user.id) // Assuming fetchPosts needs userId now
+      }
+    }
+    initializeUserData()
+  }, []) // Run once on component mount
 
   // Set up polling to refresh posts every 5 seconds
   useEffect(() => {
@@ -307,7 +337,7 @@ export default function EnhancedHome() {
     return () => clearInterval(pollInterval)
   }, [])
 
-  const fetchPosts = async () => {
+  const fetchPosts = async (userId?: string) => {
     setLoading(true);
     try {
       const { data: postsData, error: postsError } = await supabase
@@ -344,10 +374,12 @@ export default function EnhancedHome() {
 
         return {
           id: post.id,
+          user_id: post.user_id,
           user: {
             name: userProfile?.username || userProfile?.email?.split('@')[0] || 'Unknown User',
             avatar: userProfile?.profile_picture || 'https://images.pexels.com/photos/1036622/pexels-photo-1036622.jpeg?auto=compress&cs=tinysrgb&w=120&h=120&dpr=2',
             pets: userPets || 'No pets',
+            user_id: post.user_id,
           },
           content: {
             type: post.content_type || 'image',
@@ -379,18 +411,45 @@ export default function EnhancedHome() {
     fetchPosts()
   }
 
-  const fetchCurrentUserData = async () => {
+  const fetchUserStats = async (userId) => {
     try {
-      const user = await getCurrentUser()
-      if (user) {
-        setCurrentUser(user)
-        const profile = await getUserProfile(user.id)
-        setUserProfile(profile)
-      }
+      // Fetch followers count
+      const { count: followers } = await supabase
+        .from('user_connections')
+        .select('*', { count: 'exact', head: true })
+        .eq('requested_id', userId)
+        .eq('status', 'accepted')
+        .eq('connection_type', 'follow');
+
+      // Fetch following count
+      const { count: following } = await supabase
+        .from('user_connections')
+        .select('*', { count: 'exact', head: true })
+        .eq('requester_id', userId)
+        .eq('status', 'accepted')
+        .eq('connection_type', 'follow');
+
+      // Fetch posts count
+      const { count: posts } = await supabase
+        .from('posts')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', userId)
+        .eq('is_active', true);
+
+      setFollowersCount(followers || 0);
+      setFollowingCount(following || 0);
+      setPostsCount(posts || 0);
+      setPosts(currentPosts => currentPosts.map(post => ({
+        ...post,
+        user_id: userId
+      })));
     } catch (error) {
-      console.error('Error fetching user data:', error)
+      console.error('Error fetching user stats:', error);
+      setFollowersCount(0);
+      setFollowingCount(0);
+      setPostsCount(0);
     }
-  }
+  };
 
   const handleLike = async (postId: string) => {
     if (!currentUser) {
@@ -546,6 +605,12 @@ export default function EnhancedHome() {
     console.log('Declining request:', requestId)
   }
 
+  const handleCreatePost = async (newPostData) => {
+    // ... your logic to create a post
+    await createPost(newPostData);
+    fetchPosts(); // <-- This will update the posts array and the count
+  };
+
   return (
     <>
       <div style={{
@@ -628,21 +693,21 @@ export default function EnhancedHome() {
               borderBottom: '1px dotted #4B5563',
             }}>
               <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '18px', fontWeight: '700', color: '#FFFFFF' }}>368</div>
+                <div style={{ fontSize: '18px', fontWeight: '700', color: '#FFFFFF' }}>{(postsCount || 0).toLocaleString()}</div>
                 <div style={{ fontSize: '12px', color: '#9CA3AF' }}>Posts</div>
               </div>
               <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '18px', fontWeight: '700', color: '#FFFFFF' }}>184.3K</div>
+                <div style={{ fontSize: '18px', fontWeight: '700', color: '#FFFFFF' }}>{(followersCount || 0).toLocaleString()}</div>
                 <div style={{ fontSize: '12px', color: '#9CA3AF' }}>Followers</div>
               </div>
               <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '18px', fontWeight: '700', color: '#FFFFFF' }}>1.04M</div>
+                <div style={{ fontSize: '18px', fontWeight: '700', color: '#FFFFFF' }}>{(followingCount || 0).toLocaleString()}</div>
                 <div style={{ fontSize: '12px', color: '#9CA3AF' }}>Following</div>
               </div>
             </div>
           </div>
 
-          {/* Notifications and Messages */}
+          {/* Notifications */}
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '40px', marginBottom: '28px' }}>
             <button 
               onClick={() => setShowNotifications(!showNotifications)}
@@ -679,21 +744,6 @@ export default function EnhancedHome() {
                 3
               </div>
             </button>
-            <Link to="/messages-page">
-              <button style={{ 
-                background: 'none', 
-                border: 'none', 
-                cursor: 'pointer', 
-                color: '#9CA3AF', 
-                padding: 0,
-                transition: 'color 0.2s ease',
-              }} 
-              title="Messages"
-              onMouseEnter={(e) => e.currentTarget.style.color = '#fff'}
-              onMouseLeave={(e) => e.currentTarget.style.color = '#9CA3AF'}>
-                <MessageCircle size={22} />
-              </button>
-            </Link>
           </div>
 
           {/* Navigation */}
@@ -908,7 +958,7 @@ export default function EnhancedHome() {
                     marginBottom: '16px',
                   }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <Link to={`/user-profile/123`} style={{ textDecoration: 'none' }}>
+                      <Link to={`/user-profile/${post.user_id}`}>
                         <img 
                           src={post.user.avatar}
                           alt={post.user.name}
@@ -921,7 +971,7 @@ export default function EnhancedHome() {
                         />
                       </Link>
                       <div>
-                        <Link to={`/user-profile/123`} style={{ textDecoration: 'none' }}>
+                        <Link to={`/user-profile/${post.user_id}`}>
                           <div style={{
                             fontSize: '14px',
                             fontWeight: '600',
@@ -1030,7 +1080,6 @@ export default function EnhancedHome() {
                           fontSize: '14px',
                         }}
                       >
-                        <MessageCircle size={18} />
                         {post.engagement.comments.toLocaleString()}
                       </button>
                     </div>
@@ -1104,7 +1153,7 @@ export default function EnhancedHome() {
                     alignItems: 'center',
                     gap: '12px',
                   }}>
-                    <Link to={`/user-profile/${request.id}`} style={{ textDecoration: 'none' }}>
+                    <Link to={`/user-profile/${request.id}`}>
                       <img 
                         src={request.avatar}
                         alt={request.name}
@@ -1117,7 +1166,7 @@ export default function EnhancedHome() {
                       />
                     </Link>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <Link to={`/user-profile/${request.id}`} style={{ textDecoration: 'none' }}>
+                      <Link to={`/user-profile/${request.id}`}>
                         <div style={{
                           fontSize: '14px',
                           fontWeight: '500',

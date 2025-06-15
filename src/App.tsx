@@ -3,7 +3,7 @@ import { Routes, Route, useNavigate } from 'react-router-dom'
 import IntroPage from './pages/IntroPage'
 import EnhancedHome from './pages/EnhancedHome'
 import Profile from './pages/Profile'
-import Messages from './pages/Messages'
+import MessagingPage from './pages/MessagingPage'
 import Explore from './pages/Explore'
 import Events from './pages/Events'
 import Appointment from './pages/Appointment'
@@ -20,7 +20,6 @@ import ExplorePage from './pages/ExplorePage'
 import EventsPage from './pages/EventsPage'
 import AppointmentPage from './pages/AppointmentPage'
 import SettingsPage from './pages/SettingsPage'
-import MessagesPage from './pages/MessagesPage'
 import CreatePostPage from './pages/CreatePostPage'
 import UserProfilePage from './pages/UserProfilePage'
 import EditProfilePage from './pages/EditProfilePage'
@@ -63,9 +62,8 @@ function App() {
         // Only navigate to /home if not already on /home or other protected routes
         const protectedRoutes = [
           '/home', '/feed', '/explore-page', '/events-page', '/appointment-page', 
-          '/settings-page', '/messages-page', '/create-post', '/profile', '/messages', 
-          '/explore', '/events', '/appointment', '/settings', '/user-profile', 
-          '/edit-profile', '/password-change', '/delete-account'
+          '/settings-page', '/create-post', '/profile', '/explore', '/events', '/appointment', 
+          '/settings', '/user-profile', '/edit-profile', '/password-change', '/delete-account'
         ]
         if (!protectedRoutes.some(route => window.location.pathname.startsWith(route))) {
           setTimeout(() => {
@@ -135,10 +133,6 @@ function App() {
           element={<Profile />} 
         />
         <Route 
-          path="/home/messages" 
-          element={<Messages />} 
-        />
-        <Route 
           path="/explore" 
           element={<Explore />} 
         />
@@ -171,10 +165,6 @@ function App() {
         <Route 
           path="/settings-page" 
           element={<SettingsPage />} 
-        />
-        <Route 
-          path="/messages-page" 
-          element={<MessagesPage />} 
         />
         <Route 
           path="/create-post" 
@@ -211,7 +201,7 @@ function App() {
           element={<PasswordSecurityPage />} 
         />
         
-        {/* 404 Route */}
+        {/* Catch all for 404 */}
         <Route path="*" element={<NotFound />} />
       </Routes>
     </div>

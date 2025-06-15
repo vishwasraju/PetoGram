@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Search, MessageCircle, Heart, Menu, Plus, Bell, Settings } from 'lucide-react'
+import { Search, Heart, Menu, Plus, Bell, Settings, MessageCircle } from 'lucide-react'
 import Avatar from '../ui/Avatar'
 import Button from '../ui/Button'
 import Input from '../ui/Input'
@@ -90,48 +90,6 @@ export default function EnhancedHeader({ onMenuClick, isMobile }: HeaderProps) {
             {!isMobile && <span>Create</span>}
           </Button>
           
-          {/* Messages */}
-          <div style={{ position: 'relative' }}>
-            <Link 
-              to="/messages" 
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: '40px',
-                height: '40px',
-                borderRadius: designTokens.borderRadius.full,
-                cursor: 'pointer',
-                color: designTokens.colors.gray[600],
-                transition: 'background-color 150ms cubic-bezier(0.4, 0, 0.2, 1)',
-                backgroundColor: 'transparent',
-              }} 
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = designTokens.colors.gray[100]}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-            >
-              <MessageCircle size={20} />
-            </Link>
-            <div style={{
-              position: 'absolute',
-              top: '-2px',
-              right: '-2px',
-              width: '20px',
-              height: '20px',
-              backgroundColor: designTokens.colors.primary[500],
-              color: designTokens.colors.white,
-              fontSize: designTokens.typography.fontSize.xs,
-              borderRadius: designTokens.borderRadius.full,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontWeight: designTokens.typography.fontWeight.bold,
-              border: `2px solid ${designTokens.colors.white}`,
-              pointerEvents: 'none',
-            }}>
-              2
-            </div>
-          </div>
-
           {/* Notifications */}
           <div style={{ position: 'relative' }}>
             <Button variant="ghost" size="sm">

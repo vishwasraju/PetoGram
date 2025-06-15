@@ -6,6 +6,7 @@ interface CardProps {
   hover?: boolean
   padding?: 'none' | 'sm' | 'md' | 'lg'
   style?: React.CSSProperties
+  onClick?: () => void
 }
 
 export default function Card({ 
@@ -13,7 +14,8 @@ export default function Card({
   className = '', 
   hover = false,
   padding = 'md',
-  style
+  style,
+  onClick
 }: CardProps) {
   const getPadding = () => {
     const paddings = {
@@ -46,6 +48,7 @@ export default function Card({
     <div 
       style={cardStyle}
       className={className}
+      onClick={onClick}
       onMouseEnter={hover ? (e) => {
         e.currentTarget.style.boxShadow = '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)'
         e.currentTarget.style.borderColor = '#E5E7EB'

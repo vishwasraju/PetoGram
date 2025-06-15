@@ -85,6 +85,8 @@ CREATE TABLE IF NOT EXISTS conversations (
   updated_at timestamptz DEFAULT now()
 );
 
+ALTER TABLE conversations ADD COLUMN IF NOT EXISTS created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL;
+
 -- Conversation Participants
 CREATE TABLE IF NOT EXISTS conversation_participants (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -115,7 +117,7 @@ CREATE TABLE IF NOT EXISTS messages (
 CREATE TABLE IF NOT EXISTS notifications (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  type text NOT NULL CHECK (type IN ('like', 'comment', 'follow', 'friend_request', 'message', 'event', 'appointment')),
+  type text NOT NULL CHECK (type IN ('like', 'follow', 'message')),
   title text NOT NULL,
   content text NOT NULL,
   related_id uuid,
@@ -189,43 +191,58 @@ ALTER TABLE user_blocks ENABLE ROW LEVEL SECURITY;
 ALTER TABLE user_privacy_settings ENABLE ROW LEVEL SECURITY;
 
 -- User Connections Policies
+DROP POLICY IF EXISTS "Users can view their own connections" ON user_connections;
 CREATE POLICY "Users can view their own connections"
   ON user_connections FOR SELECT
   TO authenticated
   USING (auth.uid() = requester_id OR auth.uid() = requested_id);
 
+DROP POLICY IF EXISTS "Users can create connection requests" ON user_connections;
 CREATE POLICY "Users can create connection requests"
   ON user_connections FOR INSERT
   TO authenticated
   WITH CHECK (auth.uid() = requester_id);
 
+DROP POLICY IF EXISTS "Users can accept connection requests" ON user_connections;
+CREATE POLICY "Users can accept connection requests"
+  ON user_connections FOR UPDATE
+  TO authenticated
+  USING (auth.uid() = requested_id)
+  WITH CHECK (status = 'accepted');
+
+DROP POLICY IF EXISTS "Users can update their connection requests" ON user_connections;
 CREATE POLICY "Users can update their connection requests"
   ON user_connections FOR UPDATE
   TO authenticated
   USING (auth.uid() = requester_id OR auth.uid() = requested_id);
 
 -- Posts Policies
+DROP POLICY IF EXISTS "Users can view public posts" ON posts;
 CREATE POLICY "Users can view public posts"
   ON posts FOR SELECT
   TO authenticated
   USING (privacy_level = 'public' OR user_id = auth.uid());
 
+DROP POLICY IF EXISTS "Users can create their own posts" ON posts;
 CREATE POLICY "Users can create their own posts"
   ON posts FOR INSERT
   TO authenticated
   WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can update their own posts" ON posts;
 CREATE POLICY "Users can update their own posts"
   ON posts FOR UPDATE
   TO authenticated
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can delete their own posts" ON posts;
 CREATE POLICY "Users can delete their own posts"
   ON posts FOR DELETE
   TO authenticated
   USING (auth.uid() = user_id);
 
 -- Post Likes Policies
+DROP POLICY IF EXISTS "Users can view post likes" ON post_likes;
 CREATE POLICY "Users can view post likes"
   ON post_likes FOR SELECT
   TO authenticated
@@ -242,27 +259,32 @@ CREATE POLICY "Users can unlike posts"
   USING (auth.uid() = user_id);
 
 -- Post Comments Policies
+DROP POLICY IF EXISTS "Users can view comments" ON post_comments;
 CREATE POLICY "Users can view comments"
   ON post_comments FOR SELECT
   TO authenticated
   USING (true);
 
+DROP POLICY IF EXISTS "Users can create comments" ON post_comments;
 CREATE POLICY "Users can create comments"
   ON post_comments FOR INSERT
   TO authenticated
   WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can update their own comments" ON post_comments;
 CREATE POLICY "Users can update their own comments"
   ON post_comments FOR UPDATE
   TO authenticated
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can delete their own comments" ON post_comments;
 CREATE POLICY "Users can delete their own comments"
   ON post_comments FOR DELETE
   TO authenticated
   USING (auth.uid() = user_id);
 
 -- Conversations Policies
+DROP POLICY IF EXISTS "Users can view their conversations" ON conversations;
 CREATE POLICY "Users can view their conversations"
   ON conversations FOR SELECT
   TO authenticated
@@ -273,6 +295,7 @@ CREATE POLICY "Users can view their conversations"
     )
   );
 
+DROP POLICY IF EXISTS "Users can create conversations" ON conversations;
 CREATE POLICY "Users can create conversations"
   ON conversations FOR INSERT
   TO authenticated
@@ -317,27 +340,32 @@ CREATE POLICY "Users can send messages"
   );
 
 -- Notifications Policies
+DROP POLICY IF EXISTS "Users can view their own notifications" ON notifications;
 CREATE POLICY "Users can view their own notifications"
   ON notifications FOR SELECT
   TO authenticated
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "System can create notifications" ON notifications;
 CREATE POLICY "System can create notifications"
   ON notifications FOR INSERT
   TO authenticated
   WITH CHECK (true);
 
+DROP POLICY IF EXISTS "Users can update their own notifications" ON notifications;
 CREATE POLICY "Users can update their own notifications"
   ON notifications FOR UPDATE
   TO authenticated
   USING (auth.uid() = user_id);
 
 -- Event Registrations Policies
+DROP POLICY IF EXISTS "Users can view their own event registrations" ON event_registrations;
 CREATE POLICY "Users can view their own event registrations"
   ON event_registrations FOR SELECT
   TO authenticated
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can create event registrations" ON event_registrations;
 CREATE POLICY "Users can create event registrations"
   ON event_registrations FOR INSERT
   TO authenticated
@@ -370,6 +398,7 @@ CREATE POLICY "Users can block others"
   TO authenticated
   WITH CHECK (auth.uid() = blocker_id);
 
+DROP POLICY IF EXISTS "Users can unblock others" ON user_blocks;
 CREATE POLICY "Users can unblock others"
   ON user_blocks FOR DELETE
   TO authenticated

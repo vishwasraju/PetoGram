@@ -1,137 +1,65 @@
-import React, { useState, useEffect } from 'react'
-import { X, CheckCircle, AlertCircle, Info, AlertTriangle } from 'lucide-react'
-import { designTokens } from '../../design-system/tokens'
+import React, { useEffect } from 'react';
+import { CheckCircle, XCircle, X } from 'lucide-react';
+import { designTokens } from '../../design-system/tokens';
 
-export interface ToastProps {
-  id: string
-  type: 'success' | 'error' | 'warning' | 'info'
-  title: string
-  message?: string
-  duration?: number
-  onClose: (id: string) => void
+interface ToastProps {
+  message: string;
+  type: 'success' | 'error';
+  onClose: () => void;
 }
 
-const toastIcons = {
-  success: CheckCircle,
-  error: AlertCircle,
-  warning: AlertTriangle,
-  info: Info,
-}
-
-const toastStyles = {
-  success: {
-    backgroundColor: designTokens.colors.success[50],
-    borderColor: designTokens.colors.success[200],
-    iconColor: designTokens.colors.success[500],
-  },
-  error: {
-    backgroundColor: designTokens.colors.error[50],
-    borderColor: designTokens.colors.error[200],
-    iconColor: designTokens.colors.error[500],
-  },
-  warning: {
-    backgroundColor: designTokens.colors.warning[50],
-    borderColor: designTokens.colors.warning[200],
-    iconColor: designTokens.colors.warning[500],
-  },
-  info: {
-    backgroundColor: designTokens.colors.primary[50],
-    borderColor: designTokens.colors.primary[200],
-    iconColor: designTokens.colors.primary[500],
-  },
-}
-
-export default function Toast({ id, type, title, message, duration = 5000, onClose }: ToastProps) {
-  const [isVisible, setIsVisible] = useState(true)
-  const [isExiting, setIsExiting] = useState(false)
-  
-  const Icon = toastIcons[type]
-  const styles = toastStyles[type]
-
+export default function Toast({ message, type, onClose }: ToastProps) {
   useEffect(() => {
     const timer = setTimeout(() => {
-      handleClose()
-    }, duration)
+      onClose();
+    }, 3000); // Auto-close after 3 seconds
 
-    return () => clearTimeout(timer)
-  }, [duration])
+    return () => clearTimeout(timer);
+  }, [onClose]);
 
-  const handleClose = () => {
-    setIsExiting(true)
-    setTimeout(() => {
-      setIsVisible(false)
-      onClose(id)
-    }, 300)
-  }
-
-  if (!isVisible) return null
+  const backgroundColor = type === 'success' ? designTokens.colors.success[600] : designTokens.colors.error[600];
+  const icon = type === 'success' ? <CheckCircle size={20} color={designTokens.colors.white} /> : <XCircle size={20} color={designTokens.colors.white} />;
 
   return (
     <div
       style={{
         position: 'fixed',
-        top: designTokens.spacing[6],
-        right: designTokens.spacing[6],
-        zIndex: designTokens.zIndex.toast,
-        maxWidth: '400px',
-        width: '100%',
-        backgroundColor: styles.backgroundColor,
-        border: `1px solid ${styles.borderColor}`,
-        borderRadius: designTokens.borderRadius['2xl'],
-        boxShadow: designTokens.boxShadow.lg,
-        padding: designTokens.spacing[4],
-        transform: isExiting ? 'translateX(100%)' : 'translateX(0)',
-        opacity: isExiting ? 0 : 1,
-        transition: `all ${designTokens.animation.duration.normal} ${designTokens.animation.easing.ease}`,
+        bottom: designTokens.spacing[4],
+        right: designTokens.spacing[4],
+        backgroundColor: backgroundColor,
+        color: designTokens.colors.white,
+        padding: `${designTokens.spacing[3]} ${designTokens.spacing[4]}`,
+        borderRadius: designTokens.borderRadius.lg,
+        boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.2)',
+        display: 'flex',
+        alignItems: 'center',
+        gap: designTokens.spacing[3],
+        zIndex: 1000,
+        animation: 'fadeIn 0.3s ease-out',
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: designTokens.spacing[3] }}>
-        <Icon size={20} color={styles.iconColor} />
-        
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <h4 style={{
-            margin: 0,
-            fontSize: designTokens.typography.fontSize.sm,
-            fontWeight: designTokens.typography.fontWeight.semibold,
-            color: designTokens.colors.gray[900],
-            marginBottom: message ? designTokens.spacing[1] : 0,
-          }}>
-            {title}
-          </h4>
-          
-          {message && (
-            <p style={{
-              margin: 0,
-              fontSize: designTokens.typography.fontSize.sm,
-              color: designTokens.colors.gray[600],
-              lineHeight: designTokens.typography.lineHeight.normal,
-            }}>
-              {message}
-            </p>
-          )}
-        </div>
-        
-        <button
-          onClick={handleClose}
-          style={{
-            padding: designTokens.spacing[1],
-            color: designTokens.colors.gray[400],
-            backgroundColor: 'transparent',
-            border: 'none',
-            borderRadius: designTokens.borderRadius.md,
-            cursor: 'pointer',
-            transition: `color ${designTokens.animation.duration.fast} ${designTokens.animation.easing.ease}`,
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.color = designTokens.colors.gray[600]
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.color = designTokens.colors.gray[400]
-          }}
-        >
-          <X size={16} />
-        </button>
-      </div>
+      {icon}
+      <span style={{ fontSize: designTokens.typography.fontSize.base, fontWeight: designTokens.typography.fontWeight.medium }}>{message}</span>
+      <button
+        onClick={onClose}
+        style={{
+          background: 'none',
+          border: 'none',
+          color: designTokens.colors.white,
+          cursor: 'pointer',
+          marginLeft: designTokens.spacing[2],
+          display: 'flex',
+          alignItems: 'center',
+        }}
+      >
+        <X size={16} />
+      </button>
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
     </div>
-  )
+  );
 }

@@ -21,7 +21,6 @@ interface UserProfile {
   }
   interests: string[]
   is_public: boolean
-  allow_messages: boolean
   show_email: boolean
 }
 
@@ -136,7 +135,6 @@ export default function EditProfilePage() {
           social_media: profile.social_media,
           interests: profile.interests,
           is_public: profile.is_public,
-          allow_messages: profile.allow_messages,
           show_email: profile.show_email
         })
         .eq('user_id', currentUser.id)

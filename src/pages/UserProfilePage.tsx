@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
-import { ArrowLeft, MessageCircle, UserPlus, UserMinus, MoreHorizontal, MapPin, Calendar, Shield, Lock, Globe, Users, Grid3X3, Heart, Share, Phone, Video, Blocks as Block, Flag } from 'lucide-react'
+import { ArrowLeft, UserPlus, UserMinus, MoreHorizontal, MapPin, Calendar, Shield, Lock, Globe, Users, Grid3X3, Heart, Share, Phone, Video, Blocks as Block, Flag, Edit3 } from 'lucide-react'
 import { designTokens } from '../design-system/tokens'
 import { supabase } from '../utils/supabase'
 
@@ -13,7 +13,6 @@ interface UserProfile {
   location: string
   created_at: string
   is_public: boolean
-  allow_messages: boolean
 }
 
 interface Post {
@@ -43,6 +42,7 @@ export default function UserProfilePage() {
   const [postsCount, setPostsCount] = useState(0)
   const [currentUser, setCurrentUser] = useState<any>(null)
   const [showMoreMenu, setShowMoreMenu] = useState(false)
+  const [isFollowing, setIsFollowing] = useState(false)
 
   useEffect(() => {
     if (userId) {
@@ -57,6 +57,7 @@ export default function UserProfilePage() {
   const getCurrentUser = async () => {
     const { data: { user } } = await supabase.auth.getUser()
     setCurrentUser(user)
+    console.log("Auth user id:", user?.id);
   }
 
   const fetchUserProfile = async () => {
@@ -117,6 +118,7 @@ export default function UserProfilePage() {
         .select('*', { count: 'exact', head: true })
         .eq('requested_id', userId)
         .eq('status', 'accepted')
+        .eq('connection_type', 'follow');
 
       // Fetch following count
       const { count: following } = await supabase
@@ -124,125 +126,67 @@ export default function UserProfilePage() {
         .select('*', { count: 'exact', head: true })
         .eq('requester_id', userId)
         .eq('status', 'accepted')
+        .eq('connection_type', 'follow');
 
-      setFollowersCount(followers || 0)
-      setFollowingCount(following || 0)
+      // Fetch posts count
+      const { count: postsCount } = await supabase
+        .from('posts')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', userId)
+        .eq('is_active', true);
+
+      setFollowersCount(followers || 0);
+      setFollowingCount(following || 0);
+      setPostsCount(postsCount || 0);
     } catch (error) {
-      console.error('Error fetching user stats:', error)
+      console.error('Error fetching user stats:', error);
+      setFollowersCount(0);
+      setFollowingCount(0);
+      setPostsCount(0);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
-  const handleSendFriendRequest = async () => {
+  const handleFollowToggle = async () => {
     if (!currentUser || !userId) return
-
-    try {
-      const { error } = await supabase
+    if (isFollowing) {
+      // Unfollow
+      await supabase
+        .from('user_connections')
+        .delete()
+        .eq('requester_id', currentUser.id)
+        .eq('requested_id', userId)
+        .eq('connection_type', 'follow')
+      setIsFollowing(false)
+    } else {
+      // Follow
+      await supabase
         .from('user_connections')
         .insert({
           requester_id: currentUser.id,
           requested_id: userId,
-          status: 'pending',
-          connection_type: 'friend'
+          status: 'accepted',
+          connection_type: 'follow',
         })
-
-      if (error) throw error
-
-      setConnectionStatus({ status: 'pending', type: 'friend' })
-      
-      // Create notification
-      await supabase
-        .from('notifications')
-        .insert({
-          user_id: userId,
-          type: 'friend_request',
-          title: 'New Friend Request',
-          content: `${profile?.username || 'Someone'} sent you a friend request`,
-          related_id: currentUser.id,
-          related_type: 'user'
-        })
-    } catch (error) {
-      console.error('Error sending friend request:', error)
+      setIsFollowing(true)
     }
   }
 
-  const handleAcceptFriendRequest = async () => {
+  useEffect(() => {
     if (!currentUser || !userId) return
-
-    try {
-      const { error } = await supabase
+    const checkFollowing = async () => {
+      const { data } = await supabase
         .from('user_connections')
-        .update({ status: 'accepted' })
-        .or(`and(requester_id.eq.${userId},requested_id.eq.${currentUser.id}),and(requester_id.eq.${currentUser.id},requested_id.eq.${userId})`)
-
-      if (error) throw error
-
-      setConnectionStatus({ status: 'accepted', type: 'friend' })
-      setFollowersCount(prev => prev + 1)
-    } catch (error) {
-      console.error('Error accepting friend request:', error)
+        .select('*')
+        .eq('requester_id', currentUser.id)
+        .eq('requested_id', userId)
+        .eq('connection_type', 'follow')
+        .eq('status', 'accepted')
+      setIsFollowing(!!data && data.length > 0)
     }
-  }
-
-  const handleRemoveFriend = async () => {
-    if (!currentUser || !userId) return
-
-    try {
-      const { error } = await supabase
-        .from('user_connections')
-        .delete()
-        .or(`and(requester_id.eq.${userId},requested_id.eq.${currentUser.id}),and(requester_id.eq.${currentUser.id},requested_id.eq.${userId})`)
-
-      if (error) throw error
-
-      setConnectionStatus({ status: 'none', type: 'friend' })
-      setFollowersCount(prev => Math.max(0, prev - 1))
-    } catch (error) {
-      console.error('Error removing friend:', error)
-    }
-  }
-
-  const handleSendMessage = async () => {
-    if (!currentUser || !userId) return
-
-    try {
-      // Create or find existing conversation
-      const { data: existingConversation } = await supabase
-        .from('conversations')
-        .select('id')
-        .eq('type', 'direct')
-        .single()
-
-      let conversationId = existingConversation?.id
-
-      if (!conversationId) {
-        const { data: newConversation, error } = await supabase
-          .from('conversations')
-          .insert({
-            type: 'direct',
-            created_by: currentUser.id
-          })
-          .select('id')
-          .single()
-
-        if (error) throw error
-        conversationId = newConversation.id
-
-        // Add participants
-        await supabase
-          .from('conversation_participants')
-          .insert([
-            { conversation_id: conversationId, user_id: currentUser.id },
-            { conversation_id: conversationId, user_id: userId }
-          ])
-      }
-
-      navigate(`/messages-page?conversation=${conversationId}`)
-    } catch (error) {
-      console.error('Error creating conversation:', error)
-    }
-  }
+    checkFollowing()
+  }, [currentUser, userId])
 
   const handleBlockUser = async () => {
     if (!currentUser || !userId) return
@@ -276,7 +220,7 @@ export default function UserProfilePage() {
       case 'none':
         return (
           <button
-            onClick={handleSendFriendRequest}
+            onClick={handleFollowToggle}
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -295,7 +239,7 @@ export default function UserProfilePage() {
             onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#6366F1'}
           >
             <UserPlus size={16} />
-            Add Friend
+            Follow
           </button>
         )
       case 'pending':
@@ -323,7 +267,7 @@ export default function UserProfilePage() {
       case 'accepted':
         return (
           <button
-            onClick={handleRemoveFriend}
+            onClick={handleFollowToggle}
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -342,7 +286,7 @@ export default function UserProfilePage() {
             onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#EF4444'}
           >
             <UserMinus size={16} />
-            Remove Friend
+            Unfollow
           </button>
         )
       case 'blocked':
@@ -634,7 +578,7 @@ export default function UserProfilePage() {
                     fontWeight: '700',
                     color: '#fff',
                   }}>
-                    {postsCount}
+                    {postsCount.toLocaleString()}
                   </div>
                   <div style={{
                     fontSize: '14px',
@@ -649,7 +593,7 @@ export default function UserProfilePage() {
                     fontWeight: '700',
                     color: '#fff',
                   }}>
-                    {followersCount}
+                    {followersCount.toLocaleString()}
                   </div>
                   <div style={{
                     fontSize: '14px',
@@ -664,7 +608,7 @@ export default function UserProfilePage() {
                     fontWeight: '700',
                     color: '#fff',
                   }}>
-                    {followingCount}
+                    {followingCount.toLocaleString()}
                   </div>
                   <div style={{
                     fontSize: '14px',
@@ -731,94 +675,56 @@ export default function UserProfilePage() {
             gap: '12px',
             justifyContent: 'center',
           }}>
-            {getConnectionButton()}
-            
-            {profile.allow_messages && connectionStatus.status === 'accepted' && (
+            {currentUser && currentUser.id !== userId && (
+              <>
+                <button
+                  onClick={handleFollowToggle}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '12px 24px',
+                    backgroundColor: isFollowing ? '#9CA3AF' : '#6366F1',
+                    border: 'none',
+                    borderRadius: '8px',
+                    color: '#fff',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'background 0.2s ease',
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.backgroundColor = isFollowing ? '#6B7280' : '#4F46E5'}
+                  onMouseLeave={e => e.currentTarget.style.backgroundColor = isFollowing ? '#9CA3AF' : '#6366F1'}
+                >
+                  <UserPlus size={16} />
+                  {isFollowing ? 'Followed' : 'Follow'}
+                </button>
+              </>
+            )}
+            {currentUser && currentUser.id === userId && (
               <button
-                onClick={handleSendMessage}
+                onClick={() => navigate('/edit-profile')}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
                   gap: '8px',
                   padding: '12px 24px',
-                  backgroundColor: 'transparent',
-                  border: '1px solid #6366F1',
+                  backgroundColor: '#6366F1',
+                  border: 'none',
                   borderRadius: '8px',
-                  color: '#6366F1',
+                  color: '#fff',
                   fontSize: '14px',
                   fontWeight: '600',
                   cursor: 'pointer',
-                  transition: 'all 0.2s ease',
+                  transition: 'background 0.2s ease',
                 }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = '#6366F1'
-                  e.currentTarget.style.color = '#fff'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'transparent'
-                  e.currentTarget.style.color = '#6366F1'
-                }}
+                onMouseEnter={e => e.currentTarget.style.backgroundColor = '#4F46E5'}
+                onMouseLeave={e => e.currentTarget.style.backgroundColor = '#6366F1'}
               >
-                <MessageCircle size={16} />
-                Message
+                <Edit3 size={18} />
+                Edit Profile
               </button>
             )}
-
-            <button
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '12px 24px',
-                backgroundColor: 'transparent',
-                border: '1px solid #10B981',
-                borderRadius: '8px',
-                color: '#10B981',
-                fontSize: '14px',
-                fontWeight: '600',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#10B981'
-                e.currentTarget.style.color = '#fff'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent'
-                e.currentTarget.style.color = '#10B981'
-              }}
-            >
-              <Phone size={16} />
-              Call
-            </button>
-
-            <button
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '12px 24px',
-                backgroundColor: 'transparent',
-                border: '1px solid #F59E0B',
-                borderRadius: '8px',
-                color: '#F59E0B',
-                fontSize: '14px',
-                fontWeight: '600',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#F59E0B'
-                e.currentTarget.style.color = '#fff'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent'
-                e.currentTarget.style.color = '#F59E0B'
-              }}
-            >
-              <Video size={16} />
-              Video Call
-            </button>
           </div>
         </div>
 
@@ -922,7 +828,6 @@ export default function UserProfilePage() {
                         color: '#fff',
                         fontWeight: '600',
                       }}>
-                        <MessageCircle size={16} fill="currentColor" />
                         <span>{post.comments_count}</span>
                       </div>
                     </div>

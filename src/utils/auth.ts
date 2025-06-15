@@ -164,18 +164,31 @@ export const updateUserProfile = async (userId: string, updates: Partial<UserPro
 }
 
 // Create user pets
-export const createUserPets = async (pets: Omit<UserPet, 'id' | 'created_at' | 'updated_at'>[]): Promise<UserPet[]> => {
+export const createUserPets = async (userId: string, pets: Array<{
+  name: string;
+  type: string;
+  breed?: string;
+  age?: string;
+  photo?: string;
+}>): Promise<UserPet[]> => {
   try {
-    const { data: createdPets, error } = await supabase
+    const petsWithUserId = pets.map(pet => ({
+      ...pet,
+      user_id: userId,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    }));
+
+    const { data, error } = await supabase
       .from('user_pets')
-      .insert(pets)
+      .insert(petsWithUserId)
       .select()
 
     if (error) {
       throw new Error(error.message)
     }
 
-    return createdPets || []
+    return data || []
   } catch (error) {
     console.error('Create pets error:', error)
     if (error instanceof Error) {
@@ -335,56 +348,6 @@ export const unlikePost = async (postId: string, userId: string): Promise<boolea
   }
 }
 
-// Message functions
-export const createConversation = async (createdBy: string, participantIds: string[]): Promise<string | null> => {
-  try {
-    const { data: conversation, error } = await supabase
-      .from('conversations')
-      .insert({
-        type: participantIds.length > 2 ? 'group' : 'direct',
-        created_by: createdBy
-      })
-      .select('id')
-      .single()
-
-    if (error) throw error
-
-    // Add participants
-    const participants = participantIds.map(userId => ({
-      conversation_id: conversation.id,
-      user_id: userId
-    }))
-
-    await supabase
-      .from('conversation_participants')
-      .insert(participants)
-
-    return conversation.id
-  } catch (error) {
-    console.error('Create conversation error:', error)
-    return null
-  }
-}
-
-export const sendMessage = async (conversationId: string, senderId: string, content: string, messageType: string = 'text'): Promise<boolean> => {
-  try {
-    const { error } = await supabase
-      .from('messages')
-      .insert({
-        conversation_id: conversationId,
-        sender_id: senderId,
-        content,
-        message_type: messageType
-      })
-
-    if (error) throw error
-    return true
-  } catch (error) {
-    console.error('Send message error:', error)
-    return false
-  }
-}
-
 // Event registration
 export const registerForEvent = async (userId: string, eventId: string, email: string): Promise<boolean> => {
   try {
@@ -463,7 +426,6 @@ export const deleteUserAccount = async (userId: string): Promise<boolean> => {
     await supabase.from('posts').delete().eq('user_id', userId)
     await supabase.from('user_connections').delete().or(`requester_id.eq.${userId},requested_id.eq.${userId}`)
     await supabase.from('notifications').delete().eq('user_id', userId)
-    await supabase.from('messages').delete().eq('sender_id', userId)
     await supabase.from('event_registrations').delete().eq('user_id', userId)
     await supabase.from('appointment_bookings').delete().eq('user_id', userId)
     await supabase.from('user_blocks').delete().or(`blocker_id.eq.${userId},blocked_id.eq.${userId}`)

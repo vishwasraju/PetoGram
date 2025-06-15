@@ -16,6 +16,7 @@ interface PostProps {
       pets: string
       verified?: boolean
       id?: string
+      user_id?: string
     }
     content: {
       type: 'image' | 'video'
@@ -112,7 +113,7 @@ export default function Post({ post, onLike, onSave }: PostProps) {
       {/* Post Header */}
       <div className="flex items-center justify-between p-4">
         <div className="flex items-center gap-3">
-          <Link to={`/user-profile/${post.user.id || '123'}`}>
+          <Link to={`/user-profile/${post.user.user_id}`}>
             <Avatar 
               src={post.user.avatar}
               alt={post.user.name}
@@ -122,7 +123,7 @@ export default function Post({ post, onLike, onSave }: PostProps) {
           </Link>
           <div>
             <div className="flex items-center gap-2">
-              <Link to={`/user-profile/${post.user.id || '123'}`} className="font-semibold text-gray-900">
+              <Link to={`/user-profile/${post.user.user_id}`} className="font-semibold text-gray-900">
                 {post.user.name}
               </Link>
               <span className="text-gray-500">•</span>

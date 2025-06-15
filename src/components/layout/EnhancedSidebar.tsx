@@ -319,7 +319,9 @@ export default function EnhancedSidebar({ isOpen, onClose, isMobile }: SidebarPr
               fontWeight: designTokens.typography.fontWeight.bold, 
               color: designTokens.colors.gray[900],
               fontSize: designTokens.typography.fontSize.lg,
-            }}>42</div>
+            }}>
+              {userProfile?.postsCount?.toLocaleString() || "42"}
+            </div>
             <div style={{ color: designTokens.colors.gray[500] }}>Posts</div>
           </div>
           <div style={{ textAlign: 'center' }}>
@@ -327,7 +329,9 @@ export default function EnhancedSidebar({ isOpen, onClose, isMobile }: SidebarPr
               fontWeight: designTokens.typography.fontWeight.bold, 
               color: designTokens.colors.gray[900],
               fontSize: designTokens.typography.fontSize.lg,
-            }}>1.2K</div>
+            }}>
+              {userProfile?.followersCount?.toLocaleString() || "1.2K"}
+            </div>
             <div style={{ color: designTokens.colors.gray[500] }}>Followers</div>
           </div>
           <div style={{ textAlign: 'center' }}>
@@ -335,7 +339,9 @@ export default function EnhancedSidebar({ isOpen, onClose, isMobile }: SidebarPr
               fontWeight: designTokens.typography.fontWeight.bold, 
               color: designTokens.colors.gray[900],
               fontSize: designTokens.typography.fontSize.lg,
-            }}>389</div>
+            }}>
+              {userProfile?.followingCount?.toLocaleString() || "389"}
+            </div>
             <div style={{ color: designTokens.colors.gray[500] }}>Following</div>
           </div>
         </div>

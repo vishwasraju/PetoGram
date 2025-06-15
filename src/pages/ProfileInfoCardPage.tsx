@@ -8,26 +8,16 @@ import { supabase } from '../utils/supabase';
 import { getCurrentUser, getUserProfile, getUserPets } from '../utils/auth';
 
 interface UserProfile {
-  id: string;
   user_id: string;
-  username?: string;
-  bio: string;
+  username: string;
   profile_picture: string;
-  location: string;
-  birth_date?: string;
-  phone: string;
-  website: string;
-  social_media: {
-    instagram: string;
-    twitter: string;
-    facebook: string;
-  };
-  interests: string[];
-  is_public: boolean;
-  allow_messages: boolean;
-  show_email: boolean;
-  created_at?: string;
-  updated_at?: string;
+  bio?: string;
+  website?: string;
+  location?: string;
+  followers_count: number;
+  following_count: number;
+  posts_count: number;
+  is_private: boolean;
 }
 
 export default function ProfileInfoCardPage() {
@@ -51,6 +41,8 @@ export default function ProfileInfoCardPage() {
       }
       const userProfile = await getUserProfile(user.id);
       if (userProfile) setProfile(userProfile);
+
+      // Fetch posts
       const { data: userPosts } = await supabase
         .from('posts')
         .select('*')
@@ -58,20 +50,29 @@ export default function ProfileInfoCardPage() {
         .eq('is_active', true)
         .order('created_at', { ascending: false });
       if (userPosts) setPosts(userPosts);
+
+      // Fetch followers count
       const { count: followers } = await supabase
         .from('user_connections')
         .select('*', { count: 'exact', head: true })
         .eq('requested_id', user.id)
-        .eq('status', 'accepted');
+        .eq('status', 'accepted')
+        .eq('connection_type', 'follow');
+
+      // Fetch following count
       const { count: following } = await supabase
         .from('user_connections')
         .select('*', { count: 'exact', head: true })
         .eq('requester_id', user.id)
-        .eq('status', 'accepted');
+        .eq('status', 'accepted')
+        .eq('connection_type', 'follow');
+
       setFollowersCount(followers || 0);
       setFollowingCount(following || 0);
     } catch (error) {
       console.error('Error fetching user data:', error);
+      setFollowersCount(0);
+      setFollowingCount(0);
     } finally {
       setLoading(false);
     }
@@ -98,15 +99,15 @@ export default function ProfileInfoCardPage() {
           <p style={{ margin: 0, fontSize: 16, color: '#9CA3AF', fontWeight: 500 }}>@{profile?.username || 'username'}</p>
           <div style={{ display: 'flex', gap: 32, margin: '16px 0' }}>
             <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: 20, fontWeight: 700, color: '#fff' }}>{posts.length}</div>
+              <div style={{ fontSize: 20, fontWeight: 700, color: '#fff' }}>{posts.length.toLocaleString()}</div>
               <div style={{ fontSize: 14, color: '#9CA3AF', fontWeight: 500 }}>Posts</div>
             </div>
             <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: 20, fontWeight: 700, color: '#fff' }}>{followersCount}</div>
+              <div style={{ fontSize: 20, fontWeight: 700, color: '#fff' }}>{followersCount.toLocaleString()}</div>
               <div style={{ fontSize: 14, color: '#9CA3AF', fontWeight: 500 }}>Followers</div>
             </div>
             <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: 20, fontWeight: 700, color: '#fff' }}>{followingCount}</div>
+              <div style={{ fontSize: 20, fontWeight: 700, color: '#fff' }}>{followingCount.toLocaleString()}</div>
               <div style={{ fontSize: 14, color: '#9CA3AF', fontWeight: 500 }}>Following</div>
             </div>
           </div>

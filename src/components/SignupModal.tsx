@@ -23,7 +23,8 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
     password: '',
     confirmPassword: '',
     petName: '',
-    aboutPet: ''
+    aboutPet: '',
+    bio: '',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
@@ -188,7 +189,7 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
       await createUserProfile({
         user_id: registeredUserId,
         username: formData.username,
-        bio: '',
+        bio: formData.bio,
         profile_picture: '',
         location: '',
         phone: '',
@@ -200,14 +201,12 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
         },
         interests: [],
         is_public: true,
-        allow_messages: true,
         show_email: false,
       });
 
       // Create user pet
-      await createUserPets([
+      await createUserPets(registeredUserId, [
         {
-          user_id: registeredUserId,
           name: formData.petName,
           type: selectedPetType || '',
           breed: '',
@@ -248,7 +247,8 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
       password: '',
       confirmPassword: '',
       petName: '',
-      aboutPet: ''
+      aboutPet: '',
+      bio: '',
     });
     setErrors({});
     setIsLoading(false);

@@ -183,7 +183,7 @@ export default function DeleteAccountPage() {
                 lineHeight: '1.6',
               }}>
                 Deleting your account will permanently remove all your data from our servers. 
-                This includes your profile, posts, messages, connections, and all other associated information.
+                This includes your profile, posts, connections, and all other associated information.
               </p>
             </div>
 
@@ -212,12 +212,8 @@ export default function DeleteAccountPage() {
                 {[
                   'Your profile and personal information',
                   'All your posts and media',
-                  'Your messages and conversations',
                   'Friend connections and followers',
                   'Event registrations',
-                  'Appointment bookings',
-                  'Notifications and activity',
-                  'Account settings and preferences'
                 ].map((item, index) => (
                   <div
                     key={index}

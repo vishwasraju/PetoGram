@@ -9,7 +9,6 @@ import {
   MoreHorizontal,
   Grid3X3,
   Heart,
-  MessageCircle,
   Share,
   Bookmark,
   UserPlus,
@@ -50,7 +49,6 @@ export interface UserProfile {
   }
   interests: string[]
   is_public: boolean
-  allow_messages: boolean
   show_email: boolean
   created_at?: string
   updated_at?: string
@@ -403,63 +401,75 @@ export default function Profile() {
   const fetchFollowData = async (targetUserId: string) => {
     if (!targetUserId) return;
     try {
+      // Fetch followers count
       const { count: followers } = await supabase
         .from('user_connections')
         .select('*', { count: 'exact', head: true })
         .eq('requested_id', targetUserId)
-        .eq('status', 'accepted');
+        .eq('status', 'accepted')
+        .eq('connection_type', 'follow');
+
+      // Fetch following count
       const { count: following } = await supabase
         .from('user_connections')
         .select('*', { count: 'exact', head: true })
         .eq('requester_id', targetUserId)
-        .eq('status', 'accepted');
+        .eq('status', 'accepted')
+        .eq('connection_type', 'follow');
+
+      // Fetch posts count
+      const { count: postsCount } = await supabase
+        .from('posts')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', targetUserId)
+        .eq('is_active', true);
 
       setFollowersCount(followers || 0);
       setFollowingCount(following || 0);
     } catch (error) {
       console.error('Error fetching follow data:', error);
+      setFollowersCount(0);
+      setFollowingCount(0);
     }
   };
 
   const handleFollowToggle = async () => {
     if (!currentUser || !profile) return;
+    if (isFollowing) {
+      await supabase
+        .from('user_connections')
+        .delete()
+        .eq('requester_id', currentUser.id)
+        .eq('requested_id', profile.user_id)
+        .eq('connection_type', 'follow');
+      setIsFollowing(false);
+    } else {
+      await supabase
+        .from('user_connections')
+        .insert({
+          requester_id: currentUser.id,
+          requested_id: profile.user_id,
+          status: 'accepted',
+          connection_type: 'follow',
+        });
+      setIsFollowing(true);
+    }
+  };
 
-    try {
-      const { data, error } = await supabase
+  useEffect(() => {
+    if (!currentUser || !profile) return;
+    const checkFollowing = async () => {
+      const { data } = await supabase
         .from('user_connections')
         .select('*')
         .eq('requester_id', currentUser.id)
         .eq('requested_id', profile.user_id)
-        .single();
-
-      if (error && error.message.includes('rows not found')) {
-        // Not following, so follow
-        const { error: insertError } = await supabase.from('user_connections').insert({
-          requester_id: currentUser.id,
-          requested_id: profile.user_id,
-          status: 'accepted',
-        });
-        if (insertError) throw insertError;
-        setIsFollowing(true);
-        setFollowersCount(prev => prev + 1);
-      } else if (data) {
-        // Already following, so unfollow
-        const { error: deleteError } = await supabase
-          .from('user_connections')
-          .delete()
-          .eq('requester_id', currentUser.id)
-          .eq('requested_id', profile.user_id);
-        if (deleteError) throw deleteError;
-        setIsFollowing(false);
-        setFollowersCount(prev => prev - 1);
-      } else if (error) {
-        throw error;
-      }
-    } catch (error) {
-      console.error('Error toggling follow status:', error);
-      alert('An error occurred while changing follow status.');
-    }
-  };
+        .eq('connection_type', 'follow')
+        .eq('status', 'accepted');
+      setIsFollowing(!!data && data.length > 0);
+    };
+    checkFollowing();
+  }, [currentUser, profile]);
 
   // Initial fetch of current user for isOwnProfile
   useEffect(() => {
@@ -706,7 +716,7 @@ export default function Profile() {
                     fontWeight: designTokens.typography.fontWeight.bold,
                     color: '#fff',
                   }}>
-                    {posts.length}
+                    {posts.length.toLocaleString()}
                   </div>
                   <div style={{
                     fontSize: designTokens.typography.fontSize.sm,
@@ -722,7 +732,7 @@ export default function Profile() {
                     fontWeight: designTokens.typography.fontWeight.bold,
                     color: '#fff',
                   }}>
-                    {followersCount}
+                    {followersCount.toLocaleString()}
                   </div>
                   <div style={{
                     fontSize: designTokens.typography.fontSize.sm,
@@ -738,7 +748,7 @@ export default function Profile() {
                     fontWeight: designTokens.typography.fontWeight.bold,
                     color: '#fff',
                   }}>
-                    {followingCount}
+                    {followingCount.toLocaleString()}
                   </div>
                   <div style={{
                     fontSize: designTokens.typography.fontSize.sm,
@@ -803,22 +813,13 @@ export default function Profile() {
               ) : (
                 <>
                   <Button 
-                    variant={isFollowing ? 'secondary' : 'primary'} 
+                    variant="primary" 
                     size="lg" 
                     style={{ width: '100%' }}
                     onClick={handleFollowToggle}
                   >
                     <UserPlus size={18} />
-                    <span>{isFollowing ? 'Following' : 'Follow'}</span>
-                  </Button>
-                  <Button 
-                    variant="secondary" 
-                    size="lg" 
-                    style={{ width: '100%', marginTop: designTokens.spacing[2] }}
-                    onClick={() => navigate('/messages-page')}
-                  >
-                    <MessageCircle size={18} />
-                    <span>Message</span>
+                    <span>{isFollowing ? 'Followed' : 'Follow'}</span>
                   </Button>
                 </>
               )}
@@ -951,8 +952,17 @@ export default function Profile() {
                     onMouseLeave={(e) => e.currentTarget.style.opacity = '0'}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <Heart size={20} fill="currentColor" /> {post.likes_count}
-                        <MessageCircle size={20} /> {post.comments_count}
+                        <Heart size={20} fill="currentColor" />
+                        <span>{post.likes_count}</span>
+                      </div>
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        color: '#fff',
+                        fontWeight: '600',
+                      }}>
+                        <span>{post.comments_count}</span>
                       </div>
                     </div>
                   </div>
@@ -1042,7 +1052,6 @@ export default function Profile() {
                     >
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '10px' }}>
                         <Heart size={20} fill="currentColor" /> {post.likes_count}
-                        <MessageCircle size={20} /> {post.comments_count}
                       </div>
                       <button
                         onClick={(e) => {
