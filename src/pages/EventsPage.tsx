@@ -2,9 +2,43 @@ import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowLeft, Calendar, MapPin, Users, Clock, Plus, Filter, Search, Star } from 'lucide-react'
 import { designTokens } from '../design-system/tokens'
+import Modal from '../components/ui/Modal'
 
 export default function EventsPage() {
   const [activeTab, setActiveTab] = useState('upcoming')
+  const [showContactModal, setShowContactModal] = useState(false)
+  const [contactInfo, setContactInfo] = useState({ email: '', phone: '' })
+  const [contactError, setContactError] = useState('')
+  const [contactSuccess, setContactSuccess] = useState(false)
+  const [showResults, setShowResults] = useState(false)
+  const [votes, setVotes] = useState({})
+  const [totalVotes, setTotalVotes] = useState(0)
+
+  const handleEventCardClick = () => {
+    setShowContactModal(true)
+    setContactInfo({ email: '', phone: '' })
+    setContactError('')
+    setContactSuccess(false)
+  }
+
+  const handleContactInputChange = (field, value) => {
+    setContactInfo(prev => ({ ...prev, [field]: value }))
+    setContactError('')
+  }
+
+  const handleContactSubmit = (e) => {
+    e.preventDefault()
+    if (!contactInfo.email || !contactInfo.phone) {
+      setContactError('Please enter both Gmail and phone number.')
+      return
+    }
+    if (!contactInfo.email.endsWith('@gmail.com')) {
+      setContactError('Please enter a valid Gmail address.')
+      return
+    }
+    setContactSuccess(true)
+    setTimeout(() => setShowContactModal(false), 1500)
+  }
 
   const upcomingEvents = [
     {
@@ -42,43 +76,12 @@ export default function EventsPage() {
       category: 'Social',
       price: '$15',
       organizer: 'Cat Lovers NYC'
-    },
-    {
-      id: '4',
-      title: 'Pet Photography Session',
-      date: 'Next Friday',
-      time: '11:00 AM - 3:00 PM',
-      location: 'Prospect Park, Brooklyn',
-      attendees: 67,
-      image: 'https://images.pexels.com/photos/2023384/pexels-photo-2023384.jpeg?auto=compress&cs=tinysrgb&w=400',
-      category: 'Photography',
-      price: '$40',
-      organizer: 'Pet Photo Pro'
-    },
-    {
-      id: '5',
-      title: 'Veterinary Health Seminar',
-      date: 'Next Saturday',
-      time: '9:00 AM - 12:00 PM',
-      location: 'Animal Hospital, Queens',
-      attendees: 123,
-      image: 'https://images.pexels.com/photos/1108099/pexels-photo-1108099.jpeg?auto=compress&cs=tinysrgb&w=400',
-      category: 'Health',
-      price: 'Free',
-      organizer: 'Queens Vet Clinic'
-    },
-    {
-      id: '6',
-      title: 'Pet Costume Contest',
-      date: 'Next Sunday',
-      time: '1:00 PM - 4:00 PM',
-      location: 'Washington Square Park',
-      attendees: 298,
-      image: 'https://images.pexels.com/photos/1564506/pexels-photo-1564506.jpeg?auto=compress&cs=tinysrgb&w=400',
-      category: 'Contest',
-      price: '$10',
-      organizer: 'NYC Pet Events'
     }
+  ]
+
+  const animalOptions = [
+    { id: '1', name: 'Cat', img: 'https://images.pexels.com/photos/1170986/pexels-photo-1170986.jpeg?auto=compress&cs=tinysrgb&w=400' },
+    { id: '2', name: 'Dog', img: 'https://images.pexels.com/photos/1851164/pexels-photo-1851164.jpeg?auto=compress&cs=tinysrgb&w=400' },
   ]
 
   return (
@@ -208,15 +211,13 @@ export default function EventsPage() {
                 cursor: 'pointer',
                 transition: 'all 0.2s ease',
                 border: '1px solid #333',
+                minHeight: '420px',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                position: 'relative',
               }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-4px)'
-                e.currentTarget.style.boxShadow = '0 8px 32px rgba(0, 0, 0, 0.3)'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)'
-                e.currentTarget.style.boxShadow = 'none'
-              }}
+              onClick={handleEventCardClick}
             >
               <div style={{ position: 'relative' }}>
                 <img 
@@ -347,10 +348,89 @@ export default function EventsPage() {
                   </button>
                 </div>
               </div>
+              <div style={{ marginTop: '16px', color: '#F59E0B', fontSize: '13px', fontWeight: 500 }}>
+                Note: These are dummy events for demo purposes.
+              </div>
             </div>
           ))}
         </div>
       </div>
+
+      {/* Modal for contact info */}
+      <Modal isOpen={showContactModal} onClose={() => setShowContactModal(false)} title="Contact Information" size="sm">
+        {contactSuccess ? (
+          <div style={{ textAlign: 'center', color: '#10B981', fontWeight: 600, fontSize: 18 }}>
+            Thanks! We will assist you soon.
+          </div>
+        ) : (
+          <form onSubmit={handleContactSubmit}>
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ color: '#9CA3AF', fontWeight: 600 }}>Gmail</label>
+              <input
+                type="email"
+                value={contactInfo.email}
+                onChange={e => handleContactInputChange('email', e.target.value)}
+                placeholder="yourname@gmail.com"
+                style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid #333', background: '#222', color: '#fff', fontSize: 16, marginTop: 4 }}
+              />
+            </div>
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ color: '#9CA3AF', fontWeight: 600 }}>Phone Number</label>
+              <input
+                type="tel"
+                value={contactInfo.phone}
+                onChange={e => handleContactInputChange('phone', e.target.value)}
+                placeholder="Enter your phone number"
+                style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid #333', background: '#222', color: '#fff', fontSize: 16, marginTop: 4 }}
+              />
+            </div>
+            {contactError && <div style={{ color: '#EF4444', marginBottom: 12 }}>{contactError}</div>}
+            <button type="submit" style={{
+              width: '100%',
+              padding: '16px',
+              marginTop: '18px',
+              backgroundColor: '#10B981',
+              border: 'none',
+              borderRadius: 8,
+              color: '#fff',
+              fontSize: 18,
+              fontWeight: 700,
+              cursor: 'pointer',
+              boxShadow: '0 2px 8px rgba(16,185,129,0.15)',
+              letterSpacing: '0.5px',
+              display: 'block',
+            }}>
+              Send
+            </button>
+          </form>
+        )}
+      </Modal>
+
+      {showResults && (
+        <div id="pollResults">
+          {animalOptions.map((animal) => {
+            const count = votes[animal.id] || 0;
+            const percent = totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0;
+            return (
+              <div key={animal.id} style={{ marginBottom: 18 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontWeight: 600 }}>
+                  <span style={{ display: 'flex', alignItems: 'center' }}>
+                    <img src={animal.img} alt={animal.name} style={{ width: 32, height: 32, borderRadius: '50%', marginRight: 10 }} />
+                    {animal.name}
+                  </span>
+                  <span>{count} vote{count !== 1 ? 's' : ''} ({percent}%)</span>
+                </div>
+                <div style={{ height: 10, background: '#e0e7ff', borderRadius: 5, marginTop: 6, marginBottom: 2, overflow: 'hidden' }}>
+                  <div style={{ width: `${percent}%`, height: 10, background: '#6366F1', borderRadius: 5, transition: 'width 0.4s' }} />
+                </div>
+              </div>
+            );
+          })}
+          <div style={{ marginTop: 18, color: '#6366F1', fontWeight: 600, textAlign: 'center' }}>
+            Total votes: {totalVotes}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -159,17 +159,50 @@ export default function UserProfilePage() {
         .eq('requested_id', userId)
         .eq('connection_type', 'follow')
       setIsFollowing(false)
+      await fetchUserStats(); // Refresh stats after unfollow
     } else {
       // Follow
-      await supabase
-        .from('user_connections')
-        .insert({
-          requester_id: currentUser.id,
-          requested_id: userId,
-          status: 'accepted',
-          connection_type: 'follow',
-        })
-      setIsFollowing(true)
+      try {
+        const { error } = await supabase
+          .from('user_connections')
+          .insert({
+            requester_id: currentUser.id,
+            requested_id: userId,
+            status: 'accepted',
+            connection_type: 'follow',
+          })
+        
+        console.log('Insert result:', { error })
+        
+        if (error) {
+          console.log('Error details:', error)
+          // Check for various possible error codes
+          if (error.code === '23505' || error.code === '409' || error.message?.includes('duplicate') || error.message?.includes('conflict')) {
+            console.log('Handling duplicate/conflict error')
+            // Unique constraint violation - connection already exists
+            // Update the existing connection to accepted status
+            const { error: updateError } = await supabase
+              .from('user_connections')
+              .update({ status: 'accepted' })
+              .eq('requester_id', currentUser.id)
+              .eq('requested_id', userId)
+              .eq('connection_type', 'follow')
+            
+            if (updateError) {
+              console.error('Error updating existing connection:', updateError)
+              return
+            }
+          } else {
+            console.error('Error following user:', error)
+            return
+          }
+        }
+        
+        setIsFollowing(true)
+        await fetchUserStats(); // Refresh stats after follow
+      } catch (error) {
+        console.error('Caught error following user:', error)
+      }
     }
   }
 

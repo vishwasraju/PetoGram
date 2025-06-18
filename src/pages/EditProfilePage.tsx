@@ -435,36 +435,6 @@ export default function EditProfilePage() {
                 fontWeight: '600',
                 color: '#E5E7EB',
               }}>
-                Location
-              </label>
-              <input
-                type="text"
-                value={profile.location || ''}
-                onChange={(e) => handleInputChange('location', e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  backgroundColor: '#222',
-                  border: '1px solid #444',
-                  borderRadius: '8px',
-                  color: '#fff',
-                  fontSize: '16px',
-                  outline: 'none',
-                  transition: 'border-color 0.2s ease',
-                }}
-                onFocus={(e) => e.currentTarget.style.borderColor = '#6366F1'}
-                onBlur={(e) => e.currentTarget.style.borderColor = '#444'}
-              />
-            </div>
-
-            <div>
-              <label style={{
-                display: 'block',
-                marginBottom: '8px',
-                fontSize: '14px',
-                fontWeight: '600',
-                color: '#E5E7EB',
-              }}>
                 Website
               </label>
               <input

@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from 'react'
-import EnhancedSidebar from '../components/layout/EnhancedSidebar'
-import EnhancedHeader from '../components/layout/EnhancedHeader'
 import Post from '../components/feed/Post'
 import Card from '../components/ui/Card'
 import Avatar from '../components/ui/Avatar'
@@ -8,7 +6,7 @@ import Button from '../components/ui/Button'
 import Badge from '../components/ui/Badge'
 import NotificationPopup from '../components/ui/NotificationPopup'
 import { SkeletonCard } from '../components/ui/Skeleton'
-import { TrendingUp, Users, Calendar, MapPin, Star, Plus, Search, Mic, Heart, Bookmark, MoreHorizontal, UserPlus, X, Clock, Siren as Fire, Hash, Bell, Stethoscope } from 'lucide-react'
+import { TrendingUp, Users, Calendar, MapPin, Star, Plus, Search, Mic, Heart, Bookmark, MoreHorizontal, UserPlus, X, Clock, Siren as Fire, Hash, Bell, Stethoscope, MessageCircle } from 'lucide-react'
 import { designTokens } from '../design-system/tokens'
 import { useNavigate, Link, useParams } from 'react-router-dom'
 import { clearAuthenticationState, getCurrentUser, getUserProfile, getUserPets, savePost, unsavePost, getSavedPostIds, createPost } from '../utils/auth'
@@ -38,7 +36,6 @@ interface PostData {
     saved?: boolean
   }
   timestamp: string
-  user_id: string
 }
 
 const mockPosts: PostData[] = [
@@ -65,7 +62,6 @@ const mockPosts: PostData[] = [
       saved: false,
     },
     timestamp: '2h',
-    user_id: '1',
   },
   {
     id: '2',
@@ -90,7 +86,6 @@ const mockPosts: PostData[] = [
       saved: true,
     },
     timestamp: '4h',
-    user_id: '2',
   },
   {
     id: '3',
@@ -115,7 +110,6 @@ const mockPosts: PostData[] = [
       saved: true,
     },
     timestamp: '1h',
-    user_id: '3',
   },
   {
     id: '4',
@@ -140,7 +134,6 @@ const mockPosts: PostData[] = [
       saved: false,
     },
     timestamp: '3h',
-    user_id: '4',
   },
   {
     id: '5',
@@ -165,7 +158,6 @@ const mockPosts: PostData[] = [
       saved: false,
     },
     timestamp: '6h',
-    user_id: '5',
   },
   {
     id: '6',
@@ -190,7 +182,6 @@ const mockPosts: PostData[] = [
       saved: true,
     },
     timestamp: '8h',
-    user_id: '6',
   },
 ]
 
@@ -246,45 +237,7 @@ const upcomingEvents = [
   }
 ]
 
-const trendingTopics = [
-  {
-    id: '1',
-    hashtag: '#PuppyLove',
-    posts: '45.2K',
-    growth: '+12%',
-    category: 'Trending in Pets'
-  },
-  {
-    id: '2',
-    hashtag: '#CatsOfInstagram',
-    posts: '38.9K',
-    growth: '+8%',
-    category: 'Trending in Social'
-  },
-  {
-    id: '3',
-    hashtag: '#DogTraining',
-    posts: '23.1K',
-    growth: '+15%',
-    category: 'Trending in Education'
-  },
-  {
-    id: '4',
-    hashtag: '#PetPhotography',
-    posts: '19.8K',
-    growth: '+5%',
-    category: 'Trending in Art'
-  },
-  {
-    id: '5',
-    hashtag: '#AdoptDontShop',
-    posts: '16.7K',
-    growth: '+20%',
-    category: 'Trending in Advocacy'
-  }
-]
-
-export default function EnhancedHome() {
+function EnhancedHome() {
   const [posts, setPosts] = useState<PostData[]>([])
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
@@ -299,6 +252,92 @@ export default function EnhancedHome() {
   const [followersCount, setFollowersCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
   const [postsCount, setPostsCount] = useState(0);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [votedPet, setVotedPet] = useState<string | null>(null);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [showThankYou, setShowThankYou] = useState(false);
+
+  const animalOptions = [
+    { id: '1', name: 'Cat', img: '/PetoGram/assets/images/pets/cat.png' },
+    { id: '2', name: 'Dog', img: '/PetoGram/assets/images/pets/dog.png' },
+  ];
+  const [votes, setVotes] = useState<{ [key: string]: number }>({ '1': 0, '2': 0 });
+  const [loadingVotes, setLoadingVotes] = useState(true);
+  const [voteError, setVoteError] = useState<string | null>(null);
+  const totalVotes = Object.values(votes).reduce((a, b) => a + b, 0);
+  const [selectedAnimal, setSelectedAnimal] = useState<string | null>(null);
+
+  // Map animal id to string for DB
+  const animalIdToName = { '1': 'cat', '2': 'dog' };
+  const animalNameToId = { 'cat': '1', 'dog': '2' };
+
+  // Fetch vote counts from Supabase
+  const fetchVotesFromDB = async () => {
+    setLoadingVotes(true);
+    setVoteError(null);
+    try {
+      const { data, error } = await supabase
+        .from('pet_votes')
+        .select('animal');
+      if (error) throw error;
+      // Count votes for each animal
+      const counts = { '1': 0, '2': 0 };
+      (data || []).forEach(row => {
+        if (row.animal === 'cat') counts['1']++;
+        if (row.animal === 'dog') counts['2']++;
+      });
+      setVotes(counts);
+    } catch (err) {
+      setVoteError('Could not fetch votes.');
+    } finally {
+      setLoadingVotes(false);
+    }
+  };
+
+  useEffect(() => {
+    const fetchVotesAndUserVote = async () => {
+      await fetchVotesFromDB();
+      try {
+        const user = await getCurrentUser();
+        if (!user) return;
+        const { data, error } = await supabase
+          .from('pet_votes')
+          .select('animal')
+          .eq('user_id', user.id)
+          .single();
+        if (!error && data && data.animal) {
+          setSelectedAnimal(animalNameToId[data.animal]);
+        }
+      } catch {}
+    };
+    fetchVotesAndUserVote();
+  }, []);
+
+  // Voting handler
+  const handleVote = async (animalId: string) => {
+    if (selectedAnimal) return;
+    setVoteError(null);
+    setLoadingVotes(true);
+    try {
+      const user = await getCurrentUser();
+      if (!user) throw new Error('Not logged in');
+      // Upsert vote (one per user)
+      const { error } = await supabase
+        .from('pet_votes')
+        .upsert({ user_id: user.id, animal: animalIdToName[animalId] }, { onConflict: 'user_id' });
+      if (error) throw error;
+      setSelectedAnimal(animalId);
+      setShowConfetti(true);
+      setShowThankYou(true);
+      setTimeout(() => setShowConfetti(false), 1200);
+      // Refresh votes
+      await fetchVotesFromDB();
+    } catch (err) {
+      setVoteError('Could not submit vote.');
+    } finally {
+      setLoadingVotes(false);
+    }
+  };
 
   useEffect(() => {
     const updateLayout = () => {
@@ -316,10 +355,13 @@ export default function EnhancedHome() {
       const user = await getCurrentUser()
       if (user) {
         setCurrentUser(user)
-        const profile = await getUserProfile(user.id) // Fetch profile using user.id
-        setUserProfile(profile)
-
-        if (profile) {
+        const { data, error } = await supabase
+          .from('user_profiles')
+          .select('*')
+          .eq('user_id', user.id)
+          .single();
+        if (data) {
+          setUserProfile(data)
           fetchUserStats(user.id) // Call fetchUserStats with user.id
         }
         fetchPosts(user.id) // Assuming fetchPosts needs userId now
@@ -545,44 +587,48 @@ export default function EnhancedHome() {
     try {
       if (postToSave.engagement.saved) {
         // If currently saved, unsave it
-        const success = await unsavePost(currentUser.id, postId);
-        if (success) {
-          setPosts(currentPosts =>
-            currentPosts.map(post =>
-              post.id === postId
-                ? {
-                    ...post,
-                    engagement: {
-                      ...post.engagement,
-                      saved: false,
-                    },
-                  }
-                : post
-            )
-          );
-        } else {
-          alert('Failed to unsave post. Please try again.');
-        }
+        const { error } = await supabase
+          .from('saved_posts')
+          .delete()
+          .eq('user_id', currentUser.id)
+          .eq('post_id', postId);
+
+        if (error) throw error;
+
+        setPosts(currentPosts =>
+          currentPosts.map(post =>
+            post.id === postId
+              ? {
+                  ...post,
+                  engagement: {
+                    ...post.engagement,
+                    saved: false,
+                  },
+                }
+              : post
+          )
+        );
       } else {
         // If not saved, save it
-        const success = await savePost(currentUser.id, postId);
-        if (success) {
-          setPosts(currentPosts =>
-            currentPosts.map(post =>
-              post.id === postId
-                ? {
-                    ...post,
-                    engagement: {
-                      ...post.engagement,
-                      saved: true,
-                    },
-                  }
-                : post
-            )
-          );
-        } else {
-          alert('Failed to save post. Please try again.');
-        }
+        const { error } = await supabase
+          .from('saved_posts')
+          .upsert({ user_id: currentUser.id, post_id: postId });
+
+        if (error) throw error;
+
+        setPosts(currentPosts =>
+          currentPosts.map(post =>
+            post.id === postId
+              ? {
+                  ...post,
+                  engagement: {
+                    ...post.engagement,
+                    saved: true,
+                  },
+                }
+              : post
+          )
+        );
       }
     } catch (error) {
       console.error('Error saving/unsaving post:', error);
@@ -609,6 +655,31 @@ export default function EnhancedHome() {
     // ... your logic to create a post
     await createPost(newPostData);
     fetchPosts(); // <-- This will update the posts array and the count
+  };
+
+  const handleFollowToggle = async () => {
+    if (!currentUser || !userProfile.user_id) return;
+    if (isFollowing) {
+      await supabase
+        .from('user_connections')
+        .delete()
+        .eq('requester_id', currentUser.id)
+        .eq('requested_id', userProfile.user_id)
+        .eq('connection_type', 'follow');
+      setIsFollowing(false);
+      await fetchUserStats(userProfile.user_id);
+    } else {
+      await supabase
+        .from('user_connections')
+        .upsert({
+          requester_id: currentUser.id,
+          requested_id: userProfile.user_id,
+          status: 'accepted',
+          connection_type: 'follow',
+        });
+      setIsFollowing(true);
+      await fetchUserStats(userProfile.user_id);
+    }
   };
 
   return (
@@ -707,50 +778,10 @@ export default function EnhancedHome() {
             </div>
           </div>
 
-          {/* Notifications */}
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '40px', marginBottom: '28px' }}>
-            <button 
-              onClick={() => setShowNotifications(!showNotifications)}
-              style={{ 
-                background: 'none', 
-                border: 'none', 
-                cursor: 'pointer', 
-                color: '#9CA3AF', 
-                padding: 0,
-                position: 'relative',
-                transition: 'color 0.2s ease',
-              }} 
-              title="Notifications"
-              onMouseEnter={(e) => e.currentTarget.style.color = '#fff'}
-              onMouseLeave={(e) => e.currentTarget.style.color = '#9CA3AF'}
-            >
-              <Bell size={22} />
-              {/* Notification badge */}
-              <div style={{
-                position: 'absolute',
-                top: '-4px',
-                right: '-4px',
-                width: '16px',
-                height: '16px',
-                backgroundColor: '#EF4444',
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '10px',
-                color: '#fff',
-                fontWeight: '600',
-              }}>
-                3
-              </div>
-            </button>
-          </div>
-
           {/* Navigation */}
           <nav style={{ marginBottom: '4px' }}>
             {[ 
               { icon: '🏠', label: 'Feed', path: '/feed', active: false },
-              { icon: '🔍', label: 'Explore', path: '/explore-page' },
               { icon: <Calendar size={20} />, label: 'Events', path: '/events-page' },
               { icon: <Stethoscope size={20} />, label: 'Appointment', path: '/appointment-page' },
               { icon: '⚙️', label: 'Settings', path: '/settings-page' },
@@ -1064,23 +1095,9 @@ export default function EnhancedHome() {
                         <Heart size={18} fill={post.engagement.liked ? 'currentColor' : 'none'} />
                         {post.engagement.likes.toLocaleString()}
                       </button>
-                      <button 
-                        onClick={() => {
-                          setSelectedPostId(post.id);
-                          setShowCommentModal(true);
-                        }}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '8px',
-                          backgroundColor: 'transparent',
-                          border: 'none',
-                          color: '#9CA3AF',
-                          cursor: 'pointer',
-                          fontSize: '14px',
-                        }}
-                      >
-                        {post.engagement.comments.toLocaleString()}
+                      <button className="flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors">
+                        <MessageCircle size={24} />
+                        <span className="font-medium">{post.engagement.comments}</span>
                       </button>
                     </div>
                     <button
@@ -1119,276 +1136,213 @@ export default function EnhancedHome() {
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'space-between',
+                gap: '24px',
+                justifyContent: 'flex-end',
                 marginBottom: '16px',
               }}>
-                <h3 style={{
-                  margin: 0,
-                  fontSize: '16px',
-                  fontWeight: '600',
-                  color: '#FFFFFF',
-                }}>
-                  Requests
-                </h3>
-                <div style={{
-                  backgroundColor: '#6366F1',
-                  color: '#FFFFFF',
-                  borderRadius: '50%',
-                  width: '20px',
-                  height: '20px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '12px',
-                  fontWeight: '600',
-                }}>
-                  2
-                </div>
-              </div>
-              
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                {requests.map((request) => (
-                  <div key={request.id} style={{
+                {/* Message Button */}
+                <button
+                  onClick={() => navigate('/chat')}
+                  style={{
+                    background: '#6366F1',
+                    border: 'none',
+                    cursor: 'pointer',
+                    color: '#fff',
+                    padding: '10px',
+                    borderRadius: '50%',
+                    boxShadow: '0 2px 8px rgba(99,102,241,0.18)',
+                    position: 'relative',
+                    transition: 'background 0.2s, box-shadow 0.2s',
+                  }}
+                  title="Messages"
+                  onMouseEnter={e => {
+                    e.currentTarget.style.background = '#4F46E5';
+                    e.currentTarget.style.boxShadow = '0 4px 16px rgba(99,102,241,0.28)';
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.background = '#6366F1';
+                    e.currentTarget.style.boxShadow = '0 2px 8px rgba(99,102,241,0.18)';
+                  }}
+                >
+                  {/* Message Icon */}
+                  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                </button>
+                {/* Notification Button */}
+                <button 
+                  onClick={() => setShowNotifications(!showNotifications)}
+                  style={{ 
+                    background: 'none', 
+                    border: 'none', 
+                    cursor: 'pointer', 
+                    color: '#9CA3AF', 
+                    padding: 0,
+                    position: 'relative',
+                    transition: 'color 0.2s ease',
+                  }} 
+                  title="Notifications"
+                  onMouseEnter={(e) => e.currentTarget.style.color = '#fff'}
+                  onMouseLeave={(e) => e.currentTarget.style.color = '#9CA3AF'}
+                >
+                  <Bell size={22} />
+                  {/* Notification badge */}
+                  <div style={{
+                    position: 'absolute',
+                    top: '-4px',
+                    right: '-4px',
+                    width: '16px',
+                    height: '16px',
+                    backgroundColor: '#EF4444',
+                    borderRadius: '50%',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '12px',
+                    justifyContent: 'center',
+                    fontSize: '10px',
+                    color: '#fff',
+                    fontWeight: '600',
                   }}>
-                    <Link to={`/user-profile/${request.id}`}>
-                      <img 
-                        src={request.avatar}
-                        alt={request.name}
-                        style={{
-                          width: '40px',
-                          height: '40px',
-                          borderRadius: '50%',
-                          objectFit: 'cover',
-                        }}
-                      />
-                    </Link>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <Link to={`/user-profile/${request.id}`}>
-                        <div style={{
-                          fontSize: '14px',
-                          fontWeight: '500',
-                          color: '#FFFFFF',
-                          marginBottom: '2px',
-                        }}>
-                          {request.name}
-                        </div>
-                      </Link>
-                      <div style={{
-                        fontSize: '12px',
-                        color: '#9CA3AF',
-                      }}>
-                        {request.action}
-                      </div>
-                      <div style={{
-                        display: 'flex',
-                        gap: '8px',
-                        marginTop: '8px',
-                      }}>
-                        <button 
-                          onClick={() => handleAcceptRequest(request.id)}
-                          style={{
-                            padding: '4px 12px',
-                            backgroundColor: '#6366F1',
-                            border: 'none',
-                            borderRadius: '16px',
-                            color: '#FFFFFF',
-                            fontSize: '12px',
-                            fontWeight: '500',
-                            cursor: 'pointer',
-                          }}
-                        >
-                          Accept
-                        </button>
-                        <button 
-                          onClick={() => handleDeclineRequest(request.id)}
-                          style={{
-                            padding: '4px 12px',
-                            backgroundColor: '#374151',
-                            border: 'none',
-                            borderRadius: '16px',
-                            color: '#9CA3AF',
-                            fontSize: '12px',
-                            fontWeight: '500',
-                            cursor: 'pointer',
-                          }}
-                        >
-                          Decline
-                        </button>
-                      </div>
-                    </div>
+                    3
                   </div>
-                ))}
+                </button>
               </div>
             </div>
-
-            {/* Upcoming Events */}
-            <div style={{ marginBottom: '32px' }}>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                marginBottom: '16px',
-              }}>
-                <Calendar size={20} color="#6366F1" />
-                <h3 style={{
-                  margin: 0,
-                  fontSize: '16px',
-                  fontWeight: '600',
-                  color: '#FFFFFF',
-                }}>
-                  Upcoming Events
-                </h3>
-              </div>
-              
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                {upcomingEvents.slice(0, 2).map((event) => (
-                  <div key={event.id} style={{
-                    backgroundColor: '#374151',
-                    borderRadius: '10px',
-                    padding: '10px',
-                    border: '1px solid #4B5563',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = '#404756'
-                    e.currentTarget.style.transform = 'translateY(-2px)'
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = '#374151'
-                    e.currentTarget.style.transform = 'translateY(0)'
-                  }}>
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                      <img 
-                        src={event.image}
-                        alt={event.title}
-                        style={{
-                          width: '38px',
-                          height: '38px',
-                          borderRadius: '6px',
-                          objectFit: 'cover',
-                        }}
-                      />
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <h4 style={{
-                          margin: '0 0 2px 0',
-                          fontSize: '14px',
-                          fontWeight: '600',
-                          color: '#FFFFFF',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
-                        }}>
-                          {event.title}
-                        </h4>
-                        <div style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '2px',
-                          marginBottom: '2px',
-                        }}>
-                          <Clock size={10} color="#9CA3AF" />
-                          <span style={{ fontSize: '12px' }}>
-                            {event.date} • {event.time}
-                          </span>
-                        </div>
-                        <div style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '2px',
-                          marginBottom: '4px',
-                        }}>
-                          <MapPin size={10} color="#9CA3AF" />
-                          <span style={{
-                            fontSize: '12px',
-                            color: '#9CA3AF',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap',
-                          }}>
-                            {event.location}
-                          </span>
-                        </div>
-                        <div style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '2px',
-                        }}>
-                          <Users size={10} color="#6366F1" />
-                          <span style={{
-                            fontSize: '12px',
-                            color: '#6366F1',
-                            fontWeight: '500',
-                          }}>
-                            {event.attendees} attending
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              
-              <button
-                style={{
+            {/* Pet Poll Card */}
+            <div style={{
+              margin: '0 auto 32px auto',
+              background: 'linear-gradient(135deg, #f5f7fa 0%, #e0e7ff 100%)',
+              borderRadius: '22px',
+              boxShadow: '0 4px 32px 0 rgba(99,102,241,0.13)',
+              padding: '32px 6vw',
+              maxWidth: 420,
+              minWidth: 0,
+              color: '#23233a',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              position: 'relative',
+              width: '100%',
+            }}>
+              {/* Confetti burst */}
+              {showConfetti && (
+                <div style={{
+                  position: 'absolute',
+                  left: 0, right: 0, top: 0, height: 0, zIndex: 10,
+                  pointerEvents: 'none',
                   width: '100%',
-                  padding: '8px',
-                  marginTop: '1px',
-                  backgroundColor: 'transparent',
-                  border: 'none',
-                  color: '#6366F1',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  cursor: 'pointer',
-                }}
-                onClick={() => navigate('/events-page')}
-              >
-                Explore more events
-              </button>
-            </div>
-
-            {/* Trending Topics */}
-            <div style={{ marginBottom: '31px' }}>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                marginBottom: '16px',
-              }}>
-                <TrendingUp size={20} color="#EF4444" />
-                <h3 style={{
-                  margin: 0,
-                  fontSize: '16px',
-                  fontWeight: '600',
-                  color: '#FFFFFF',
+                  display: 'flex',
+                  justifyContent: 'center',
                 }}>
-                  Trending
-                </h3>
-              </div>
-              
-              <div style={{
-                display: 'flex',
-                flexDirection: 'row',
-                flexWrap: 'wrap',
-                gap: '10px',
+                  {[...Array(18)].map((_, i) => (
+                    <span key={i} style={{
+                      display: 'inline-block',
+                      width: 10,
+                      height: 10,
+                      borderRadius: '50%',
+                      background: ['#6366F1','#F59E0B','#10B981','#F472B6','#F87171','#A78BFA','#FBBF24','#34D399'][i%8],
+                      position: 'absolute',
+                      left: `${50 + 30*Math.cos((i/18)*2*Math.PI)}%`,
+                      top: `${-10 + 30*Math.sin((i/18)*2*Math.PI)}px`,
+                      opacity: 0.8,
+                      transform: `scale(${0.8 + 0.4*Math.random()})`,
+                      animation: 'confetti-burst 1.1s cubic-bezier(.62,.28,.23,.99)',
+                      animationDelay: `${i*0.03}s`,
+                    }} />
+                  ))}
+                  <style>{`
+                    @keyframes confetti-burst {
+                      0% { opacity: 0; transform: scale(0.5) translateY(0); }
+                      60% { opacity: 1; }
+                      100% { opacity: 0; transform: scale(1.2) translateY(60px); }
+                    }
+                  `}</style>
+                </div>
+              )}
+              <h3 style={{
+                margin: 0,
+                marginBottom: 10,
+                fontSize: 24,
+                fontWeight: 800,
+                color: '#4F46E5',
+                letterSpacing: 0.2,
+                textAlign: 'center',
               }}>
-                {trendingTopics.slice(0, 3).map(topic => (
-                  <div key={topic.id} style={{ marginBottom: '16px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <span style={{ fontSize: '14px', color: '#6366F1', fontWeight: '600' }}>{topic.hashtag}</span>
-                      <span style={{ fontSize: '12px', color: '#9CA3AF' }}>{topic.posts} Posts</span>
+                Vote for the Most Lovely Pet
+              </h3>
+              {loadingVotes && <div style={{ color: '#6366F1', fontWeight: 500, marginBottom: 12 }}>Loading votes...</div>}
+              {voteError && <div style={{ color: '#EF4444', fontWeight: 500, marginBottom: 12 }}>{voteError}</div>}
+              {animalOptions.map((animal) => {
+                const count = votes[animal.id] || 0;
+                const isSelected = selectedAnimal === animal.id;
+                return (
+                  <div
+                    key={animal.id}
+                    title={`Vote for ${animal.name}`}
+                    style={{
+                      background: isSelected ? '#f5f3ff' : '#f9fafb',
+                      border: isSelected ? '3px solid #6366F1' : '2px solid #e5e7eb',
+                      boxShadow: isSelected ? '0 4px 16px rgba(99,102,241,0.13)' : 'none',
+                      borderRadius: 18,
+                      padding: '20px 24px',
+                      marginBottom: 20,
+                      display: 'flex',
+                      alignItems: 'center',
+                      cursor: selectedAnimal ? 'default' : 'pointer',
+                      transition: 'border 0.2s, background 0.2s, box-shadow 0.2s, transform 0.18s',
+                      position: 'relative',
+                      minWidth: 240,
+                      outline: isSelected ? '2px solid #a5b4fc' : 'none',
+                      transform: selectedAnimal ? 'none' : 'scale(1)',
+                    }}
+                    onClick={() => handleVote(animal.id)}
+                    onMouseEnter={e => {
+                      if (!isSelected && !selectedAnimal) e.currentTarget.style.transform = 'scale(1.03)';
+                    }}
+                    onMouseLeave={e => {
+                      if (!isSelected && !selectedAnimal) e.currentTarget.style.transform = 'scale(1)';
+                    }}
+                    tabIndex={0}
+                    aria-label={`Vote for ${animal.name}`}
+                  >
+                    {/* Custom radio with animated checkmark */}
+                    <span style={{
+                      display: 'inline-block',
+                      width: 32,
+                      height: 32,
+                      borderRadius: '50%',
+                      border: isSelected ? '7px solid #6366F1' : '2px solid #a5b4fc',
+                      background: isSelected ? '#ede9fe' : '#fff',
+                      marginRight: 18,
+                      boxSizing: 'border-box',
+                      transition: 'border 0.2s, background 0.2s',
+                      position: 'relative',
+                    }}>
+                      {isSelected && (
+                        <svg width="18" height="18" viewBox="0 0 18 18" style={{ position: 'absolute', left: 7, top: 7, opacity: 1, transition: 'opacity 0.2s' }}>
+                          <polyline points="2,10 7,15 16,4" fill="none" stroke="#6366F1" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      )}
+                    </span>
+                    <img src={animal.img} alt={animal.name} style={{ width: 54, height: 54, borderRadius: '50%', objectFit: 'cover', marginRight: 18, background: '#fff', border: '2px solid #e0e7ff' }} />
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 700, fontSize: 22, color: '#23233a', marginBottom: 6 }}>{animal.name}</div>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', fontSize: '12px', color: '#9CA3AF' }}>
-                      <TrendingUp size={12} style={{ marginRight: '4px', color: '#22C55E' }} />
-                      <span style={{ color: '#22C55E', marginRight: '8px' }}>{topic.growth}</span>
-                      <span>{topic.category}</span>
-                    </div>
+                    <div style={{ fontWeight: 700, fontSize: 20, color: isSelected ? '#6366F1' : '#23233a', marginLeft: 18, minWidth: 48, textAlign: 'right' }}>{count} vote{count === 1 ? '' : 's'}</div>
                   </div>
-                ))}
-              </div>
+                );
+              })}
+              {showThankYou && (
+                <div style={{
+                  marginTop: 10,
+                  color: '#10B981',
+                  fontWeight: 700,
+                  fontSize: 18,
+                  textAlign: 'center',
+                  letterSpacing: 0.2,
+                  animation: 'fadein 0.7s',
+                }}>
+                  Thank you for voting!
+                  <style>{`@keyframes fadein { from { opacity: 0; } to { opacity: 1; } }`}</style>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -1425,3 +1379,5 @@ export default function EnhancedHome() {
     </>
   )
 }
+
+export default EnhancedHome;

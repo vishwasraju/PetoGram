@@ -226,7 +226,7 @@ export default function Post({ post, onLike, onSave }: PostProps) {
           
           <button className="flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors">
             <MessageCircle size={24} />
-            <span className="font-medium">Comment</span>
+            <span className="font-medium">{post.engagement.comments}</span>
           </button>
           
           <button className="flex items-center gap-2 text-gray-600 hover:text-green-600 transition-colors">

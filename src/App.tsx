@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react'
-import { Routes, Route, useNavigate } from 'react-router-dom'
+import { Routes, Route, useNavigate, Link } from 'react-router-dom'
 import IntroPage from './pages/IntroPage'
 import EnhancedHome from './pages/EnhancedHome'
 import Profile from './pages/Profile'
 import MessagingPage from './pages/MessagingPage'
-import Explore from './pages/Explore'
 import Events from './pages/Events'
 import Appointment from './pages/Appointment'
 import Settings from './pages/Settings'
@@ -16,7 +15,6 @@ import PrivacyPolicyPage from './pages/PrivacyPolicyPage'
 import TermsOfServicePage from './pages/TermsOfServicePage'
 import HelpCenterPage from './pages/HelpCenterPage'
 // Import new pages
-import ExplorePage from './pages/ExplorePage'
 import EventsPage from './pages/EventsPage'
 import AppointmentPage from './pages/AppointmentPage'
 import SettingsPage from './pages/SettingsPage'
@@ -27,6 +25,7 @@ import PasswordChangePage from './pages/PasswordChangePage'
 import DeleteAccountPage from './pages/DeleteAccountPage'
 import ProfileInfoCardPage from './pages/ProfileInfoCardPage'
 import PasswordSecurityPage from './pages/PasswordSecurityPage'
+import ChatPage from './pages/ChatPage'
 import { isAuthenticated } from './utils/auth'
 import { supabase } from './utils/supabase'
 
@@ -61,9 +60,10 @@ function App() {
       if (isAuth) {
         // Only navigate to /home if not already on /home or other protected routes
         const protectedRoutes = [
-          '/home', '/feed', '/explore-page', '/events-page', '/appointment-page', 
-          '/settings-page', '/create-post', '/profile', '/explore', '/events', '/appointment', 
-          '/settings', '/user-profile', '/edit-profile', '/password-change', '/delete-account'
+          '/home', '/feed', '/events-page', '/appointment-page', 
+          '/settings-page', '/create-post', '/profile', '/events', '/appointment', 
+          '/settings', '/user-profile', '/edit-profile', '/password-change', '/delete-account',
+          '/chat'
         ]
         if (!protectedRoutes.some(route => window.location.pathname.startsWith(route))) {
           setTimeout(() => {
@@ -133,10 +133,6 @@ function App() {
           element={<Profile />} 
         />
         <Route 
-          path="/explore" 
-          element={<Explore />} 
-        />
-        <Route 
           path="/events" 
           element={<Events />} 
         />
@@ -150,10 +146,6 @@ function App() {
         />
         
         {/* New dedicated pages */}
-        <Route 
-          path="/explore-page" 
-          element={<ExplorePage />} 
-        />
         <Route 
           path="/events-page" 
           element={<EventsPage />} 
@@ -199,6 +191,12 @@ function App() {
         <Route 
           path="/password-security" 
           element={<PasswordSecurityPage />} 
+        />
+        
+        {/* New chat page */}
+        <Route 
+          path="/chat" 
+          element={<ChatPage />} 
         />
         
         {/* Catch all for 404 */}

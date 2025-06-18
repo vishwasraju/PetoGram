@@ -18,9 +18,14 @@ import {
   Lock,
   CreditCard,
   Download,
-  Trash2
+  Trash2,
+  Check,
+  EyeOff,
+  X
 } from 'lucide-react'
 import { designTokens } from '../design-system/tokens'
+import Modal from '../components/ui/Modal'
+import { supabase } from '../utils/supabase'
 
 export default function SettingsPage() {
   const [darkMode, setDarkMode] = useState(true)
@@ -29,24 +34,26 @@ export default function SettingsPage() {
     email: false,
     sms: true
   })
+  const [showPasswordModal, setShowPasswordModal] = useState(false)
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  })
+  const [showPasswords, setShowPasswords] = useState({
+    current: false,
+    new: false,
+    confirm: false
+  })
+  const [passwordErrors, setPasswordErrors] = useState<Record<string, string>>({})
+  const [passwordLoading, setPasswordLoading] = useState(false)
+  const [passwordSuccess, setPasswordSuccess] = useState(false)
 
   const settingsCategories = [
     {
       title: 'Account',
       items: [
-        { icon: User, label: 'Profile Information', description: 'Update your personal details', action: 'navigate' },
         { icon: Lock, label: 'Password & Security', description: 'Change your password', action: 'navigate' },
-        { icon: CreditCard, label: 'Billing & Payments', description: 'Manage payment methods', action: 'navigate' },
-        { icon: Download, label: 'Download Data', description: 'Export your account data', action: 'button' }
-      ]
-    },
-    {
-      title: 'Preferences',
-      items: [
-        { icon: Bell, label: 'Notifications', description: 'Manage notification preferences', action: 'navigate' },
-        { icon: Eye, label: 'Privacy', description: 'Control who can see your content', action: 'navigate' },
-        { icon: Globe, label: 'Language & Region', description: 'Change language and location settings', action: 'navigate' },
-        { icon: darkMode ? Moon : Sun, label: 'Dark Mode', description: 'Toggle dark/light theme', action: 'toggle', value: darkMode, onChange: setDarkMode }
       ]
     },
     {
@@ -90,14 +97,84 @@ export default function SettingsPage() {
         return;
       }
       if (item.label === 'Password & Security') {
-        navigate('/password-security');
-        return;
+        setShowPasswordModal(true)
+        return
       }
       // Add more navigation cases as needed
     }
   }
 
   const navigate = useNavigate();
+
+  const handlePasswordInputChange = (field: string, value: string) => {
+    setPasswordForm(prev => ({ ...prev, [field]: value }))
+    if (passwordErrors[field]) {
+      setPasswordErrors(prev => ({ ...prev, [field]: '' }))
+    }
+  }
+
+  const togglePasswordVisibility = (field: string) => {
+    setShowPasswords(prev => ({ ...prev, [field]: !prev[field] }))
+  }
+
+  const passwordRequirements = [
+    { text: 'At least 8 characters', check: (pwd: string) => pwd.length >= 8 },
+    { text: 'Contains lowercase letter', check: (pwd: string) => /[a-z]/.test(pwd) },
+    { text: 'Contains number', check: (pwd: string) => /\d/.test(pwd) },
+    { text: 'Contains special character', check: (pwd: string) => /[!@#$%^&*(),.?":{}|<>]/.test(pwd) }
+  ]
+
+  const validatePasswordForm = () => {
+    const newErrors: Record<string, string> = {}
+    if (!passwordForm.currentPassword) {
+      newErrors.currentPassword = 'Current password is required'
+    }
+    if (!passwordForm.newPassword) {
+      newErrors.newPassword = 'New password is required'
+    } else {
+      const failedRequirements = passwordRequirements.filter(req => !req.check(passwordForm.newPassword))
+      if (failedRequirements.length > 0) {
+        newErrors.newPassword = 'Password does not meet requirements'
+      }
+    }
+    if (!passwordForm.confirmPassword) {
+      newErrors.confirmPassword = 'Please confirm your new password'
+    } else if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      newErrors.confirmPassword = 'Passwords do not match'
+    }
+    if (passwordForm.currentPassword === passwordForm.newPassword) {
+      newErrors.newPassword = 'New password must be different from current password'
+    }
+    setPasswordErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!validatePasswordForm()) return
+    setPasswordLoading(true)
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user?.email) throw new Error('User not found')
+      // Try to re-authenticate (Supabase does not require current password for updateUser, but you may want to verify)
+      // Update password
+      const { error } = await supabase.auth.updateUser({ password: passwordForm.newPassword })
+      if (error) {
+        setPasswordErrors({ general: error.message })
+        return
+      }
+      setPasswordSuccess(true)
+      setTimeout(() => {
+        setShowPasswordModal(false)
+        setPasswordSuccess(false)
+        setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' })
+      }, 2000)
+    } catch (error) {
+      setPasswordErrors({ general: 'An error occurred while changing password' })
+    } finally {
+      setPasswordLoading(false)
+    }
+  }
 
   return (
     <div style={{
@@ -390,6 +467,80 @@ export default function SettingsPage() {
           </div>
         </div>
       </div>
+
+      <Modal isOpen={showPasswordModal} onClose={() => setShowPasswordModal(false)} title="Change Password" size="md">
+        {passwordSuccess ? (
+          <div style={{ textAlign: 'center', padding: 24 }}>
+            <div style={{ width: 60, height: 60, backgroundColor: '#10B981', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+              <Check size={32} color="#fff" />
+            </div>
+            <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 8 }}>Password Changed Successfully!</h2>
+            <p style={{ color: '#9CA3AF', fontSize: 15 }}>Your password has been updated.</p>
+          </div>
+        ) : (
+          <form onSubmit={handlePasswordSubmit}>
+            {passwordErrors.general && <div style={{ color: '#EF4444', marginBottom: 12 }}>{passwordErrors.general}</div>}
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ display: 'block', marginBottom: 8, color: '#9CA3AF', fontWeight: 600 }}>Current Password</label>
+              <div style={{ position: 'relative' }}>
+                <input
+                  type={showPasswords.current ? 'text' : 'password'}
+                  value={passwordForm.currentPassword}
+                  onChange={e => handlePasswordInputChange('currentPassword', e.target.value)}
+                  style={{ width: '100%', padding: '12px 40px 12px 12px', backgroundColor: '#222', border: `1px solid ${passwordErrors.currentPassword ? '#EF4444' : '#444'}`, borderRadius: 8, color: '#fff', fontSize: 16, outline: 'none', transition: 'border-color 0.2s ease' }}
+                />
+                <button type="button" onClick={() => togglePasswordVisibility('current')} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: '#9CA3AF', cursor: 'pointer' }}>
+                  {showPasswords.current ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
+              {passwordErrors.currentPassword && <p style={{ color: '#EF4444', fontSize: 12, marginTop: 4 }}>{passwordErrors.currentPassword}</p>}
+            </div>
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ display: 'block', marginBottom: 8, color: '#9CA3AF', fontWeight: 600 }}>New Password</label>
+              <div style={{ position: 'relative' }}>
+                <input
+                  type={showPasswords.new ? 'text' : 'password'}
+                  value={passwordForm.newPassword}
+                  onChange={e => handlePasswordInputChange('newPassword', e.target.value)}
+                  style={{ width: '100%', padding: '12px 40px 12px 12px', backgroundColor: '#222', border: `1px solid ${passwordErrors.newPassword ? '#EF4444' : '#444'}`, borderRadius: 8, color: '#fff', fontSize: 16, outline: 'none', transition: 'border-color 0.2s ease' }}
+                />
+                <button type="button" onClick={() => togglePasswordVisibility('new')} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: '#9CA3AF', cursor: 'pointer' }}>
+                  {showPasswords.new ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
+              {passwordErrors.newPassword && <p style={{ color: '#EF4444', fontSize: 12, marginTop: 4 }}>{passwordErrors.newPassword}</p>}
+            </div>
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ display: 'block', marginBottom: 8, color: '#9CA3AF', fontWeight: 600 }}>Confirm New Password</label>
+              <div style={{ position: 'relative' }}>
+                <input
+                  type={showPasswords.confirm ? 'text' : 'password'}
+                  value={passwordForm.confirmPassword}
+                  onChange={e => handlePasswordInputChange('confirmPassword', e.target.value)}
+                  style={{ width: '100%', padding: '12px 40px 12px 12px', backgroundColor: '#222', border: `1px solid ${passwordErrors.confirmPassword ? '#EF4444' : '#444'}`, borderRadius: 8, color: '#fff', fontSize: 16, outline: 'none', transition: 'border-color 0.2s ease' }}
+                />
+                <button type="button" onClick={() => togglePasswordVisibility('confirm')} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: '#9CA3AF', cursor: 'pointer' }}>
+                  {showPasswords.confirm ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
+              {passwordErrors.confirmPassword && <p style={{ color: '#EF4444', fontSize: 12, marginTop: 4 }}>{passwordErrors.confirmPassword}</p>}
+            </div>
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ marginBottom: 8, color: '#9CA3AF', fontWeight: 600 }}>Password Requirements</div>
+              <ul style={{ paddingLeft: 18, color: '#9CA3AF', fontSize: 13, margin: 0 }}>
+                {passwordRequirements.map((req, idx) => (
+                  <li key={idx} style={{ color: req.check(passwordForm.newPassword) ? '#10B981' : '#9CA3AF' }}>
+                    {req.check(passwordForm.newPassword) ? <Check size={14} /> : <X size={14} />} {req.text}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <button type="submit" disabled={passwordLoading} style={{ width: '100%', padding: '12px', backgroundColor: passwordLoading ? '#666' : '#6366F1', border: 'none', borderRadius: 8, color: '#fff', fontSize: 16, fontWeight: 600, cursor: passwordLoading ? 'not-allowed' : 'pointer', transition: 'background 0.2s ease', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }} onMouseEnter={e => { if (!passwordLoading) e.currentTarget.style.backgroundColor = '#4F46E5' }} onMouseLeave={e => { if (!passwordLoading) e.currentTarget.style.backgroundColor = '#6366F1' }}>
+              <Lock size={16} /> {passwordLoading ? 'Changing Password...' : 'Change Password'}
+            </button>
+          </form>
+        )}
+      </Modal>
     </div>
   )
 }

@@ -443,16 +443,49 @@ export default function Profile() {
         .eq('requested_id', profile.user_id)
         .eq('connection_type', 'follow');
       setIsFollowing(false);
+      await fetchFollowData(profile.user_id);
     } else {
-      await supabase
-        .from('user_connections')
-        .insert({
-          requester_id: currentUser.id,
-          requested_id: profile.user_id,
-          status: 'accepted',
-          connection_type: 'follow',
-        });
-      setIsFollowing(true);
+      try {
+        const { error } = await supabase
+          .from('user_connections')
+          .insert({
+            requester_id: currentUser.id,
+            requested_id: profile.user_id,
+            status: 'accepted',
+            connection_type: 'follow',
+          });
+        
+        console.log('Insert result:', { error })
+        
+        if (error) {
+          console.log('Error details:', error)
+          // Check for various possible error codes
+          if (error.code === '23505' || error.code === '409' || error.message?.includes('duplicate') || error.message?.includes('conflict')) {
+            console.log('Handling duplicate/conflict error')
+            // Unique constraint violation - connection already exists
+            // Update the existing connection to accepted status
+            const { error: updateError } = await supabase
+              .from('user_connections')
+              .update({ status: 'accepted' })
+              .eq('requester_id', currentUser.id)
+              .eq('requested_id', profile.user_id)
+              .eq('connection_type', 'follow');
+            
+            if (updateError) {
+              console.error('Error updating existing connection:', updateError)
+              return;
+            }
+          } else {
+            console.error('Error following user:', error);
+            return;
+          }
+        }
+        
+        setIsFollowing(true);
+        await fetchFollowData(profile.user_id);
+      } catch (error) {
+        console.error('Caught error following user:', error);
+      }
     }
   };
 
@@ -691,17 +724,6 @@ export default function Profile() {
                     @{profile?.username || 'username'}
                   </p>
                 </div>
-                {isOwnProfile && (
-                  <Button 
-                    variant="primary" 
-                    size="lg" 
-                    style={{ marginLeft: designTokens.spacing[6] }}
-                    onClick={() => navigate('/edit-profile')}
-                  >
-                    <Edit3 size={18} />
-                    <span>Edit Profile</span>
-                  </Button>
-                )}
               </div>
 
               {/* Stats */}

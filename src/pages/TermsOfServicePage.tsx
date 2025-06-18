@@ -2,6 +2,7 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 import { designTokens } from '../design-system/tokens'
+import { supabase } from '../utils/supabase'
 
 export default function TermsOfServicePage() {
   return (
@@ -53,4 +54,8 @@ export default function TermsOfServicePage() {
       </p>
     </div>
   )
+} 
+
+function extractHashtags(text) {
+  return (text.match(/#(\\w+)/g) || []).map(tag => tag.slice(1).toLowerCase());
 } 
