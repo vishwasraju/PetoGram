@@ -52,6 +52,25 @@ export function TrendingHashtags() {
   );
 }
 
+function useRealtimeMessages(roomId: string, onNewMessage: (msg: any) => void) {
+  useEffect(() => {
+    const channel = supabase
+      .channel('messages')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'messages' },
+        (payload) => {
+          console.log('New message!', payload.new);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [roomId, onNewMessage]);
+}
+
 export default function ChatPage() {
   const [search, setSearch] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
@@ -203,7 +222,7 @@ export default function ChatPage() {
                     cursor: 'pointer',
                   }}
                 >
-                  <img src={user.profile_picture || 'https://ui-avatars.com/api/?name=' + user.username} alt={user.username} style={{ width: 32, height: 32, borderRadius: '50%' }} />
+                  <img src={user?.profile_picture || 'https://ui-avatars.com/api/?name=' + user.username} alt={user.username} style={{ width: 32, height: 32, borderRadius: '50%' }} />
                   <span>{user.username}</span>
                 </div>
               ))}
@@ -229,7 +248,7 @@ export default function ChatPage() {
                   marginBottom: 8,
                 }}
               >
-                <img src={otherUser.profile_picture || 'https://ui-avatars.com/api/?name=' + otherUser.username} alt={otherUser.username} style={{ width: 44, height: 44, borderRadius: '50%' }} />
+                <img src={otherUser?.profile_picture || 'https://ui-avatars.com/api/?name=' + otherUser.username} alt={otherUser.username} style={{ width: 44, height: 44, borderRadius: '50%' }} />
                 <div>
                   <div style={{ fontWeight: 600 }}>{otherUser.username}</div>
                 </div>
