@@ -12,7 +12,6 @@ interface UserProfile {
   username: string;
   profile_picture: string;
   bio?: string;
-  website?: string;
   location?: string;
   followers_count: number;
   following_count: number;

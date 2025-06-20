@@ -59,18 +59,9 @@ export default function SettingsPage() {
     {
       title: 'Support',
       items: [
-        { icon: HelpCircle, label: 'Help Center', description: 'Get help and support', action: 'navigate' },
-        { icon: Mail, label: 'Contact Support', description: 'Send us a message', action: 'navigate' },
-        { icon: Smartphone, label: 'Report a Problem', description: 'Report bugs or issues', action: 'navigate' }
+        { icon: HelpCircle, label: 'Help Center', description: 'Get help and support', action: 'popup' },
       ]
     },
-    {
-      title: 'Danger Zone',
-      items: [
-        { icon: Trash2, label: 'Delete Account', description: 'Permanently delete your account', action: 'button', danger: true },
-        { icon: LogOut, label: 'Sign Out', description: 'Sign out of your account', action: 'button', danger: true }
-      ]
-    }
   ]
 
   const handleToggle = (onChange: any, currentValue: boolean) => {
@@ -101,6 +92,9 @@ export default function SettingsPage() {
         return
       }
       // Add more navigation cases as needed
+    } else if (item.action === 'popup' && item.label === 'Help Center') {
+      alert('Send your query to vishwasmraju2003@gmail.com');
+      return;
     }
   }
 

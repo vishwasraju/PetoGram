@@ -4,6 +4,8 @@ import Button from './ui/Button';
 import Card from './ui/Card';
 import { designTokens } from '../design-system/tokens';
 import { UserProfile, UserPet } from '../pages/Profile'; // Assuming these interfaces are exported from Profile.tsx
+import Modal from './ui/Modal';
+import { supabase } from '../utils/supabase';
 
 interface ProfileCardProps {
   profile: UserProfile | null;
@@ -14,6 +16,44 @@ interface ProfileCardProps {
 }
 
 export default function ProfileCard({ profile, pets, followersCount, followingCount, onEditProfile }: ProfileCardProps) {
+  const [showFollowers, setShowFollowers] = React.useState(false);
+  const [showFollowing, setShowFollowing] = React.useState(false);
+  const [followers, setFollowers] = React.useState<any[]>([]);
+  const [following, setFollowing] = React.useState<any[]>([]);
+  const [loadingFollowers, setLoadingFollowers] = React.useState(false);
+  const [loadingFollowing, setLoadingFollowing] = React.useState(false);
+
+  const fetchFollowers = async () => {
+    setLoadingFollowers(true);
+    const { data, error } = await supabase
+      .from('user_connections')
+      .select('requester_id, requester:requester_id(username, profile_picture)')
+      .eq('requested_id', profile?.user_id)
+      .eq('status', 'accepted')
+      .eq('connection_type', 'follow');
+    setFollowers(data?.map((c: any) => c.requester) || []);
+    setLoadingFollowers(false);
+  };
+
+  const fetchFollowing = async () => {
+    setLoadingFollowing(true);
+    const { data, error } = await supabase
+      .from('user_connections')
+      .select('requested_id, requested:requested_id(username, profile_picture)')
+      .eq('requester_id', profile?.user_id)
+      .eq('status', 'accepted')
+      .eq('connection_type', 'follow');
+    setFollowing(data?.map((c: any) => c.requested) || []);
+    setLoadingFollowing(false);
+  };
+
+  React.useEffect(() => {
+    if (showFollowers) fetchFollowers();
+  }, [showFollowers]);
+  React.useEffect(() => {
+    if (showFollowing) fetchFollowing();
+  }, [showFollowing]);
+
   return (
     <Card style={{
       width: '100%',
@@ -46,17 +86,17 @@ export default function ProfileCard({ profile, pets, followersCount, followingCo
         <div style={{ display: 'flex', gap: designTokens.spacing[8], margin: `${designTokens.spacing[4]} 0` }}>
           <div style={{ textAlign: 'center' }}>
             <div style={{ fontSize: designTokens.typography.fontSize.xl, fontWeight: designTokens.typography.fontWeight.bold, color: '#fff' }}>
-              {/* Posts count needs to be passed as a prop or fetched */}0
+              0
             </div>
             <div style={{ fontSize: designTokens.typography.fontSize.sm, color: '#9CA3AF', fontWeight: designTokens.typography.fontWeight.medium }}>Posts</div>
           </div>
-          <div style={{ textAlign: 'center' }}>
+          <div style={{ textAlign: 'center', cursor: 'pointer' }} onClick={() => setShowFollowers(true)}>
             <div style={{ fontSize: designTokens.typography.fontSize.xl, fontWeight: designTokens.typography.fontWeight.bold, color: '#fff' }}>
               {followersCount}
             </div>
             <div style={{ fontSize: designTokens.typography.fontSize.sm, color: '#9CA3AF', fontWeight: designTokens.typography.fontWeight.medium }}>Followers</div>
           </div>
-          <div style={{ textAlign: 'center' }}>
+          <div style={{ textAlign: 'center', cursor: 'pointer' }} onClick={() => setShowFollowing(true)}>
             <div style={{ fontSize: designTokens.typography.fontSize.xl, fontWeight: designTokens.typography.fontWeight.bold, color: '#fff' }}>
               {followingCount}
             </div>
@@ -91,6 +131,34 @@ export default function ProfileCard({ profile, pets, followersCount, followingCo
           </div>
         )}
       </div>
+      <Modal isOpen={showFollowers} onClose={() => setShowFollowers(false)} title="Followers" size="sm">
+        {loadingFollowers ? <div>Loading...</div> : (
+          followers.length === 0 ? <div>No followers yet.</div> : (
+            <ul style={{ listStyle: 'none', padding: 0 }}>
+              {followers.map((user, idx) => (
+                <li key={idx} style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+                  <img src={user.profile_picture || 'https://ui-avatars.com/api/?name=' + user.username} alt={user.username} style={{ width: 36, height: 36, borderRadius: '50%' }} />
+                  <span>{user.username}</span>
+                </li>
+              ))}
+            </ul>
+          )
+        )}
+      </Modal>
+      <Modal isOpen={showFollowing} onClose={() => setShowFollowing(false)} title="Following" size="sm">
+        {loadingFollowing ? <div>Loading...</div> : (
+          following.length === 0 ? <div>Not following anyone yet.</div> : (
+            <ul style={{ listStyle: 'none', padding: 0 }}>
+              {following.map((user, idx) => (
+                <li key={idx} style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+                  <img src={user.profile_picture || 'https://ui-avatars.com/api/?name=' + user.username} alt={user.username} style={{ width: 36, height: 36, borderRadius: '50%' }} />
+                  <span>{user.username}</span>
+                </li>
+              ))}
+            </ul>
+          )
+        )}
+      </Modal>
     </Card>
   );
 } 

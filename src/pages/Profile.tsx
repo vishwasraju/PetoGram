@@ -30,7 +30,7 @@ import Badge from '../components/ui/Badge'
 import ProfileCard from '../components/ProfileCard'
 import { designTokens } from '../design-system/tokens'
 import { supabase } from '../utils/supabase'
-import { getCurrentUser, getUserProfile, getUserPets, getSavedPostIds, unsavePost, savePost } from '../utils/auth'
+import { getCurrentUser, getUserProfile, getUserPets } from '../utils/auth'
 
 export interface UserProfile {
   id: string
@@ -41,7 +41,6 @@ export interface UserProfile {
   location: string
   birth_date?: string
   phone: string
-  website: string
   social_media: {
     instagram: string
     twitter: string
@@ -139,7 +138,6 @@ export default function Profile() {
   const [activeTab, setActiveTab] = useState('posts')
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [posts, setPosts] = useState<Post[]>([])
-  const [savedPosts, setSavedPosts] = useState<Post[]>([])
   const [pets, setPets] = useState<UserPet[]>([])
   const [loading, setLoading] = useState(true)
   const [followersCount, setFollowersCount] = useState(0)
@@ -153,12 +151,10 @@ export default function Profile() {
     if (profileId) {
       fetchCurrentUserData(profileId)
       fetchPosts(profileId)
-      fetchSavedPosts(profileId)
       fetchFollowData(profileId)
     } else if (currentUser) {
       fetchCurrentUserData(currentUser.id)
       fetchPosts(currentUser.id)
-      fetchSavedPosts(currentUser.id)
       fetchFollowData(currentUser.id)
     } else {
       setLoading(false);
@@ -177,8 +173,6 @@ export default function Profile() {
         .order('created_at', { ascending: false });
       
       if (postsError) throw postsError;
-
-      const savedPostIds = await getSavedPostIds(currentUser?.id || '');
 
       const uniqueUserIdsInPosts = [...new Set((postsData || []).map(post => post.user_id))];
       const userProfilesMap = new Map<string, UserProfile>();
@@ -201,7 +195,6 @@ export default function Profile() {
 
         return {
           ...post,
-          is_saved: savedPostIds.includes(post.id),
           user: {
             name: profile?.username || (post.user_id === currentUser?.id ? currentUser.email?.split('@')[0] || 'You' : 'Unknown User'),
             avatar: profile?.profile_picture || 'https://images.pexels.com/photos/1036622/pexels-photo-1036622.jpeg?auto=compress&cs=tinysrgb&w=120&h=120&dpr=2',
@@ -215,145 +208,6 @@ export default function Profile() {
       console.error('Error fetching posts:', error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchSavedPosts = async (targetUserId: string) => {
-    if (!currentUser || !targetUserId) return;
-    setLoading(true);
-    try {
-      const savedPostIds = await getSavedPostIds(currentUser.id);
-      if (savedPostIds.length === 0) {
-        setSavedPosts([]);
-        setLoading(false);
-        return;
-      }
-
-      const { data: fetchedSavedPosts, error: savedPostsError } = await supabase
-        .from('posts')
-        .select('*')
-        .in('id', savedPostIds)
-        .eq('is_active', true)
-        .order('created_at', { ascending: false });
-
-      if (savedPostsError) throw savedPostsError;
-      
-      const uniqueUserIdsInSavedPosts = [...new Set((fetchedSavedPosts || []).map(post => post.user_id))];
-      const userProfilesMap = new Map<string, UserProfile>();
-      const userPetsMap = new Map<string, string>();
-
-      await Promise.all(uniqueUserIdsInSavedPosts.map(async (userId) => {
-        const profileData = await getUserProfile(userId);
-        if (profileData) {
-          userProfilesMap.set(userId, profileData);
-        }
-        const petsData = await getUserPets(userId);
-        if (petsData && petsData.length > 0) {
-          userPetsMap.set(userId, petsData.map(pet => pet.name).join(', '));
-        }
-      }));
-
-      const savedPostsWithUserData = (fetchedSavedPosts || []).map(post => {
-        const profile = userProfilesMap.get(post.user_id);
-        const petsInfo = userPetsMap.get(post.user_id);
-
-        return {
-          ...post,
-          is_saved: true,
-          user: {
-            name: profile?.username || (post.user_id === currentUser.id ? currentUser.email?.split('@')[0] || 'You' : 'Unknown User'),
-            avatar: profile?.profile_picture || 'https://images.pexels.com/photos/1036622/pexels-photo-1036622.jpeg?auto=compress&cs=tinysrgb&w=120&h=120&dpr=2',
-            pets: petsInfo || 'No pets',
-          },
-        };
-      });
-
-      setSavedPosts(savedPostsWithUserData);
-    } catch (error) {
-      console.error('Error fetching saved posts:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleUnsavePost = async (postId: string) => {
-    if (!currentUser) {
-      alert('Please log in to unsave posts.');
-      return;
-    }
-
-    try {
-      const success = await unsavePost(currentUser.id, postId);
-      if (success) {
-        // Remove from savedPosts state
-        setSavedPosts(prevSavedPosts => prevSavedPosts.filter(post => post.id !== postId));
-        // Update the original posts array if this post is also in it
-        setPosts(prevPosts => 
-          prevPosts.map(post =>
-            post.id === postId ? { ...post, is_saved: false } : post
-          )
-        );
-      } else {
-        alert('Failed to unsave post. Please try again.');
-      }
-    } catch (error) {
-      console.error('Error unsaving post:', error);
-      alert('An error occurred while unsaving the post.');
-    }
-  };
-
-  const handleSave = async (postId: string) => {
-    if (!currentUser) {
-      alert('Please log in to save posts.');
-      return;
-    }
-
-    const postToToggle = posts.find(p => p.id === postId) || savedPosts.find(p => p.id === postId);
-    if (!postToToggle) return;
-
-    try {
-      if (postToToggle.is_saved) {
-        // If currently saved, unsave it
-        const success = await unsavePost(currentUser.id, postId);
-        if (success) {
-          setPosts(currentPosts =>
-            currentPosts.map(post =>
-              post.id === postId
-                ? {
-                    ...post,
-                    is_saved: false,
-                  }
-                : post
-            )
-          );
-          setSavedPosts(currentSavedPosts =>
-            currentSavedPosts.filter(post => post.id !== postId)
-          );
-        } else {
-          alert('Failed to unsave post. Please try again.');
-        }
-      } else {
-        // If not saved, save it
-        const success = await savePost(currentUser.id, postId);
-        if (success) {
-          setPosts(currentPosts =>
-            currentPosts.map(post =>
-              post.id === postId
-                ? {
-                    ...post,
-                    is_saved: true,
-                  }
-                : post
-            )
-          );
-          // No need to add to savedPosts here, fetchSavedPosts will handle it on tab switch/refresh
-        } else {
-          alert('Failed to save post. Please try again.');
-        }
-      }
-    } catch (error) {
-      console.error('Error saving/unsaving post:', error);
-      alert('An error occurred while saving/unsaving the post.');
     }
   };
 
@@ -547,18 +401,6 @@ export default function Profile() {
       icon: Grid3X3,
       count: posts.length,
     },
-    {
-      id: 'saved',
-      name: 'Saved',
-      icon: Bookmark,
-      count: savedPosts.length,
-    },
-    {
-      id: 'tagged',
-      name: 'Tagged',
-      icon: Tag,
-      count: 0,
-    },
   ]
 
   return (
@@ -575,67 +417,27 @@ export default function Profile() {
         top: 0,
         zIndex: 100,
         padding: `${designTokens.spacing[4]} ${designTokens.spacing[6]}`,
+        display: 'flex',
+        justifyContent: 'flex-start',
+        alignItems: 'center',
       }}>
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          maxWidth: '1200px',
-          margin: '0 auto',
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: designTokens.spacing[4] }}>
-            <Link 
-              to="/home" 
-              style={{
-                color: '#9CA3AF',
-                transition: `color ${designTokens.animation.duration.fast} ${designTokens.animation.easing.ease}`,
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.color = '#fff'}
-              onMouseLeave={(e) => e.currentTarget.style.color = '#9CA3AF'}
-            >
-              <ArrowLeft size={24} />
-            </Link>
-            <div>
-              <h1 style={{
-                margin: 0,
-                fontSize: designTokens.typography.fontSize['2xl'],
-                fontWeight: designTokens.typography.fontWeight.bold,
-                color: '#fff',
-                fontFamily: designTokens.typography.fontFamily.display.join(', '),
-              }}>
-                {profile?.username || 'My Profile'}
-              </h1>
-              <p style={{
-                margin: '0 0 16px 0',
-                fontSize: '16px',
-                color: '#9CA3AF',
-              }}>
-                @{profile?.username || (currentUser?.email ? currentUser.email.split('@')[0] : 'username')}
-              </p>
-              
-              {/* Pets Display */}
-              {pets.length > 0 && (
-                <p style={{
-                  margin: '0 0 16px 0',
-                  fontSize: '14px',
-                  color: '#E5E7EB',
-                  lineHeight: '1.5',
-                }}>
-                  Pets: {pets.map(pet => pet.name).join(', ')}
-                </p>
-              )}
-            </div>
-          </div>
-          
-          <div style={{ display: 'flex', alignItems: 'center', gap: designTokens.spacing[2] }}>
-            <Button variant="ghost" size="sm">
-              <Share size={20} />
-            </Button>
-            <Button variant="ghost" size="sm">
-              <MoreHorizontal size={20} />
-            </Button>
-          </div>
-        </div>
+        <Link 
+          to="/home" 
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '8px',
+            color: '#9CA3AF',
+            fontSize: '18px',
+            textDecoration: 'none',
+            transition: `color ${designTokens.animation.duration.fast} ${designTokens.animation.easing.ease}`,
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.color = '#fff'}
+          onMouseLeave={(e) => e.currentTarget.style.color = '#9CA3AF'}
+        >
+          <ArrowLeft size={24} />
+          <span>Back</span>
+        </Link>
       </div>
 
       {/* Main Content */}
@@ -1004,105 +806,6 @@ export default function Profile() {
                       <Camera size={18} style={{ marginRight: '8px' }} />
                       Create Post
                     </Button>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {activeTab === 'saved' && (
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-                gap: '16px',
-              }}>
-                {savedPosts.length > 0 ? (savedPosts.map((post) => (
-                  <div
-                    key={post.id}
-                    style={{
-                      position: 'relative',
-                      borderRadius: '12px',
-                      overflow: 'hidden',
-                      aspectRatio: '1',
-                      backgroundColor: '#222',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      flexDirection: 'column',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    {post.content_type === 'image' && (
-                      <img
-                        src={post.media_urls[0]}
-                        alt="Post"
-                        style={{
-                          width: '100%',
-                          height: '100%',
-                          objectFit: 'cover',
-                        }}
-                      />
-                    )}
-                    {post.content_type === 'video' && (
-                      <video
-                        src={post.media_urls[0]}
-                        controls
-                        style={{
-                          width: '100%',
-                          height: '100%',
-                          objectFit: 'cover',
-                        }}
-                      />
-                    )}
-                    {/* Overlay for likes/comments and save button */}
-                    <div style={{
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      width: '100%',
-                      height: '100%',
-                      backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                      color: '#fff',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      flexDirection: 'column',
-                      opacity: 0,
-                      transition: 'opacity 0.2s ease',
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
-                    onMouseLeave={(e) => e.currentTarget.style.opacity = '0'}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '10px' }}>
-                        <Heart size={20} fill="currentColor" /> {post.likes_count}
-                      </div>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleSave(post.id);
-                        }}
-                        style={{
-                          backgroundColor: 'transparent',
-                          border: 'none',
-                          color: post.is_saved ? designTokens.colors.primary[500] : '#9CA3AF',
-                          cursor: 'pointer',
-                        }}
-                      >
-                        <Bookmark size={20} fill={post.is_saved ? 'currentColor' : 'none'} />
-                      </button>
-                    </div>
-                  </div>
-                ))) : (
-                  <div style={{
-                    gridColumn: '1 / -1',
-                    textAlign: 'center',
-                    padding: '40px',
-                    backgroundColor: '#111',
-                    borderRadius: '16px',
-                    border: '1px solid #333',
-                  }}>
-                    <Bookmark size={48} color="#9CA3AF" style={{ marginBottom: '20px' }} />
-                    <h3 style={{ margin: '0 0 10px 0', fontSize: '18px', color: '#fff' }}>No saved posts yet</h3>
-                    <p style={{ margin: '0 0 20px 0', fontSize: '14px', color: '#9CA3AF' }}>Save posts from your feed to view them here!</p>
                   </div>
                 )}
               </div>

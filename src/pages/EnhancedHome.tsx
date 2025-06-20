@@ -9,7 +9,7 @@ import { SkeletonCard } from '../components/ui/Skeleton'
 import { TrendingUp, Users, Calendar, MapPin, Star, Plus, Search, Mic, Heart, Bookmark, MoreHorizontal, UserPlus, X, Clock, Siren as Fire, Hash, Bell, Stethoscope, MessageCircle } from 'lucide-react'
 import { designTokens } from '../design-system/tokens'
 import { useNavigate, Link, useParams } from 'react-router-dom'
-import { clearAuthenticationState, getCurrentUser, getUserProfile, getUserPets, savePost, unsavePost, getSavedPostIds, createPost } from '../utils/auth'
+import { clearAuthenticationState, getCurrentUser, getUserProfile, getUserPets, savePost, unsavePost, createPost } from '../utils/auth'
 import { supabase } from '../utils/supabase'
 import CommentModal from '../components/feed/CommentModal'
 
@@ -390,9 +390,6 @@ function EnhancedHome() {
       
       if (postsError) throw postsError;
 
-      const currentUserAuth = await getCurrentUser(); // Get current user here
-      const savedPostIds = currentUserAuth ? await getSavedPostIds(currentUserAuth.id) : [];
-
       // Fetch profiles and pets for all unique user_ids in posts
       const userIds = [...new Set((postsData || []).map(post => post.user_id) || [])];
       const profilesMap = new Map();
@@ -434,7 +431,6 @@ function EnhancedHome() {
             comments: post.comments_count || 0,
             shares: post.shares_count || 0,
             liked: post.liked || false,
-            saved: savedPostIds.includes(post.id), // Set saved status here
           },
           timestamp: post.created_at,
         };
@@ -572,67 +568,6 @@ function EnhancedHome() {
     } catch (error) {
       console.error('Error liking/unliking post:', error);
       alert('An error occurred while liking/unliking the post. Please try again.');
-    }
-  };
-
-  const handleSave = async (postId: string) => {
-    if (!currentUser) {
-      alert('Please log in to save posts.');
-      return;
-    }
-
-    const postToSave = posts.find(p => p.id === postId);
-    if (!postToSave) return;
-
-    try {
-      if (postToSave.engagement.saved) {
-        // If currently saved, unsave it
-        const { error } = await supabase
-          .from('saved_posts')
-          .delete()
-          .eq('user_id', currentUser.id)
-          .eq('post_id', postId);
-
-        if (error) throw error;
-
-        setPosts(currentPosts =>
-          currentPosts.map(post =>
-            post.id === postId
-              ? {
-                  ...post,
-                  engagement: {
-                    ...post.engagement,
-                    saved: false,
-                  },
-                }
-              : post
-          )
-        );
-      } else {
-        // If not saved, save it
-        const { error } = await supabase
-          .from('saved_posts')
-          .upsert({ user_id: currentUser.id, post_id: postId });
-
-        if (error) throw error;
-
-        setPosts(currentPosts =>
-          currentPosts.map(post =>
-            post.id === postId
-              ? {
-                  ...post,
-                  engagement: {
-                    ...post.engagement,
-                    saved: true,
-                  },
-                }
-              : post
-          )
-        );
-      }
-    } catch (error) {
-      console.error('Error saving/unsaving post:', error);
-      alert('An error occurred while saving/unsaving the post.');
     }
   };
 
@@ -781,7 +716,6 @@ function EnhancedHome() {
           {/* Navigation */}
           <nav style={{ marginBottom: '4px' }}>
             {[ 
-              { icon: '🏠', label: 'Feed', path: '/feed', active: false },
               { icon: <Calendar size={20} />, label: 'Events', path: '/events-page' },
               { icon: <Stethoscope size={20} />, label: 'Appointment', path: '/appointment-page' },
               { icon: '⚙️', label: 'Settings', path: '/settings-page' },
@@ -1030,21 +964,33 @@ function EnhancedHome() {
                     </button>
                   </div>
 
-                  {/* Post Image */}
+                  {/* Post Media */}
                   <div style={{
                     borderRadius: '12px',
                     overflow: 'hidden',
                     marginBottom: '16px',
                   }}>
-                    <img 
-                      src={post.content.url}
-                      alt="Post content"
-                      style={{
-                        width: '100%',
-                        height: '300px',
-                        objectFit: 'cover',
-                      }}
-                    />
+                    {post.content.type === 'video' ? (
+                      <video 
+                        src={post.content.url}
+                        controls
+                        style={{
+                          width: '100%',
+                          height: '300px',
+                          objectFit: 'cover',
+                        }}
+                      />
+                    ) : (
+                      <img 
+                        src={post.content.url}
+                        alt="Post content"
+                        style={{
+                          width: '100%',
+                          height: '300px',
+                          objectFit: 'cover',
+                        }}
+                      />
+                    )}
                   </div>
 
                   {/* Post Content */}
@@ -1095,22 +1041,17 @@ function EnhancedHome() {
                         <Heart size={18} fill={post.engagement.liked ? 'currentColor' : 'none'} />
                         {post.engagement.likes.toLocaleString()}
                       </button>
-                      <button className="flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors">
+                      <button
+                        onClick={() => {
+                          setShowCommentModal(true);
+                          setSelectedPostId(post.id);
+                        }}
+                        className="flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors"
+                      >
                         <MessageCircle size={24} />
                         <span className="font-medium">{post.engagement.comments}</span>
                       </button>
                     </div>
-                    <button
-                      onClick={() => handleSave(post.id)}
-                      style={{
-                        backgroundColor: 'transparent',
-                        border: 'none',
-                        color: post.engagement.saved ? '#6366F1' : '#9CA3AF',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      <Bookmark size={18} fill={post.engagement.saved ? 'currentColor' : 'none'} />
-                    </button>
                   </div>
                 </div>
               ))}

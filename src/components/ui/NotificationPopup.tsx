@@ -222,31 +222,6 @@ export default function NotificationPopup({ isOpen, onClose }: NotificationPopup
             <button
               onClick={onClose}
               style={{
-                padding: '6px 12px',
-                backgroundColor: 'transparent',
-                border: '1px solid #9CA3AF',
-                borderRadius: '8px',
-                color: '#9CA3AF',
-                fontSize: '12px',
-                fontWeight: '600',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#333'
-                e.currentTarget.style.color = '#fff'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent'
-                e.currentTarget.style.color = '#9CA3AF'
-              }}
-            >
-              Cancel
-            </button>
-            
-            <button
-              onClick={onClose}
-              style={{
                 padding: '8px',
                 backgroundColor: 'transparent',
                 border: 'none',

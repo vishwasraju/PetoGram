@@ -131,7 +131,6 @@ export default function EditProfilePage() {
           location: profile.location,
           birth_date: profile.birth_date,
           phone: profile.phone,
-          website: profile.website,
           social_media: profile.social_media,
           interests: profile.interests,
           is_public: profile.is_public,
@@ -421,36 +420,6 @@ export default function EditProfilePage() {
                   resize: 'vertical',
                   transition: 'border-color 0.2s ease',
                   fontFamily: 'inherit',
-                }}
-                onFocus={(e) => e.currentTarget.style.borderColor = '#6366F1'}
-                onBlur={(e) => e.currentTarget.style.borderColor = '#444'}
-              />
-            </div>
-
-            <div>
-              <label style={{
-                display: 'block',
-                marginBottom: '8px',
-                fontSize: '14px',
-                fontWeight: '600',
-                color: '#E5E7EB',
-              }}>
-                Website
-              </label>
-              <input
-                type="url"
-                value={profile.website || ''}
-                onChange={(e) => handleInputChange('website', e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  backgroundColor: '#222',
-                  border: '1px solid #444',
-                  borderRadius: '8px',
-                  color: '#fff',
-                  fontSize: '16px',
-                  outline: 'none',
-                  transition: 'border-color 0.2s ease',
                 }}
                 onFocus={(e) => e.currentTarget.style.borderColor = '#6366F1'}
                 onBlur={(e) => e.currentTarget.style.borderColor = '#444'}

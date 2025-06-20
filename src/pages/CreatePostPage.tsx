@@ -25,11 +25,8 @@ import { designTokens } from '../design-system/tokens'
 import { supabase } from '../utils/supabase'
 import { getCurrentUser } from '../utils/auth'
 
-type PostType = 'image' | 'video' | 'text'
-
 export default function CreatePostPage() {
   const navigate = useNavigate()
-  const [postType, setPostType] = useState<PostType>('image')
   const [description, setDescription] = useState('')
   
   // Media upload states
@@ -41,39 +38,24 @@ export default function CreatePostPage() {
   const [videoPlaying, setVideoPlaying] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)
 
-  const postTypes = [
-    { 
-      type: 'image' as PostType, 
-      name: 'Photo', 
-      icon: Image, 
-      color: '#10B981',
-      description: 'Share photos of your pets'
-    },
-    { 
-      type: 'video' as PostType, 
-      name: 'Video', 
-      icon: Video, 
-      color: '#6366F1',
-      description: 'Upload videos of your pets'
-    },
-    { 
-      type: 'text' as PostType, 
-      name: 'Text', 
-      icon: Type, 
-      color: '#EF4444',
-      description: 'Share thoughts and stories'
-    }
-  ]
-
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || [])
     if (files.length === 0) return
 
-    const newFiles = [...uploadedFiles, ...files].slice(0, 10) // Max 10 files
+    // Filter out videos larger than 5MB
+    const validFiles = files.filter(file => {
+      if (file.type.startsWith('video') && file.size > 5 * 1024 * 1024) {
+        alert(`Video file "${file.name}" is too large. Maximum allowed size is 5MB.`);
+        return false;
+      }
+      return true;
+    });
+
+    const newFiles = [...uploadedFiles, ...validFiles].slice(0, 10) // Max 10 files
     setUploadedFiles(newFiles)
 
     // Create preview URLs
-    const newPreviewUrls = files.map(file => URL.createObjectURL(file))
+    const newPreviewUrls = validFiles.map(file => URL.createObjectURL(file))
     setPreviewUrls(prev => [...prev, ...newPreviewUrls].slice(0, 10))
   }
 
@@ -93,7 +75,7 @@ export default function CreatePostPage() {
       alert('Please add a description');
       return;
     }
-    if ((postType === 'image' || postType === 'video') && uploadedFiles.length === 0) {
+    if (uploadedFiles.length === 0) {
       alert('Please upload at least one file');
       return;
     }
@@ -125,12 +107,25 @@ export default function CreatePostPage() {
         mediaUrls.push(publicUrl as string);
       }
 
+      // Determine content_type
+      const allImages = uploadedFiles.every(file => file.type.startsWith('image'));
+      const allVideos = uploadedFiles.every(file => file.type.startsWith('video'));
+      let contentType: 'image' | 'video';
+      if (allImages) {
+        contentType = 'image';
+      } else if (allVideos) {
+        contentType = 'video';
+      } else {
+        alert('Please upload only images or only videos per post. Mixed uploads are not allowed.');
+        return;
+      }
+
       // Insert post into Supabase
       const { error } = await supabase
         .from('posts')
         .insert({
           user_id: user.id,
-          content_type: postType,
+          content_type: contentType,
           caption: description,
           media_urls: mediaUrls,
           is_active: true,
@@ -246,92 +241,6 @@ export default function CreatePostPage() {
         margin: '0 auto',
         padding: '24px',
       }}>
-        {/* Post Type Selection */}
-        <div style={{
-          backgroundColor: '#111',
-          borderRadius: '16px',
-          padding: '24px',
-          marginBottom: '24px',
-          border: '1px solid #333',
-        }}>
-          <h2 style={{
-            margin: '0 0 20px 0',
-            fontSize: '20px',
-            fontWeight: '700',
-            color: '#fff',
-          }}>
-            Choose Post Type
-          </h2>
-          
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-            gap: '16px',
-          }}>
-            {postTypes.map((type) => {
-              const IconComponent = type.icon
-              const isSelected = postType === type.type
-              
-              return (
-                <button
-                  key={type.type}
-                  onClick={() => setPostType(type.type)}
-                  style={{
-                    padding: '20px',
-                    backgroundColor: isSelected ? type.color + '20' : '#222',
-                    border: `2px solid ${isSelected ? type.color : '#333'}`,
-                    borderRadius: '12px',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                    textAlign: 'center',
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!isSelected) {
-                      e.currentTarget.style.backgroundColor = '#333'
-                      e.currentTarget.style.borderColor = type.color
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!isSelected) {
-                      e.currentTarget.style.backgroundColor = '#222'
-                      e.currentTarget.style.borderColor = '#333'
-                    }
-                  }}
-                >
-                  <div style={{
-                    width: '48px',
-                    height: '48px',
-                    backgroundColor: type.color,
-                    borderRadius: '12px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    margin: '0 auto 12px',
-                  }}>
-                    <IconComponent size={24} color="#fff" />
-                  </div>
-                  <h3 style={{
-                    margin: '0 0 8px 0',
-                    fontSize: '16px',
-                    fontWeight: '600',
-                    color: '#fff',
-                  }}>
-                    {type.name}
-                  </h3>
-                  <p style={{
-                    margin: 0,
-                    fontSize: '14px',
-                    color: '#9CA3AF',
-                    lineHeight: '1.4',
-                  }}>
-                    {type.description}
-                  </p>
-                </button>
-              )
-            })}
-          </div>
-        </div>
-
         {/* Content Input Based on Type */}
         <div style={{
           backgroundColor: '#111',
@@ -341,159 +250,150 @@ export default function CreatePostPage() {
           border: '1px solid #333',
         }}>
           {/* Image/Video Upload */}
-          {(postType === 'image' || postType === 'video') && (
-            <div style={{ marginBottom: '24px' }}>
-              <h3 style={{
-                margin: '0 0 16px 0',
+          <div style={{ marginBottom: '24px' }}>
+            <h3 style={{
+              margin: '0 0 16px 0',
+              fontSize: '18px',
+              fontWeight: '600',
+              color: '#fff',
+            }}>
+              Upload Photos or Videos
+            </h3>
+            {/* Upload Area */}
+            <div
+              onClick={() => fileInputRef.current?.click()}
+              style={{
+                border: '2px dashed #555',
+                borderRadius: '12px',
+                padding: '40px',
+                textAlign: 'center',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                marginBottom: '16px',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = '#6366F1'
+                e.currentTarget.style.backgroundColor = '#1a1a2e'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = '#555'
+                e.currentTarget.style.backgroundColor = 'transparent'
+              }}
+            >
+              <Upload size={48} color="#6366F1" style={{ marginBottom: '16px' }} />
+              <h4 style={{
+                margin: '0 0 8px 0',
                 fontSize: '18px',
                 fontWeight: '600',
                 color: '#fff',
               }}>
-                Upload {postType === 'image' ? 'Photos' : 'Videos'}
-              </h3>
-              
-              {/* Upload Area */}
-              <div
-                onClick={() => fileInputRef.current?.click()}
-                style={{
-                  border: '2px dashed #555',
-                  borderRadius: '12px',
-                  padding: '40px',
-                  textAlign: 'center',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease',
-                  marginBottom: '16px',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = '#6366F1'
-                  e.currentTarget.style.backgroundColor = '#1a1a2e'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = '#555'
-                  e.currentTarget.style.backgroundColor = 'transparent'
-                }}
-              >
-                <Upload size={48} color="#6366F1" style={{ marginBottom: '16px' }} />
-                <h4 style={{
-                  margin: '0 0 8px 0',
-                  fontSize: '18px',
-                  fontWeight: '600',
-                  color: '#fff',
-                }}>
-                  Click to upload {postType === 'image' ? 'photos' : 'videos'}
-                </h4>
-                <p style={{
-                  margin: 0,
-                  fontSize: '14px',
-                  color: '#9CA3AF',
-                }}>
-                  {postType === 'image' 
-                    ? 'PNG, JPG, GIF up to 10MB each (max 10 files)'
-                    : 'MP4, MOV, AVI up to 100MB each (max 5 files)'
-                  }
-                </p>
-              </div>
-              
-              <input
-                ref={fileInputRef}
-                type="file"
-                multiple
-                accept={postType === 'image' ? 'image/*' : 'video/*'}
-                onChange={handleFileUpload}
-                style={{ display: 'none' }}
-              />
-              
-              {/* Preview Uploaded Files */}
-              {previewUrls.length > 0 && (
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
-                  gap: '12px',
-                }}>
-                  {previewUrls.map((url, index) => (
-                    <div
-                      key={index}
-                      style={{
-                        position: 'relative',
-                        borderRadius: '8px',
-                        overflow: 'hidden',
-                        aspectRatio: '1',
-                      }}
-                    >
-                      {postType === 'image' ? (
-                        <img
+                Click to upload photos or videos
+              </h4>
+              <p style={{
+                margin: 0,
+                fontSize: '14px',
+                color: '#9CA3AF',
+              }}>
+                PNG, JPG, GIF up to 10MB each (max 10 files), MP4, MOV, AVI up to 100MB each (max 5 files)
+              </p>
+            </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              accept="image/*,video/*"
+              onChange={handleFileUpload}
+              style={{ display: 'none' }}
+            />
+            {/* Preview Uploaded Files */}
+            {previewUrls.length > 0 && (
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
+                gap: '12px',
+              }}>
+                {previewUrls.map((url, index) => (
+                  <div
+                    key={index}
+                    style={{
+                      position: 'relative',
+                      borderRadius: '8px',
+                      overflow: 'hidden',
+                      aspectRatio: '1',
+                    }}
+                  >
+                    {uploadedFiles[index] && uploadedFiles[index].type.startsWith('image') ? (
+                      <img
+                        src={url}
+                        alt={`Upload ${index + 1}`}
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                        }}
+                      />
+                    ) : (
+                      <div style={{ position: 'relative' }}>
+                        <video
+                          ref={index === 0 ? videoRef : undefined}
                           src={url}
-                          alt={`Upload ${index + 1}`}
                           style={{
                             width: '100%',
                             height: '100%',
                             objectFit: 'cover',
                           }}
+                          muted
                         />
-                      ) : (
-                        <div style={{ position: 'relative' }}>
-                          <video
-                            ref={index === 0 ? videoRef : undefined}
-                            src={url}
+                        {index === 0 && (
+                          <button
+                            onClick={() => setVideoPlaying(!videoPlaying)}
                             style={{
-                              width: '100%',
-                              height: '100%',
-                              objectFit: 'cover',
+                              position: 'absolute',
+                              top: '50%',
+                              left: '50%',
+                              transform: 'translate(-50%, -50%)',
+                              width: '40px',
+                              height: '40px',
+                              backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                              border: 'none',
+                              borderRadius: '50%',
+                              color: '#fff',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
                             }}
-                            muted
-                          />
-                          {index === 0 && (
-                            <button
-                              onClick={() => setVideoPlaying(!videoPlaying)}
-                              style={{
-                                position: 'absolute',
-                                top: '50%',
-                                left: '50%',
-                                transform: 'translate(-50%, -50%)',
-                                width: '40px',
-                                height: '40px',
-                                backgroundColor: 'rgba(0, 0, 0, 0.7)',
-                                border: 'none',
-                                borderRadius: '50%',
-                                color: '#fff',
-                                cursor: 'pointer',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                              }}
-                            >
-                              {videoPlaying ? <Pause size={16} /> : <Play size={16} />}
-                            </button>
-                          )}
-                        </div>
-                      )}
-                      
-                      <button
-                        onClick={() => removeFile(index)}
-                        style={{
-                          position: 'absolute',
-                          top: '8px',
-                          right: '8px',
-                          width: '24px',
-                          height: '24px',
-                          backgroundColor: 'rgba(0, 0, 0, 0.7)',
-                          border: 'none',
-                          borderRadius: '50%',
-                          color: '#fff',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                        }}
-                      >
-                        <X size={14} />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
+                          >
+                            {videoPlaying ? <Pause size={16} /> : <Play size={16} />}
+                          </button>
+                        )}
+                      </div>
+                    )}
+                    <button
+                      onClick={() => removeFile(index)}
+                      style={{
+                        position: 'absolute',
+                        top: '8px',
+                        right: '8px',
+                        width: '24px',
+                        height: '24px',
+                        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                        border: 'none',
+                        borderRadius: '50%',
+                        color: '#fff',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
 
           {/* Description */}
           <div style={{ marginBottom: '24px' }}>
@@ -504,16 +404,12 @@ export default function CreatePostPage() {
               fontWeight: '600',
               color: '#E5E7EB',
             }}>
-              {postType === 'text' ? 'Additional Description (Optional)' : 'Description'}
+              Description
             </label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder={
-                postType === 'text' 
-                  ? 'Add more context to your story...'
-                  : 'What\'s on your mind? Share your story...'
-              }
+              placeholder="What's on your mind? Share your story..."
               rows={4}
               style={{
                 width: '100%',
