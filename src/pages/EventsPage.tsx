@@ -130,44 +130,6 @@ export default function EventsPage() {
         
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <button style={{
-            padding: '8px',
-            backgroundColor: 'transparent',
-            border: 'none',
-            color: '#9CA3AF',
-            cursor: 'pointer',
-            borderRadius: '8px',
-            transition: 'all 0.2s ease',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = '#333'
-            e.currentTarget.style.color = '#fff'
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = 'transparent'
-            e.currentTarget.style.color = '#9CA3AF'
-          }}>
-            <Search size={20} />
-          </button>
-          <button style={{
-            padding: '8px',
-            backgroundColor: 'transparent',
-            border: 'none',
-            color: '#9CA3AF',
-            cursor: 'pointer',
-            borderRadius: '8px',
-            transition: 'all 0.2s ease',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = '#333'
-            e.currentTarget.style.color = '#fff'
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = 'transparent'
-            e.currentTarget.style.color = '#9CA3AF'
-          }}>
-            <Filter size={20} />
-          </button>
-          <button style={{
             display: 'flex',
             alignItems: 'center',
             gap: '8px',

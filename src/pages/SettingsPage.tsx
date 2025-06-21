@@ -26,6 +26,7 @@ import {
 import { designTokens } from '../design-system/tokens'
 import Modal from '../components/ui/Modal'
 import { supabase } from '../utils/supabase'
+import { clearAuthenticationState } from '../utils/auth'
 
 export default function SettingsPage() {
   const [darkMode, setDarkMode] = useState(true)
@@ -62,10 +63,25 @@ export default function SettingsPage() {
         { icon: HelpCircle, label: 'Help Center', description: 'Get help and support', action: 'popup' },
       ]
     },
+    {
+      title: 'Account Actions',
+      items: [
+        { icon: LogOut, label: 'Sign Out', description: 'Sign out of your account', action: 'logout', danger: true },
+      ]
+    },
   ]
 
   const handleToggle = (onChange: any, currentValue: boolean) => {
     onChange(!currentValue)
+  }
+
+  const handleLogout = async () => {
+    try {
+      await clearAuthenticationState()
+      navigate('/')
+    } catch (error) {
+      console.error('Error during logout:', error)
+    }
   }
 
   const handleAction = (item: any) => {
@@ -82,6 +98,9 @@ export default function SettingsPage() {
         // Handle data download
         console.log('Downloading data...')
       }
+    } else if (item.action === 'logout') {
+      handleLogout()
+      return
     } else if (item.action === 'navigate') {
       if (item.label === 'Profile Information') {
         navigate('/profile');

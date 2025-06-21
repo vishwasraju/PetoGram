@@ -196,19 +196,20 @@ export default function ChatPage() {
 
   // 7. Render
   return (
-    <div style={{ display: 'flex', height: '100vh', background: '#f7f8fa' }}>
+    <div style={{ display: 'flex', height: '100vh', background: '#18181b', color: '#e5e7eb' }}>
       {/* Sidebar */}
-      <div style={{ width: 270, background: '#fff', borderRight: '1px solid #e5e7eb', padding: 16, display: 'flex', flexDirection: 'column', position: 'relative' }}>
+      <div style={{ width: 320, background: '#212121', borderRight: '1px solid #333', padding: 16, display: 'flex', flexDirection: 'column', position: 'relative' }}>
+        <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>Chats</h2>
         <div style={{ marginBottom: 16 }}>
           <input
             type="text"
             placeholder="Search users..."
             value={search}
             onChange={e => setSearch(e.target.value)}
-            style={{ width: '100%', padding: 8, borderRadius: 8, border: '1px solid #e5e7eb', marginBottom: 8 }}
+            style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid #444', background: '#2a2a2a', color: '#fff', marginBottom: 8 }}
           />
           {searchResults.length > 0 && (
-            <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, maxHeight: 200, overflowY: 'auto', position: 'absolute', zIndex: 10, width: 240 }}>
+            <div style={{ background: '#2a2a2a', border: '1px solid #444', borderRadius: 8, maxHeight: 200, overflowY: 'auto', position: 'absolute', zIndex: 10, width: 'calc(100% - 32px)' }}>
               {searchResults.map(user => (
                 <div
                   key={user.id}
@@ -217,13 +218,13 @@ export default function ChatPage() {
                     display: 'flex',
                     alignItems: 'center',
                     gap: 12,
-                    padding: 8,
-                    borderRadius: 8,
+                    padding: 12,
                     cursor: 'pointer',
+                    borderBottom: '1px solid #444'
                   }}
                 >
-                  <img src={user?.profile_picture || 'https://ui-avatars.com/api/?name=' + user.username} alt={user.username} style={{ width: 32, height: 32, borderRadius: '50%' }} />
-                  <span>{user.username}</span>
+                  <img src={user?.profile_picture || 'https://ui-avatars.com/api/?name=' + user.username} alt={user.username} style={{ width: 40, height: 40, borderRadius: '50%' }} />
+                  <span style={{ fontWeight: 600 }}>{user.username}</span>
                 </div>
               ))}
             </div>
@@ -242,69 +243,101 @@ export default function ChatPage() {
                   gap: 12,
                   padding: 12,
                   borderRadius: 10,
-                  background: selectedChat && selectedChat.id === chat.id ? '#7c6cf7' : 'transparent',
-                  color: selectedChat && selectedChat.id === chat.id ? '#fff' : '#222',
+                  background: selectedChat && selectedChat.id === chat.id ? '#6366F1' : 'transparent',
+                  color: selectedChat && selectedChat.id === chat.id ? '#fff' : '#e5e7eb',
                   cursor: 'pointer',
                   marginBottom: 8,
                 }}
               >
-                <img src={otherUser?.profile_picture || 'https://ui-avatars.com/api/?name=' + otherUser.username} alt={otherUser.username} style={{ width: 44, height: 44, borderRadius: '50%' }} />
-                <div>
-                  <div style={{ fontWeight: 600 }}>{otherUser.username}</div>
+                <img src={otherUser?.profile_picture || 'https://ui-avatars.com/api/?name=' + otherUser?.username} alt={otherUser?.username} style={{ width: 48, height: 48, borderRadius: '50%' }} />
+                <div style={{ flex: 1 }}>
+                  <span style={{ fontWeight: 600 }}>{otherUser?.username}</span>
+                  <p style={{ fontSize: 14, color: '#9ca3af', margin: 0, marginTop: 4 }}>Last message snippet...</p>
                 </div>
               </div>
             );
           })}
         </div>
       </div>
-      {/* Chat Area */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: '#f7f8fa' }}>
-        <div style={{ flex: 1, padding: 32, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 24 }}>
-          {selectedChat ? (
-            messages.map((msg) => (
-              <div
-                key={msg.id}
-                style={{
-                  alignSelf: msg.sender_id === currentUser.id ? 'flex-end' : 'flex-start',
-                  maxWidth: '60%',
-                  background: msg.sender_id === currentUser.id ? 'linear-gradient(135deg, #7c6cf7, #5a50e6)' : '#fff',
-                  color: msg.sender_id === currentUser.id ? '#fff' : '#222',
-                  borderRadius: 12,
-                  padding: '18px 22px',
-                  fontSize: 18,
-                  boxShadow: msg.sender_id === currentUser.id ? '0 2px 8px #7c6cf71a' : '0 2px 8px #e5e7eb1a',
-                  marginBottom: 4,
-                  position: 'relative',
-                }}
-              >
-                {msg.content}
-                <div style={{ fontSize: 13, opacity: 0.7, marginTop: 8, textAlign: msg.sender_id === currentUser.id ? 'right' : 'left' }}>
-                  {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                </div>
+      {/* Main Chat Area */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+        {selectedChat && currentUser ? (
+          <>
+            {/* Chat Header */}
+            <div style={{ padding: '12px 24px', borderBottom: '1px solid #333', display: 'flex', alignItems: 'center', gap: 16, background: '#212121' }}>
+              <img
+                src={getOtherUserProfile(selectedChat, currentUser.user_id)?.profile_picture || 'https://ui-avatars.com/api/?name=' + getOtherUserProfile(selectedChat, currentUser.user_id)?.username}
+                alt={getOtherUserProfile(selectedChat, currentUser.user_id)?.username}
+                style={{ width: 48, height: 48, borderRadius: '50%' }}
+              />
+              <div>
+                <h3 style={{ fontSize: 18, fontWeight: 700, margin: 0 }}>
+                  {getOtherUserProfile(selectedChat, currentUser.user_id)?.username}
+                </h3>
+                <p style={{ fontSize: 14, color: '#9ca3af', margin: 0 }}>Online</p>
               </div>
-            ))
-          ) : (
-            <div style={{ color: '#888', textAlign: 'center', marginTop: 100 }}>Select a chat or search for a user to start chatting.</div>
-          )}
-          <div ref={messagesEndRef} />
-        </div>
-        {/* Input */}
-        {selectedChat && (
-          <div style={{ padding: 24, background: '#fff', borderTop: '1px solid #e5e7eb', display: 'flex', alignItems: 'center', gap: 12 }}>
-            <input
-              type="text"
-              placeholder="Type a message..."
-              style={{ flex: 1, padding: 12, borderRadius: 8, border: '1px solid #e5e7eb', fontSize: 16 }}
-              value={input}
-              onChange={e => setInput(e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter') handleSend(); }}
-            />
-            <button
-              onClick={handleSend}
-              style={{ background: 'linear-gradient(135deg, #7c6cf7, #5a50e6)', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 18px', fontWeight: 600, fontSize: 16, cursor: 'pointer' }}
-            >
-              <span role="img" aria-label="send">➤</span>
-            </button>
+            </div>
+            {/* Messages */}
+            <div style={{ flex: 1, padding: 24, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
+              {messages.map(msg => (
+                <div key={msg.id} style={{
+                  alignSelf: msg.sender_id === currentUser.id ? 'flex-end' : 'flex-start',
+                  maxWidth: '65%',
+                  marginBottom: 12,
+                }}>
+                  <div style={{
+                    padding: '12px 16px',
+                    borderRadius: 20,
+                    background: msg.sender_id === currentUser.id ? '#6366F1' : '#374151',
+                    color: '#fff',
+                  }}>
+                    {msg.content}
+                  </div>
+                  <span style={{ fontSize: 12, color: '#9ca3af', marginTop: 4, display: 'block', textAlign: msg.sender_id === currentUser.id ? 'right' : 'left' }}>
+                    {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                </div>
+              ))}
+              <div ref={messagesEndRef} />
+            </div>
+            {/* Input */}
+            <div style={{ padding: 24, borderTop: '1px solid #333', background: '#212121' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <input
+                  type="text"
+                  placeholder="Type a message..."
+                  value={input}
+                  onChange={e => setInput(e.target.value)}
+                  onKeyPress={e => e.key === 'Enter' && handleSend()}
+                  style={{ flex: 1, padding: '12px 16px', borderRadius: 9999, border: '1px solid #444', background: '#2a2a2a', color: '#fff' }}
+                />
+                <button
+                  onClick={handleSend}
+                  style={{
+                    background: '#6366F1',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '50%',
+                    width: 48,
+                    height: 48,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                </button>
+              </div>
+            </div>
+          </>
+        ) : (
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 16 }}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#4a4a4a" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+            <h2 style={{ fontSize: 22, fontWeight: 600, color: '#e5e7eb' }}>Select a chat to start messaging</h2>
+            <p style={{ fontSize: 16, color: '#9ca3af', maxWidth: 300, textAlign: 'center' }}>
+              Choose from your existing conversations or search for a new user to begin.
+            </p>
           </div>
         )}
       </div>

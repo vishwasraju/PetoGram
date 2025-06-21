@@ -294,7 +294,7 @@ export default function CreatePostPage() {
                 fontSize: '14px',
                 color: '#9CA3AF',
               }}>
-                PNG, JPG, GIF up to 10MB each (max 10 files), MP4, MOV, AVI up to 100MB each (max 5 files)
+                vid/img up to 5 mb
               </p>
             </div>
             <input

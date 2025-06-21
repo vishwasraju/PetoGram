@@ -11,6 +11,7 @@ interface ModalProps {
   size?: 'sm' | 'md' | 'lg' | 'xl'
   showCloseButton?: boolean
   closeOnOverlayClick?: boolean
+  bare?: boolean
 }
 
 export default function Modal({
@@ -21,31 +22,22 @@ export default function Modal({
   size = 'md',
   showCloseButton = true,
   closeOnOverlayClick = true,
+  bare = false
 }: ModalProps) {
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden'
-    } else {
-      document.body.style.overflow = 'unset'
-    }
-
-    return () => {
-      document.body.style.overflow = 'unset'
-    }
-  }, [isOpen])
-
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         onClose()
       }
     }
-
     if (isOpen) {
+      document.body.style.overflow = 'hidden'
       document.addEventListener('keydown', handleEscape)
+    } else {
+      document.body.style.overflow = 'unset'
     }
-
     return () => {
+      document.body.style.overflow = 'unset'
       document.removeEventListener('keydown', handleEscape)
     }
   }, [isOpen, onClose])
@@ -62,6 +54,8 @@ export default function Modal({
     return sizes[size]
   }
 
+  const handleOverlayClick = closeOnOverlayClick ? onClose : undefined
+
   return (
     <div
       style={{
@@ -72,15 +66,19 @@ export default function Modal({
         alignItems: 'center',
         justifyContent: 'center',
         padding: designTokens.spacing[4],
+        backgroundColor: bare ? 'transparent' : 'rgba(0, 0, 0, 0.5)',
+        backdropFilter: bare ? 'none' : 'blur(4px)',
       }}
+      onClick={handleOverlayClick}
     >
       {/* Overlay */}
       <div
         style={{
           position: 'absolute',
           inset: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.5)',
-          backdropFilter: 'blur(4px)',
+          backgroundColor: bare ? 'rgba(10, 10, 10, 0.7)' : 'rgba(0, 0, 0, 0.5)',
+          backdropFilter: bare ? 'blur(8px)' : 'blur(4px)',
+          WebkitBackdropFilter: bare ? 'blur(8px)' : 'blur(4px)',
         }}
         onClick={closeOnOverlayClick ? onClose : undefined}
       />
@@ -91,15 +89,15 @@ export default function Modal({
           position: 'relative',
           width: '100%',
           ...getSizeStyles(),
-          backgroundColor: designTokens.colors.white,
+          backgroundColor: bare ? 'transparent' : designTokens.colors.white,
           borderRadius: designTokens.borderRadius['3xl'],
-          boxShadow: designTokens.boxShadow.xl,
+          boxShadow: bare ? 'none' : designTokens.boxShadow.xl,
           overflow: 'hidden',
           animation: 'modalSlideIn 0.3s ease-out',
         }}
       >
         {/* Header */}
-        {(title || showCloseButton) && (
+        {!bare && (title || showCloseButton) && (
           <div
             style={{
               display: 'flex',
@@ -132,7 +130,7 @@ export default function Modal({
         )}
         
         {/* Body */}
-        <div style={{ padding: designTokens.spacing[6] }}>
+        <div style={{ padding: bare ? 0 : designTokens.spacing[6] }}>
           {children}
         </div>
       </div>

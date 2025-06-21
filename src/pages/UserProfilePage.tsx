@@ -66,12 +66,18 @@ export default function UserProfilePage() {
         .from('user_profiles')
         .select('*')
         .eq('user_id', userId)
-        .single()
+        .limit(1)
 
       if (error) throw error
-      setProfile(data)
+      
+      if (data && data.length > 0) {
+        setProfile(data[0])
+      } else {
+        setProfile(null)
+      }
     } catch (error) {
       console.error('Error fetching profile:', error)
+      setProfile(null)
     }
   }
 

@@ -1,30 +1,26 @@
 import React, { useState, useEffect } from 'react'
-import { Routes, Route, useNavigate, Link } from 'react-router-dom'
+import { Routes, Route, useNavigate, Link, Navigate } from 'react-router-dom'
 import IntroPage from './pages/IntroPage'
 import EnhancedHome from './pages/EnhancedHome'
 import Profile from './pages/Profile'
-import MessagingPage from './pages/MessagingPage'
 import Events from './pages/Events'
 import Appointment from './pages/Appointment'
-import Settings from './pages/Settings'
+
 import NotFound from './pages/NotFound'
 import AboutPage from './pages/AboutPage'
 import CareersPage from './pages/CareersPage'
 import BlogPage from './pages/BlogPage'
-import PrivacyPolicyPage from './pages/PrivacyPolicyPage'
 import TermsOfServicePage from './pages/TermsOfServicePage'
-import HelpCenterPage from './pages/HelpCenterPage'
+import EditProfilePage from './pages/EditProfilePage'
+import PasswordChangePage from './pages/PasswordChangePage'
+import DeleteAccountPage from './pages/DeleteAccountPage'
+import UserProfilePage from './pages/UserProfilePage'
 // Import new pages
 import EventsPage from './pages/EventsPage'
 import AppointmentPage from './pages/AppointmentPage'
 import SettingsPage from './pages/SettingsPage'
 import CreatePostPage from './pages/CreatePostPage'
-import UserProfilePage from './pages/UserProfilePage'
-import EditProfilePage from './pages/EditProfilePage'
-import PasswordChangePage from './pages/PasswordChangePage'
-import DeleteAccountPage from './pages/DeleteAccountPage'
 import ProfileInfoCardPage from './pages/ProfileInfoCardPage'
-import PasswordSecurityPage from './pages/PasswordSecurityPage'
 import ChatPage from './pages/ChatPage'
 import { isAuthenticated } from './utils/auth'
 import { supabase } from './utils/supabase'
@@ -61,8 +57,8 @@ function App() {
         // Only navigate to /home if not already on /home or other protected routes
         const protectedRoutes = [
           '/home', '/feed', '/events-page', '/appointment-page', 
-          '/settings-page', '/create-post', '/profile', '/events', '/appointment', 
-          '/settings', '/user-profile', '/edit-profile', '/password-change', '/delete-account',
+          '/settings', '/create-post', '/profile', '/events', '/appointment', 
+          
           '/chat'
         ]
         if (!protectedRoutes.some(route => window.location.pathname.startsWith(route))) {
@@ -71,7 +67,7 @@ function App() {
           }, 0); // Use setTimeout with 0ms to defer navigation
         }
       } else {
-        const publicRoutes = ['/', '/about', '/careers', '/blog', '/privacy', '/terms', '/help']
+        const publicRoutes = ['/', '/about', '/careers', '/blog', '/terms']
         if (!publicRoutes.includes(window.location.pathname)) {
           setTimeout(() => {
             navigate('/', { replace: false })
@@ -119,9 +115,7 @@ function App() {
         <Route path="/about" element={<AboutPage />} />
         <Route path="/careers" element={<CareersPage />} />
         <Route path="/blog" element={<BlogPage />} />
-        <Route path="/privacy" element={<PrivacyPolicyPage />} />
         <Route path="/terms" element={<TermsOfServicePage />} />
-        <Route path="/help" element={<HelpCenterPage />} />
         
         {/* Protected Routes - Original */}
         <Route 
@@ -140,10 +134,7 @@ function App() {
           path="/appointment" 
           element={<Appointment />} 
         />
-        <Route 
-          path="/settings" 
-          element={<Settings />} 
-        />
+       
         
         {/* New dedicated pages */}
         <Route 
@@ -155,7 +146,7 @@ function App() {
           element={<AppointmentPage />} 
         />
         <Route 
-          path="/settings-page" 
+          path="/settings" 
           element={<SettingsPage />} 
         />
         <Route 
@@ -173,7 +164,7 @@ function App() {
           element={<EditProfilePage />} 
         />
         <Route 
-          path="/password-change" 
+          path="/change-password" 
           element={<PasswordChangePage />} 
         />
         <Route 
@@ -185,12 +176,6 @@ function App() {
         <Route 
           path="/profile-info" 
           element={<ProfileInfoCardPage />} 
-        />
-        
-        {/* New password security page */}
-        <Route 
-          path="/password-security" 
-          element={<PasswordSecurityPage />} 
         />
         
         {/* New chat page */}
