@@ -26,10 +26,12 @@ import {
 import { designTokens } from '../design-system/tokens'
 import Modal from '../components/ui/Modal'
 import { supabase } from '../utils/supabase'
-import { clearAuthenticationState } from '../utils/auth'
+import { clearAuthenticationState, getUserProfile } from '../utils/auth'
 
 export default function SettingsPage() {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [userProfile, setUserProfile] = useState<any>(null);
+  const [currentUser, setCurrentUser] = useState<any>(null);
   const [darkMode, setDarkMode] = useState(true)
   const [notifications, setNotifications] = useState({
     push: true,
@@ -55,6 +57,18 @@ export default function SettingsPage() {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setCurrentUser(user);
+        const profile = await getUserProfile(user.id);
+        setUserProfile(profile);
+      }
+    };
+    fetchCurrentUser();
   }, []);
 
   const settingsCategories = [
@@ -278,21 +292,21 @@ export default function SettingsPage() {
               }}
               onClick={() => navigate('/profile')}
             />
-            <div style={{ flexGrow: 1, cursor: 'pointer' }} onClick={() => navigate('/profile')}>
+            <div style={{ flexGrow: 1, cursor: 'pointer' }} onClick={() => navigate('/edit-profile')}>
               <h2 style={{
                 margin: '0 0 4px 0',
                 fontSize: isMobile ? '20px' : '24px',
                 fontWeight: '700',
                 color: '#fff',
               }}>
-                John Doe
+                {userProfile?.username || 'User'}
               </h2>
               <p style={{
                 margin: '0 0 8px 0',
                 fontSize: isMobile ? '14px' : '16px',
                 color: '#9CA3AF',
               }}>
-                john.doe@example.com
+                {currentUser?.email}
               </p>
               <div style={{
                 display: 'flex',

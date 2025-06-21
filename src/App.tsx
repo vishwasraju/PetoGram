@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react'
-import { Routes, Route, useNavigate, Link, Navigate } from 'react-router-dom'
+import { Routes, Route, useNavigate, Navigate } from 'react-router-dom'
 import IntroPage from './pages/IntroPage'
 import EnhancedHome from './pages/EnhancedHome'
 import Profile from './pages/Profile'
 
 
 import NotFound from './pages/NotFound'
-import AboutPage from './pages/AboutPage'
 import EditProfilePage from './pages/EditProfilePage'
 
 import DeleteAccountPage from './pages/DeleteAccountPage'
@@ -62,7 +61,7 @@ function App() {
           }, 0); // Use setTimeout with 0ms to defer navigation
         }
       } else {
-        const publicRoutes = ['/', '/about', '/careers', '/blog', '/terms']
+        const publicRoutes = ['/']
         if (!publicRoutes.includes(window.location.pathname)) {
           setTimeout(() => {
             navigate('/', { replace: false })

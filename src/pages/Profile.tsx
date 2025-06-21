@@ -156,57 +156,68 @@ export default function Profile() {
   }, []);
 
   useEffect(() => {
-    if (profileId) {
-      fetchCurrentUserData(profileId)
-      fetchPosts(profileId)
-      fetchFollowData(profileId)
-    } else if (currentUser) {
-      fetchCurrentUserData(currentUser.id)
-      fetchPosts(currentUser.id)
-      fetchFollowData(currentUser.id)
-    } else {
+    const loadProfileData = async () => {
+      setLoading(true);
+      const user = await getCurrentUser();
+      if (!user && !profileId) {
+        navigate('/');
+        return;
+      }
+      
+      const targetUserId = profileId || user?.id;
+      if (!targetUserId) {
+        setLoading(false);
+        return;
+      }
+
+      setCurrentUser(user);
+
+      // Fetch all data in parallel
+      await Promise.all([
+        fetchCurrentUserData(targetUserId),
+        fetchPosts(targetUserId),
+        fetchFollowData(targetUserId)
+      ]);
+
       setLoading(false);
-    }
-  }, [profileId, currentUser]);
+    };
+
+    loadProfileData();
+  }, [profileId, navigate]);
 
   const fetchPosts = async (targetUserId: string) => {
     if (!targetUserId) return;
-    setLoading(true);
+    
     try {
-      const { data: postsData, error: postsError } = await supabase
-        .from('posts')
-        .select('*')
-        .eq('is_active', true)
-        .eq('user_id', targetUserId)
-        .order('created_at', { ascending: false });
+      // Fetch posts and the user's profile and pets info in parallel
+      const [
+        { data: postsData, error: postsError },
+        profile,
+        pets
+      ] = await Promise.all([
+        supabase
+          .from('posts')
+          .select('*')
+          .eq('is_active', true)
+          .eq('user_id', targetUserId)
+          .order('created_at', { ascending: false }),
+        getUserProfile(targetUserId),
+        getUserPets(targetUserId)
+      ]);
       
       if (postsError) throw postsError;
 
-      const uniqueUserIdsInPosts = [...new Set((postsData || []).map(post => post.user_id))];
-      const userProfilesMap = new Map<string, UserProfile>();
-      const userPetsMap = new Map<string, string>();
-
-      await Promise.all(uniqueUserIdsInPosts.map(async (userId) => {
-        const profileData = await getUserProfile(userId);
-        if (profileData) {
-          userProfilesMap.set(userId, profileData);
-        }
-        const petsData = await getUserPets(userId);
-        if (petsData && petsData.length > 0) {
-          userPetsMap.set(userId, petsData.map(pet => pet.name).join(', '));
-        }
-      }));
+      const userName = profile?.username || 'Unknown User';
+      const userAvatar = profile?.profile_picture || `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=random`;
+      const petsInfo = pets && pets.length > 0 ? pets.map(p => p.name).join(', ') : 'No pets';
 
       const postsWithUserData = (postsData || []).map(post => {
-        const profile = userProfilesMap.get(post.user_id);
-        const petsInfo = userPetsMap.get(post.user_id);
-
         return {
           ...post,
           user: {
-            name: profile?.username || (post.user_id === currentUser?.id ? currentUser.email?.split('@')[0] || 'You' : 'Unknown User'),
-            avatar: profile?.profile_picture || 'https://images.pexels.com/photos/1036622/pexels-photo-1036622.jpeg?auto=compress&cs=tinysrgb&w=120&h=120&dpr=2',
-            pets: petsInfo || 'No pets',
+            name: userName,
+            avatar: userAvatar,
+            pets: petsInfo,
           },
         };
       });
@@ -214,49 +225,23 @@ export default function Profile() {
       setPosts(postsWithUserData);
     } catch (error) {
       console.error('Error fetching posts:', error);
-    } finally {
-      setLoading(false);
     }
   };
 
-  const fetchCurrentUserData = async (targetUserId?: string) => {
-    setLoading(true);
+  const fetchCurrentUserData = async (targetUserId: string) => {
     try {
-      let userToFetchId = targetUserId;
-      if (!userToFetchId) {
-        const user = await getCurrentUser();
-        if (user) {
-          setCurrentUser(user);
-          userToFetchId = user.id;
-        } else {
-          navigate('/');
-          return;
-        }
-      }
-
-      if (!userToFetchId) {
-        setLoading(false);
-        return;
-      }
-
-      const profileData = await getUserProfile(userToFetchId);
+      const profileData = await getUserProfile(targetUserId);
       if (profileData) {
         setProfile(profileData);
-        // Fetch pets for the displayed profile
-        const petsData = await getUserPets(userToFetchId);
+        const petsData = await getUserPets(targetUserId);
         if (petsData) {
           setPets(petsData);
         }
       } else {
         setProfile(null);
       }
-
-      // No longer fetching followers/following here, handled by fetchFollowData
-
     } catch (error) {
       console.error('Error fetching user data:', error);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -365,15 +350,6 @@ export default function Profile() {
     };
     checkFollowing();
   }, [currentUser, profile]);
-
-  // Initial fetch of current user for isOwnProfile
-  useEffect(() => {
-    const fetchInitialCurrentUser = async () => {
-      const user = await getCurrentUser();
-      setCurrentUser(user);
-    };
-    fetchInitialCurrentUser();
-  }, []);
 
   const handleDeletePost = async (postId: string) => {
     if (!window.confirm('Are you sure you want to delete this post? This action cannot be undone.')) {
@@ -801,6 +777,7 @@ export default function Profile() {
                       <img
                         src={post.media_urls[0]}
                         alt="Post"
+                        loading="lazy"
                         style={{
                           width: '100%',
                           height: '100%',

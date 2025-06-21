@@ -45,20 +45,26 @@ export default function UserProfilePage() {
   const [isFollowing, setIsFollowing] = useState(false)
 
   useEffect(() => {
-    if (userId) {
-      fetchUserProfile()
-      fetchUserPosts()
-      fetchConnectionStatus()
-      fetchUserStats()
-    }
-    getCurrentUser()
-  }, [userId])
+    const loadProfileData = async () => {
+      setLoading(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      setCurrentUser(user);
 
-  const getCurrentUser = async () => {
-    const { data: { user } } = await supabase.auth.getUser()
-    setCurrentUser(user)
-    console.log("Auth user id:", user?.id);
-  }
+      if (userId) {
+        await Promise.all([
+          fetchUserProfile(),
+          fetchUserPosts(),
+          fetchConnectionStatus(user),
+          fetchUserStats()
+        ]);
+      }
+      setLoading(false);
+    };
+
+    if (userId) {
+      loadProfileData();
+    }
+  }, [userId]);
 
   const fetchUserProfile = async () => {
     try {
@@ -98,8 +104,8 @@ export default function UserProfilePage() {
     }
   }
 
-  const fetchConnectionStatus = async () => {
-    if (!currentUser) return
+  const fetchConnectionStatus = async (currentUser: any) => {
+    if (!currentUser || !userId) return
 
     try {
       const { data, error } = await supabase
@@ -112,7 +118,7 @@ export default function UserProfilePage() {
         setConnectionStatus({ status: data.status, type: data.connection_type })
       }
     } catch (error) {
-      console.error('Error fetching connection status:', error)
+      // It's okay if this fails (e.g., no connection found), so we don't need to log an error.
     }
   }
 
@@ -795,6 +801,7 @@ export default function UserProfilePage() {
                       <img 
                         src={post.media_urls[0]}
                         alt="Post"
+                        loading="lazy"
                         style={{
                           width: '100%',
                           height: '100%',

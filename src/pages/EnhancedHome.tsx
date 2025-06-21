@@ -1,11 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import Post from '../components/feed/Post'
-import Card from '../components/ui/Card'
-import Avatar from '../components/ui/Avatar'
-import Button from '../components/ui/Button'
-import Badge from '../components/ui/Badge'
-import { SkeletonCard } from '../components/ui/Skeleton'
-import { TrendingUp, Users, Calendar, MapPin, Star, Plus, Mic, Bookmark, UserPlus, X, Clock, Siren as Fire, Hash, Stethoscope, MessageCircle, ExternalLink, ImageOff, MoreVertical, Settings, Cat, Dog, Check, AlertCircle, Loader2 } from 'lucide-react'
+import { Calendar, MapPin, Plus, Stethoscope, MessageCircle, ExternalLink, Settings, Cat, Dog, Check, AlertCircle, Loader2 } from 'lucide-react'
 import { designTokens } from '../design-system/tokens'
 import { useNavigate, Link, useParams } from 'react-router-dom'
 import { getCurrentUser, getUserProfile, getUserPets, createPost } from '../utils/auth'
@@ -47,175 +41,6 @@ interface PostData {
   }
   timestamp: string
 }
-
-const mockPosts: PostData[] = [
-  {
-    id: '1',
-    user_id: '1',
-    user: {
-      name: 'Robert Fox',
-      avatar: 'https://images.pexels.com/photos/1036622/pexels-photo-1036622.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2',
-      pets: '@alexsamdrovonzi',
-      verified: true,
-      user_id: '1',
-    },
-    content: {
-      type: 'image',
-      url: 'https://images.pexels.com/photos/1805164/pexels-photo-1805164.jpeg?auto=compress&cs=tinysrgb&w=800',
-      caption: 'While Corfu give us the ability to shoot by the sea with amazing blue background full of light of the sky. Florina give us its gentle side. The humble atmosphere and Light of Florina which comes... read more',
-      hashtags: ['#landscape', '#flora', '#nature'],
-    },
-    engagement: {
-      likes: 1600,
-      comments: 2300,
-      shares: 23,
-      saved: false,
-    },
-    timestamp: '2h',
-  },
-  {
-    id: '2',
-    user_id: '2',
-    user: {
-      name: 'Dianne Russell',
-      avatar: 'https://images.pexels.com/photos/733872/pexels-photo-733872.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2',
-      pets: '@amandadasilva',
-      verified: false,
-      user_id: '2',
-    },
-    content: {
-      type: 'image',
-      url: 'https://images.pexels.com/photos/1851164/pexels-photo-1851164.jpeg?auto=compress&cs=tinysrgb&w=800',
-      caption: 'Beautiful sunset over the mountains with amazing colors and peaceful atmosphere.',
-      hashtags: ['#sunset', '#mountains', '#nature'],
-    },
-    engagement: {
-      likes: 892,
-      comments: 45,
-      shares: 12,
-      saved: true,
-    },
-    timestamp: '4h',
-  },
-  {
-    id: '3',
-    user_id: '3',
-    user: {
-      name: 'Jane Doe',
-      avatar: 'https://images.pexels.com/photos/1036623/pexels-photo-1036623.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2',
-      pets: '@janedoe_pets',
-      verified: true,
-      user_id: '3',
-    },
-    content: {
-      type: 'image',
-      url: 'https://images.pexels.com/photos/1741477/pexels-photo-1741477.jpeg?auto=compress&cs=tinysrgb&w=800',
-      caption: 'My lovely cat enjoying the sun today! #catlife #sunnyday',
-      hashtags: ['#catlife', '#sunnyday', '#petsofinstagram'],
-    },
-    engagement: {
-      likes: 500,
-      comments: 75,
-      shares: 10,
-      saved: true,
-    },
-    timestamp: '1h',
-  },
-  {
-    id: '4',
-    user_id: '4',
-    user: {
-      name: 'John Smith',
-      avatar: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2',
-      pets: '@john_pets',
-      verified: false,
-      user_id: '4',
-    },
-    content: {
-      type: 'video',
-      url: 'https://assets.mixkit.co/videos/preview/mixkit-dog-running-in-the-snow-1406-large.mp4',
-      caption: 'Winter fun with my dog! He loves the snow. #dogsofinstagram #winterfun',
-      hashtags: ['#dogsofinstagram', '#winterfun', '#playtime'],
-    },
-    engagement: {
-      likes: 1200,
-      comments: 150,
-      shares: 20,
-      saved: false,
-    },
-    timestamp: '3h',
-  },
-  {
-    id: '5',
-    user_id: '5',
-    user: {
-      name: 'Emily White',
-      avatar: 'https://images.pexels.com/photos/1036620/pexels-photo-1036620.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2',
-      pets: '@emily_animals',
-      verified: true,
-      user_id: '5',
-    },
-    content: {
-      type: 'image',
-      url: 'https://images.pexels.com/photos/3331505/pexels-photo-3331505.jpeg?auto=compress&cs=tinysrgb&w=800',
-      caption: 'Morning walk with my best friend! Such a beautiful day. #dogwalk #naturelover',
-      hashtags: ['#dogwalk', '#naturelover', '#goldenretriever'],
-    },
-    engagement: {
-      likes: 950,
-      comments: 110,
-      shares: 15,
-      saved: false,
-    },
-    timestamp: '6h',
-  },
-  {
-    id: '6',
-    user_id: '6',
-    user: {
-      name: 'David Brown',
-      avatar: 'https://images.pexels.com/photos/1040880/pexels-photo-1040880.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2',
-      pets: '@david_wildlife',
-      verified: false,
-      user_id: '6',
-    },
-    content: {
-      type: 'image',
-      url: 'https://images.pexels.com/photos/1660721/pexels-photo-1660721.jpeg?auto=compress&cs=tinysrgb&w=800',
-      caption: 'Enjoying the serene view with my parrot. He loves to sit by the window. #parrotlife #birdwatching',
-      hashtags: ['#parrotlife', '#birdwatching', '#exoticpets'],
-    },
-    engagement: {
-      likes: 720,
-      comments: 80,
-      shares: 8,
-      saved: true,
-    },
-    timestamp: '8h',
-  },
-]
-
-const stories = [
-  { id: '1', name: 'Your story', avatar: 'https://images.pexels.com/photos/1036622/pexels-photo-1036622.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2', isAdd: true },
-  { id: '2', name: 'Sarah', avatar: 'https://images.pexels.com/photos/733872/pexels-photo-733872.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2' },
-  { id: '3', name: 'Mike', avatar: 'https://images.pexels.com/photos/1212984/pexels-photo-1212984.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2' },
-  { id: '4', name: 'Emma', avatar: 'https://images.pexels.com/photos/1564506/pexels-photo-1564506.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2' },
-  { id: '5', name: 'David', avatar: 'https://images.pexels.com/photos/2023384/pexels-photo-2023384.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2' },
-  { id: '6', name: 'Lisa', avatar: 'https://images.pexels.com/photos/1108099/pexels-photo-1108099.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2' },
-]
-
-const contacts = [
-  { id: '1', name: 'Julie Mendez', location: 'Memphis, TN, US', avatar: 'https://images.pexels.com/photos/733872/pexels-photo-733872.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2', online: true },
-  { id: '2', name: 'Marian Montgomery', location: 'Newark, NJ, US', avatar: 'https://images.pexels.com/photos/1212984/pexels-photo-1212984.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2', online: false },
-  { id: '3', name: 'Joyce Reid', location: 'Fort Worth, TX, US', avatar: 'https://images.pexels.com/photos/1564506/pexels-photo-1564506.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2', online: true },
-  { id: '4', name: 'Alice Franklin', location: 'Springfield, MA, US', avatar: 'https://images.pexels.com/photos/2023384/pexels-photo-2023384.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2', online: false },
-  { id: '5', name: 'Domingo Flores', location: 'Honolulu, HI, US', avatar: 'https://images.pexels.com/photos/1108099/pexels-photo-1108099.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2', online: true },
-]
-
-const requests = [
-  { id: '1', name: 'Lauralee Quintero', action: 'wants to add you to friends', avatar: 'https://images.pexels.com/photos/733872/pexels-photo-733872.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2' },
-  { id: '2', name: 'Brittni Landom', action: 'wants to add you to friends', avatar: 'https://images.pexels.com/photos/1212984/pexels-photo-1212984.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2' },
-]
 
 const upcomingEvents = [
   {
@@ -620,6 +445,9 @@ function EnhancedHome() {
   const [followingList, setFollowingList] = useState<User[]>([]);
   const [socialCardLoading, setSocialCardLoading] = useState(false);
 
+  const [currentPage, setCurrentPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+
   const animalOptions = [
     { id: '1', name: 'Cat', img: '/PetoGram/assets/images/pets/cat.png' },
     { id: '2', name: 'Dog', img: '/PetoGram/assets/images/pets/dog.png' },
@@ -717,73 +545,143 @@ function EnhancedHome() {
   // New useEffect to initialize user data and fetch stats
   useEffect(() => {
     const initializeUserData = async () => {
+      setLoading(true);
       const user = await getCurrentUser()
       if (user) {
         setCurrentUser(user)
-        const { data, error } = await supabase
-          .from('user_profiles')
-          .select('*')
-          .eq('user_id', user.id)
-          .single();
-        if (data) {
-          setUserProfile(data)
-          fetchUserStats(user.id) // Call fetchUserStats with user.id
-        }
-        fetchPosts(user) // Assuming fetchPosts needs userId now
+        
+        await Promise.all([
+          (async () => {
+            const { data } = await supabase.from('user_profiles').select('*').eq('user_id', user.id).single();
+            if (data) setUserProfile(data);
+          })(),
+          fetchUserStats(user.id),
+          fetchPosts(0, true)
+        ])
       }
+      setLoading(false);
     }
     initializeUserData()
   }, []) // Run once on component mount
 
-  // Set up polling to refresh posts every 5 seconds
+  // Set up a real-time subscription to refresh posts
   useEffect(() => {
-    if (!currentUser) return; // Don't start polling until user is loaded
-    const pollInterval = setInterval(() => {
-      fetchPosts(currentUser)
-    }, 5000)
+    if (!currentUser) return; // Don't subscribe until user is loaded
 
-    return () => clearInterval(pollInterval)
-  }, [currentUser]) // Depend on currentUser to start polling
+    const handleNewPost = async (payload: any) => {
+      console.log('New post received!', payload);
+      const newPost = payload.new;
+      
+      const [userProfile, userPetsData] = await Promise.all([
+        getUserProfile(newPost.user_id),
+        getUserPets(newPost.user_id)
+      ]);
 
-  const fetchPosts = async (user?: any) => {
+      const userName = userProfile?.username || (userProfile as any)?.email?.split('@')[0] || 'Unknown User';
+      const pets = userPetsData && userPetsData.length > 0 ? userPetsData.map(pet => pet.name).join(', ') : 'No pets';
+
+      const transformedPost: PostData = {
+        id: newPost.id,
+        user_id: newPost.user_id,
+        user: {
+          name: userName,
+          avatar: userProfile?.profile_picture || `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=random`,
+          pets: pets,
+          user_id: newPost.user_id,
+        },
+        content: {
+          type: newPost.content_type || 'image',
+          url: newPost.media_urls?.[0] || '',
+          caption: newPost.caption || '',
+          hashtags: newPost.hashtags || [],
+        },
+        engagement: {
+          likes: newPost.likes_count || 0,
+          comments: newPost.comments_count || 0,
+          shares: newPost.shares_count || 0,
+        },
+        timestamp: newPost.created_at,
+      };
+
+      setPosts(currentPosts => [transformedPost, ...currentPosts]);
+    };
+
+    const channel = supabase
+      .channel('posts-feed-subscription')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'posts' }, handleNewPost)
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [currentUser])
+
+  const POSTS_PER_PAGE = 5;
+
+  const fetchPosts = async (page = 0, initialLoad = false) => {
+    if (loading && !initialLoad) return;
     setLoading(true);
     try {
+      const from = page * POSTS_PER_PAGE;
+      const to = from + POSTS_PER_PAGE - 1;
+
       const { data: postsData, error: postsError } = await supabase
         .from('posts')
         .select('*')
         .eq('is_active', true)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .range(from, to);
       
       if (postsError) throw postsError;
-
-      // Fetch profiles and pets for all unique user_ids in posts
-      const userIds = [...new Set((postsData || []).map(post => post.user_id) || [])];
-      const profilesMap = new Map();
-      const petsMap = new Map();
-
-      for (const userId of userIds) {
-        const profile = await getUserProfile(userId);
-        if (profile) {
-          profilesMap.set(userId, profile);
-        }
-        const pets = await getUserPets(userId);
-        if (pets && pets.length > 0) {
-          petsMap.set(userId, pets.map(pet => pet.name).join(', ')); // Join pet names
-        }
+      
+      if (!postsData || postsData.length === 0) {
+        if (initialLoad) setPosts([]);
+        setHasMore(false);
+        setLoading(false);
+        return;
       }
+      
+      const userIds = [...new Set(postsData.map(post => post.user_id).filter(id => id))];
+      
+      if (userIds.length === 0) {
+        if (initialLoad) setPosts([]);
+        setLoading(false);
+        return;
+      }
+      
+      const [profilesResult, petsResult] = await Promise.all([
+        supabase.from('user_profiles').select('*').in('user_id', userIds),
+        supabase.from('user_pets').select('*').in('user_id', userIds)
+      ]);
+
+      const { data: profilesData, error: profilesError } = profilesResult;
+      const { data: petsData, error: petsError } = petsResult;
+
+      if (profilesError) throw profilesError;
+      if (petsError) throw petsError;
+      
+      const profilesMap = new Map((profilesData || []).map(p => [p.user_id, p]));
+      const petsMap = new Map();
+      (petsData || []).forEach(pet => {
+        if (!petsMap.has(pet.user_id)) {
+          petsMap.set(pet.user_id, []);
+        }
+        petsMap.get(pet.user_id).push(pet.name);
+      });
 
       // Transform the data to match PostData interface
-      const transformedPosts = (postsData || []).map(post => {
+      const transformedPosts = postsData.map(post => {
         const userProfile = profilesMap.get(post.user_id);
-        const userPets = petsMap.get(post.user_id);
+        const userPets = petsMap.has(post.user_id) ? petsMap.get(post.user_id).join(', ') : 'No pets';
+        const userName = userProfile?.username || (userProfile as any)?.email?.split('@')[0] || 'Unknown User';
 
         return {
           id: post.id,
           user_id: post.user_id,
           user: {
-            name: userProfile?.username || userProfile?.email?.split('@')[0] || 'Unknown User',
-            avatar: userProfile?.profile_picture || 'https://images.pexels.com/photos/1036622/pexels-photo-1036622.jpeg?auto=compress&cs=tinysrgb&w=120&h=120&dpr=2',
-            pets: userPets || 'No pets',
+            name: userName,
+            avatar: userProfile?.profile_picture || `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=random`,
+            pets: userPets,
             user_id: post.user_id,
           },
           content: {
@@ -801,7 +699,15 @@ function EnhancedHome() {
         };
       });
       
-      setPosts(transformedPosts);
+      setPosts(prev => initialLoad ? transformedPosts : [...prev, ...transformedPosts]);
+      
+      if (postsData.length < POSTS_PER_PAGE) {
+        setHasMore(false);
+      } else {
+        setHasMore(true);
+      }
+      setCurrentPage(page);
+
     } catch (error) {
       console.error('Error fetching posts:', error);
     } finally {
@@ -816,36 +722,15 @@ function EnhancedHome() {
 
   const fetchUserStats = async (userId) => {
     try {
-      // Fetch followers count
-      const { count: followers } = await supabase
-        .from('user_connections')
-        .select('*', { count: 'exact', head: true })
-        .eq('requested_id', userId)
-        .eq('status', 'accepted')
-        .eq('connection_type', 'follow');
+      const [followersResult, followingResult, postsResult] = await Promise.all([
+        supabase.from('user_connections').select('*', { count: 'exact', head: true }).eq('requested_id', userId).eq('status', 'accepted').eq('connection_type', 'follow'),
+        supabase.from('user_connections').select('*', { count: 'exact', head: true }).eq('requester_id', userId).eq('status', 'accepted').eq('connection_type', 'follow'),
+        supabase.from('posts').select('*', { count: 'exact', head: true }).eq('user_id', userId).eq('is_active', true)
+      ]);
 
-      // Fetch following count
-      const { count: following } = await supabase
-        .from('user_connections')
-        .select('*', { count: 'exact', head: true })
-        .eq('requester_id', userId)
-        .eq('status', 'accepted')
-        .eq('connection_type', 'follow');
-
-      // Fetch posts count
-      const { count: posts } = await supabase
-        .from('posts')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', userId)
-        .eq('is_active', true);
-
-      setFollowersCount(followers || 0);
-      setFollowingCount(following || 0);
-      setPostsCount(posts || 0);
-      setPosts(currentPosts => currentPosts.map(post => ({
-        ...post,
-        user_id: userId
-      })));
+      setFollowersCount(followersResult.count || 0);
+      setFollowingCount(followingResult.count || 0);
+      setPostsCount(postsResult.count || 0);
     } catch (error) {
       console.error('Error fetching user stats:', error);
       setFollowersCount(0);
@@ -938,9 +823,9 @@ function EnhancedHome() {
 
     return (profiles || []).map(profile => ({
       id: profile.user_id,
-      name: profile.username,
-      username: profile.username,
-      avatar: profile.profile_picture || 'https://i.pravatar.cc/150',
+      name: profile.username || 'Unnamed User',
+      username: profile.username || 'unnamed',
+      avatar: profile.profile_picture || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.username || 'U')}&background=random`,
       isFollowing: followingIds.has(profile.user_id),
     })) as User[];
   };
@@ -980,7 +865,7 @@ function EnhancedHome() {
       id: profile.user_id,
       name: profile.username,
       username: profile.username,
-      avatar: profile.profile_picture || 'https://i.pravatar.cc/150',
+      avatar: profile.profile_picture || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.username || 'U')}&background=random`,
       isFollowing: true,
     })) as User[];
   };
@@ -1083,7 +968,7 @@ function EnhancedHome() {
             <div style={{ marginBottom: '32px', textAlign: 'center' }}>
               <div style={{ position: 'relative', display: 'inline-block', marginBottom: '16px' }}>
                 <img 
-                  src={userProfile?.profile_picture || "https://images.pexels.com/photos/1036622/pexels-photo-1036622.jpeg?auto=compress&cs=tinysrgb&w=120&h=120&dpr=2"}
+                  src={userProfile?.profile_picture || `https://ui-avatars.com/api/?name=${encodeURIComponent(userProfile?.username || 'U')}&background=random`}
                   alt={userProfile?.username || "User"}
                   style={{
                     width: '80px',
@@ -1370,6 +1255,7 @@ function EnhancedHome() {
                       <img 
                         src={post.content.url}
                         alt="Post content"
+                        loading="lazy"
                         style={{
                           width: '100%',
                           height: '300px',
@@ -1425,6 +1311,27 @@ function EnhancedHome() {
                   </div>
                 </div>
               ))}
+              {hasMore && (
+                <div style={{ display: 'flex', justifyContent: 'center', padding: '20px' }}>
+                  <button 
+                    onClick={() => fetchPosts(currentPage + 1)} 
+                    disabled={loading}
+                    style={{
+                      padding: '10px 20px',
+                      backgroundColor: '#6366F1',
+                      border: 'none',
+                      borderRadius: '8px',
+                      color: '#FFFFFF',
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      cursor: loading ? 'not-allowed' : 'pointer',
+                      opacity: loading ? 0.6 : 1,
+                    }}
+                  >
+                    {loading ? 'Loading...' : 'Load More Posts'}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
