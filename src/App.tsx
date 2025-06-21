@@ -3,16 +3,12 @@ import { Routes, Route, useNavigate, Link, Navigate } from 'react-router-dom'
 import IntroPage from './pages/IntroPage'
 import EnhancedHome from './pages/EnhancedHome'
 import Profile from './pages/Profile'
-import Events from './pages/Events'
-import Appointment from './pages/Appointment'
+
 
 import NotFound from './pages/NotFound'
 import AboutPage from './pages/AboutPage'
-import CareersPage from './pages/CareersPage'
-import BlogPage from './pages/BlogPage'
-import TermsOfServicePage from './pages/TermsOfServicePage'
 import EditProfilePage from './pages/EditProfilePage'
-import PasswordChangePage from './pages/PasswordChangePage'
+
 import DeleteAccountPage from './pages/DeleteAccountPage'
 import UserProfilePage from './pages/UserProfilePage'
 // Import new pages
@@ -58,8 +54,7 @@ function App() {
         const protectedRoutes = [
           '/home', '/feed', '/events-page', '/appointment-page', 
           '/settings', '/create-post', '/profile', '/events', '/appointment', 
-          
-          '/chat'
+          '/chat', '/user-profile'
         ]
         if (!protectedRoutes.some(route => window.location.pathname.startsWith(route))) {
           setTimeout(() => {
@@ -112,11 +107,6 @@ function App() {
           path="/" 
           element={<IntroPage onSignupStart={() => setIsSigningUp(true)} onSignupComplete={() => setIsSigningUp(false)} />} 
         />
-        <Route path="/about" element={<AboutPage />} />
-        <Route path="/careers" element={<CareersPage />} />
-        <Route path="/blog" element={<BlogPage />} />
-        <Route path="/terms" element={<TermsOfServicePage />} />
-        
         {/* Protected Routes - Original */}
         <Route 
           path="/home" 
@@ -126,14 +116,8 @@ function App() {
           path="/profile" 
           element={<Profile />} 
         />
-        <Route 
-          path="/events" 
-          element={<Events />} 
-        />
-        <Route 
-          path="/appointment" 
-          element={<Appointment />} 
-        />
+      
+       
        
         
         {/* New dedicated pages */}
@@ -163,10 +147,7 @@ function App() {
           path="/edit-profile" 
           element={<EditProfilePage />} 
         />
-        <Route 
-          path="/change-password" 
-          element={<PasswordChangePage />} 
-        />
+        
         <Route 
           path="/delete-account" 
           element={<DeleteAccountPage />} 

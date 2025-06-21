@@ -5,7 +5,7 @@ import Avatar from '../components/ui/Avatar'
 import Button from '../components/ui/Button'
 import Badge from '../components/ui/Badge'
 import { SkeletonCard } from '../components/ui/Skeleton'
-import { TrendingUp, Users, Calendar, MapPin, Star, Plus, Mic, Bookmark, UserPlus, X, Clock, Siren as Fire, Hash, Stethoscope, MessageCircle, ExternalLink, ImageOff, MoreVertical, Settings } from 'lucide-react'
+import { TrendingUp, Users, Calendar, MapPin, Star, Plus, Mic, Bookmark, UserPlus, X, Clock, Siren as Fire, Hash, Stethoscope, MessageCircle, ExternalLink, ImageOff, MoreVertical, Settings, Cat, Dog, Check, AlertCircle, Loader2 } from 'lucide-react'
 import { designTokens } from '../design-system/tokens'
 import { useNavigate, Link, useParams } from 'react-router-dom'
 import { getCurrentUser, getUserProfile, getUserPets, createPost } from '../utils/auth'
@@ -352,6 +352,249 @@ const UpcomingEventsCard = () => {
   );
 };
 
+// PollCard component (plain React + lucide-react icons)
+const PollCard = ({
+  title = "What's your favorite pet?",
+  options = [
+    { id: 'cat', label: 'Cat', icon: <Cat size={20} />, votes: 342 },
+    { id: 'dog', label: 'Dog', icon: <Dog size={20} />, votes: 458 }
+  ],
+  totalVotes = 800,
+  hasVoted = false,
+  isLoading = false,
+  error = '',
+  onVote = () => {},
+  className = ''
+}: {
+  title?: string;
+  options?: { id: string; label: string; icon: React.ReactNode; votes: number }[];
+  totalVotes?: number;
+  hasVoted?: boolean;
+  isLoading?: boolean;
+  error?: string;
+  onVote?: (optionId: string) => void;
+  className?: string;
+}) => {
+  const [selectedOption, setSelectedOption] = React.useState(null);
+  const [animatedVotes, setAnimatedVotes] = React.useState({});
+  const [showResults, setShowResults] = React.useState(hasVoted);
+  const [loading, setLoading] = React.useState(false);
+  const [pollError, setPollError] = React.useState('');
+
+  // Fetch user's vote on mount
+  React.useEffect(() => {
+    const fetchUserVote = async () => {
+      setLoading(true);
+      setPollError('');
+      try {
+        const user = await supabase.auth.getUser();
+        if (user.data.user) {
+          const { data, error } = await supabase
+            .from('pet_votes')
+            .select('animal')
+            .eq('user_id', user.data.user.id)
+            .single();
+          if (data && data.animal) {
+            setSelectedOption(data.animal);
+            setShowResults(true);
+          }
+        }
+      } catch (err) {
+        setPollError('Could not fetch your vote.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUserVote();
+  }, []);
+
+  React.useEffect(() => {
+    const initialVotes = {};
+    options.forEach(option => {
+      initialVotes[option.id] = showResults ? option.votes : 0;
+    });
+    setAnimatedVotes(initialVotes);
+    if (showResults) {
+      const timer = setTimeout(() => {
+        const finalVotes = {};
+        options.forEach(option => {
+          finalVotes[option.id] = option.votes;
+        });
+        setAnimatedVotes(finalVotes);
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [options, showResults]);
+
+  const handleVote = async (optionId) => {
+    if (selectedOption || loading) return;
+    setSelectedOption(optionId);
+    setShowResults(true);
+    setLoading(true);
+    setPollError('');
+    try {
+      const user = await supabase.auth.getUser();
+      if (user.data.user) {
+        await supabase
+          .from('pet_votes')
+          .upsert({ user_id: user.data.user.id, animal: optionId }, { onConflict: 'user_id' });
+      }
+    } catch (err) {
+      setPollError('Could not submit your vote.');
+    } finally {
+      setLoading(false);
+    }
+    setTimeout(() => {
+      const updatedVotes = {};
+      options.forEach(option => {
+        updatedVotes[option.id] = option.id === optionId ? option.votes + 1 : option.votes;
+      });
+      setAnimatedVotes(updatedVotes);
+    }, 300);
+    onVote(optionId);
+  };
+
+  const getPercentage = (votes) => {
+    if (totalVotes === 0) return 0;
+    return Math.round((votes / totalVotes) * 100);
+  };
+
+  const handleKeyDown = (event, optionId) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      handleVote(optionId);
+    }
+  };
+
+  const catPercent = totalVotes === 0 ? 0 : Math.round((animatedVotes['cat'] / totalVotes) * 100);
+  const dogPercent = totalVotes === 0 ? 0 : Math.round((animatedVotes['dog'] / totalVotes) * 100);
+
+  return (
+    <div style={{ width: 260, height: 220, margin: '24px auto 0', padding: 12, background: '#23232a', border: '1px solid #333', boxShadow: '0 2px 8px rgba(0,0,0,0.10)', borderRadius: 12 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+        {/* Header */}
+        <div style={{ textAlign: 'center', marginBottom: 8 }}>
+          <h3 style={{ fontSize: 18, fontWeight: 600, color: '#fff', margin: 0 }}>{title}</h3>
+          {showResults && (
+            <span style={{ fontSize: 12, color: '#a3a3a3', background: '#333', borderRadius: 8, padding: '2px 8px', marginTop: 4, display: 'inline-block' }}>{totalVotes.toLocaleString()} total votes</span>
+          )}
+        </div>
+        {/* Error Message */}
+        {error && (
+          <div style={{ color: '#ef4444', background: '#2d1a1a', border: '1px solid #ef4444', borderRadius: 8, padding: 8, marginBottom: 8, display: 'flex', alignItems: 'center' }}>
+            <AlertCircle size={16} style={{ marginRight: 6 }} />
+            <span>{error}</span>
+          </div>
+        )}
+        {/* Poll Options */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8, justifyContent: 'center' }}>
+          {options.map((option) => {
+            const votesArray = Object.values(animatedVotes) as number[];
+            const percentage = getPercentage(Number(animatedVotes[option.id] || 0));
+            const isSelected = selectedOption === option.id;
+            const isWinning = showResults && Number(animatedVotes[option.id] || 0) === Math.max(...(votesArray.length > 0 ? votesArray : [0]));
+            return (
+              <div key={option.id} style={{ position: 'relative', marginBottom: 4 }}>
+                {!showResults ? (
+                  <button
+                    style={{
+                      width: '100%',
+                      padding: '10px 12px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 8,
+                      border: '1px solid #444',
+                      borderRadius: 8,
+                      background: isSelected ? '#6366F1' : '#18181b',
+                      color: '#fff',
+                      fontSize: 15,
+                      fontWeight: 500,
+                      cursor: hasVoted || isLoading ? 'not-allowed' : 'pointer',
+                      opacity: hasVoted || isLoading ? 0.5 : 1,
+                      transition: 'background 0.2s',
+                    }}
+                    onClick={() => handleVote(option.id)}
+                    onKeyDown={(e) => handleKeyDown(e, option.id)}
+                    disabled={hasVoted || isLoading}
+                    aria-label={`Vote for ${option.label}`}
+                  >
+                    {isLoading && isSelected ? (
+                      <Loader2 size={16} className="animate-spin" />
+                    ) : (
+                      <span style={{ width: 20, height: 20 }}>{option.icon}</span>
+                    )}
+                    <span>{option.label}</span>
+                  </button>
+                ) : (
+                  <div
+                    style={{
+                      position: 'relative',
+                      width: '100%',
+                      padding: '10px 12px',
+                      borderRadius: 8,
+                      border: isWinning ? '2px solid #6366F1' : '1px solid #444',
+                      background: isWinning ? 'rgba(99,102,241,0.08)' : '#18181b',
+                      marginBottom: 2,
+                      zIndex: 1,
+                    }}
+                  >
+                    {/* Background Progress */}
+                    <div style={{
+                      position: 'absolute',
+                      inset: 0,
+                      borderRadius: 8,
+                      overflow: 'hidden',
+                      zIndex: 0,
+                    }}>
+                      <div
+                        style={{
+                          height: '100%',
+                          width: `${percentage}%`,
+                          background: isWinning ? 'rgba(99,102,241,0.15)' : '#23232a',
+                          transition: 'width 1s',
+                        }}
+                      />
+                    </div>
+                    {/* Content */}
+                    <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-between', zIndex: 1 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        {isSelected && <Check size={14} color="#6366F1" />}
+                        <span style={{ width: 20, height: 20 }}>{option.icon}</span>
+                        <span style={{ fontWeight: 500 }}>{option.label}</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <span style={{
+                          fontSize: 20,
+                          fontWeight: 700,
+                          color: '#fff',
+                          marginRight: 4,
+                          letterSpacing: 0.5,
+                          minWidth: 36,
+                          textAlign: 'right',
+                          textShadow: '0 1px 4px #000',
+                        }}>{Number(animatedVotes[option.id] || 0).toLocaleString()}</span>
+                        <span style={{
+                          fontSize: 20,
+                          fontWeight: 800,
+                          color: isWinning ? '#6366F1' : '#a3a3a3',
+                          minWidth: 40,
+                          textAlign: 'center',
+                          textShadow: isWinning ? '0 1px 8px #6366F1' : '0 1px 4px #000',
+                          letterSpacing: 1,
+                        }}>{percentage}%</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 function EnhancedHome() {
   const [posts, setPosts] = useState<PostData[]>([])
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -444,10 +687,9 @@ function EnhancedHome() {
       const user = await getCurrentUser();
       if (!user) throw new Error('Not logged in');
       // Upsert vote (one per user)
-      const { error } = await supabase
+      await supabase
         .from('pet_votes')
         .upsert({ user_id: user.id, animal: animalIdToName[animalId] }, { onConflict: 'user_id' });
-      if (error) throw error;
       setSelectedAnimal(animalId);
       setShowConfetti(true);
       setShowThankYou(true);
@@ -533,6 +775,8 @@ function EnhancedHome() {
       const transformedPosts = (postsData || []).map(post => {
         const userProfile = profilesMap.get(post.user_id);
         const userPets = petsMap.get(post.user_id);
+
+        console.log('User ID for post:', post.user_id);
 
         return {
           id: post.id,
@@ -1192,6 +1436,17 @@ function EnhancedHome() {
             </div>
             {/* Upcoming Events Card */}
             <UpcomingEventsCard />
+            <PollCard
+              options={[
+                { id: 'cat', label: 'Cat', icon: <Cat size={20} />, votes: votes['1'] || 0 },
+                { id: 'dog', label: 'Dog', icon: <Dog size={20} />, votes: votes['2'] || 0 }
+              ]}
+              totalVotes={totalVotes}
+              hasVoted={!!selectedAnimal}
+              isLoading={loadingVotes}
+              error={voteError || undefined}
+              onVote={handleVote}
+            />
           </div>
         )}
       </div>
