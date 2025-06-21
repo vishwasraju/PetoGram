@@ -5,7 +5,7 @@ import Avatar from '../components/ui/Avatar'
 import Button from '../components/ui/Button'
 import Badge from '../components/ui/Badge'
 import { SkeletonCard } from '../components/ui/Skeleton'
-import { TrendingUp, Users, Calendar, MapPin, Star, Plus, Mic, Bookmark, UserPlus, X, Clock, Siren as Fire, Hash, Stethoscope, MessageCircle, ExternalLink, ImageOff, MoreVertical } from 'lucide-react'
+import { TrendingUp, Users, Calendar, MapPin, Star, Plus, Mic, Bookmark, UserPlus, X, Clock, Siren as Fire, Hash, Stethoscope, MessageCircle, ExternalLink, ImageOff, MoreVertical, Settings } from 'lucide-react'
 import { designTokens } from '../design-system/tokens'
 import { useNavigate, Link, useParams } from 'react-router-dom'
 import { getCurrentUser, getUserProfile, getUserPets, createPost } from '../utils/auth'
@@ -930,7 +930,8 @@ function EnhancedHome() {
               {[ 
                 { icon: <Calendar size={20} />, label: 'Events', path: '/events-page' },
                 { icon: <Stethoscope size={20} />, label: 'Appointment', path: '/appointment-page' },
-                { icon: '⚙️', label: 'Settings', path: '/settings' },
+                { icon: <MessageCircle size={20} />, label: 'Messages', path: '/chat' },
+                { icon: <Settings size={20} />, label: 'Settings', path: '/settings' },
               ].map((item, index) => (
                 <Link 
                   to={item.path}
@@ -956,7 +957,7 @@ function EnhancedHome() {
                   e.currentTarget.style.backgroundColor = 'transparent'
                   e.currentTarget.style.color = '#9CA3AF'
                 }}>
-                  <span style={{ fontSize: '18px' }}>{item.icon}</span>
+                  {item.icon}
                   <span style={{ fontSize: '14px', fontWeight: '500' }}>{item.label}</span>
                 </Link>
               ))}
@@ -1180,29 +1181,12 @@ function EnhancedHome() {
                 {/* Message Button */}
                 <button
                   onClick={() => navigate('/chat')}
+                  className="p-3 rounded-full bg-gray-800 hover:bg-gray-700 transition-colors"
                   style={{
-                    background: '#6366F1',
-                    border: 'none',
-                    cursor: 'pointer',
-                    color: '#fff',
-                    padding: '10px',
-                    borderRadius: '50%',
-                    boxShadow: '0 2px 8px rgba(99,102,241,0.18)',
-                    position: 'relative',
-                    transition: 'background 0.2s, box-shadow 0.2s',
-                  }}
-                  title="Messages"
-                  onMouseEnter={e => {
-                    e.currentTarget.style.background = '#4F46E5';
-                    e.currentTarget.style.boxShadow = '0 4px 16px rgba(99,102,241,0.28)';
-                  }}
-                  onMouseLeave={e => {
-                    e.currentTarget.style.background = '#6366F1';
-                    e.currentTarget.style.boxShadow = '0 2px 8px rgba(99,102,241,0.18)';
+                    animation: 'glow 2s infinite'
                   }}
                 >
-                  {/* Message Icon */}
-                  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                  <MessageCircle size={24} />
                 </button>
               </div>
             </div>
@@ -1244,6 +1228,16 @@ function EnhancedHome() {
           loading={socialCardLoading}
         />
       </Modal>
+      <style>{`
+        @keyframes glow {
+          0%, 100% {
+            box-shadow: 0 0 5px 2px rgba(192, 132, 252, 0.2);
+          }
+          50% {
+            box-shadow: 0 0 15px 5px rgba(192, 132, 252, 0.4);
+          }
+        }
+      `}</style>
     </>
   )
 }
