@@ -1,21 +1,16 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import { BrowserRouter } from 'react-router-dom'
 import App from './App.tsx'
 import './index.css'
+import { BrowserRouter } from 'react-router-dom'
 
-// Configure future flags for React Router v7 compatibility
-const router = {
-  future: {
-    v7_startTransition: true,
-    v7_relativeSplatPath: true
-  }
+// Disable React DevTools message in console
+if (typeof (window as any).__REACT_DEVTOOLS_GLOBAL_HOOK__ === 'object') {
+  (window as any).__REACT_DEVTOOLS_GLOBAL_HOOK__.inject = function() {};
 }
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <BrowserRouter future={router.future}>
-      <App />
-    </BrowserRouter>
-  </React.StrictMode>,
+  <BrowserRouter>
+    <App />
+  </BrowserRouter>
 )

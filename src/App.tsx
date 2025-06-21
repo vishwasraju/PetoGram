@@ -19,6 +19,7 @@ import ProfileInfoCardPage from './pages/ProfileInfoCardPage'
 import ChatPage from './pages/ChatPage'
 import { isAuthenticated } from './utils/auth'
 import { supabase } from './utils/supabase'
+import BoltBadge from './components/BoltBadge'
 
 function App() {
   const [isAuth, setIsAuth] = useState(false)
@@ -100,6 +101,7 @@ function App() {
 
   return (
     <div>
+      <BoltBadge />
       <Routes>
         {/* Public Routes */}
         <Route 

@@ -279,7 +279,7 @@ export default function SettingsPage() {
             textAlign: isMobile ? 'center' : 'left',
           }}>
             <img 
-              src="https://images.pexels.com/photos/1036622/pexels-photo-1036622.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2"
+              src={userProfile?.profile_picture || `https://ui-avatars.com/api/?name=${encodeURIComponent(userProfile?.username || 'U')}&background=random`}
               alt="Profile"
               style={{
                 width: isMobile ? '60px' : '80px',
