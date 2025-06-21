@@ -17,6 +17,7 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
   const [selectedPetType, setSelectedPetType] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(0); // For the pet type slider
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+  const [profileImage, setProfileImage] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -31,6 +32,7 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
   const [registeredUserId, setRegisteredUserId] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const profileFileInputRef = useRef<HTMLInputElement>(null);
 
   if (!isOpen) return null;
 
@@ -76,15 +78,9 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
 
   const validateStep2 = () => {
     const newErrors: Record<string, string> = {};
-
     if (!selectedPetType) {
       newErrors.petType = 'Please select a pet type';
     }
-
-    if (!formData.petName.trim()) {
-      newErrors.petName = 'Pet name is required';
-    }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -164,6 +160,17 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
     }
   };
 
+  const handleProfileImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfileImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleUploadClick = () => {
     fileInputRef.current?.click();
   };
@@ -173,24 +180,19 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
       console.log('Step 2 validation failed:', errors);
       return;
     }
-
     if (!registeredUserId) {
       setErrors({ general: 'User not registered. Please go back to Step 1.' });
       return;
     }
-
     setIsLoading(true);
     setErrors({});
-
     try {
-      console.log('Attempting to create user profile and pet...');
-
-      // Create user profile
+      // Only create user profile, skip pet creation
       await createUserProfile({
         user_id: registeredUserId,
         username: formData.username,
         bio: formData.bio,
-        profile_picture: '',
+        profile_picture: profileImage || '',
         location: '',
         phone: '',
         website: '',
@@ -202,20 +204,8 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
         interests: [],
         is_public: true,
         show_email: false,
+        pet_type: selectedPetType,
       });
-
-      // Create user pet
-      await createUserPets(registeredUserId, [
-        {
-          name: formData.petName,
-          type: selectedPetType || '',
-          breed: '',
-          age: '',
-          photo: uploadedImage || '',
-        },
-      ]);
-
-      // Set authentication state after successful profile and pet creation
       setAuthenticationState({
         id: registeredUserId,
         email: formData.email,
@@ -223,14 +213,12 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
           full_name: formData.username,
         },
       });
-
       setIsLoading(false);
       onConfirm();
-
     } catch (error) {
-      console.error('Profile/Pet creation error:', error);
+      console.error('Profile creation error:', error);
       setIsLoading(false);
-      setErrors({ general: 'An error occurred during profile/pet creation.' });
+      setErrors({ general: 'An error occurred during profile creation.' });
     }
   };
 
@@ -240,6 +228,7 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
     setSelectedPetType(null);
     setCurrentPage(0);
     setUploadedImage(null);
+    setProfileImage(null);
     setRegisteredUserId(null);
     setFormData({
       username: '',
@@ -491,6 +480,67 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
               )}
             </div>
             
+            {/* Profile Pic Upload as Card */}
+            <div style={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              marginBottom: 16,
+            }}>
+              <div
+                onClick={() => profileFileInputRef.current?.click()}
+                style={{
+                  cursor: 'pointer',
+                  background: '#18181b',
+                  border: '1.5px solid #363636',
+                  borderRadius: 12,
+                  padding: 18,
+                  minWidth: 120,
+                  minHeight: 120,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.10)',
+                  transition: 'box-shadow 0.2s',
+                }}
+              >
+                {profileImage ? (
+                  <img src={profileImage} alt="Profile" style={{ width: 60, height: 60, borderRadius: '50%', marginBottom: 8, objectFit: 'cover', border: '2px solid #6366F1' }} />
+                ) : (
+                  <span style={{ color: '#8e8e8e', fontSize: 15, textAlign: 'center' }}>Upload profile pic</span>
+                )}
+                <input
+                  type="file"
+                  accept="image/*"
+                  style={{ display: 'none' }}
+                  ref={profileFileInputRef}
+                  onChange={handleProfileImageUpload}
+                />
+              </div>
+            </div>
+            
+            <div>
+              <textarea
+                name="bio"
+                placeholder="Write a short bio..."
+                value={formData.bio}
+                onChange={handleInputChange}
+                style={{
+                  width: '100%',
+                  padding: '8px',
+                  backgroundColor: '#1a1a1a',
+                  border: '1px solid #363636',
+                  borderRadius: '4px',
+                  color: '#fff',
+                  fontSize: '13px',
+                  outline: 'none',
+                  boxSizing: 'border-box',
+                  marginBottom: '8px'
+                }}
+                rows={2}
+              />
+            </div>
+            
             <button
               type="submit"
               disabled={isLoading}
@@ -626,106 +676,6 @@ const SignupModal: React.FC<SignupModalProps> = ({ isOpen, onClose, onConfirm })
               >
                 <ChevronRight size={24} />
               </button>
-            </div>
-
-            <div style={{ marginBottom: '12px' }}>
-              <label htmlFor="petName" style={{ display: 'block', color: '#e0e0e0', marginBottom: '4px', fontSize: '11px' }}>Pet Name</label>
-              <input 
-                type="text" 
-                id="petName" 
-                name="petName"
-                placeholder="Pet's Name" 
-                value={formData.petName}
-                onChange={handleInputChange}
-                style={{
-                  width: '100%',
-                  padding: '8px',
-                  backgroundColor: '#1a1a1a',
-                  border: `1px solid ${errors.petName ? '#ff4444' : '#363636'}`,
-                  borderRadius: '4px',
-                  color: '#fff',
-                  fontSize: '13px',
-                  outline: 'none',
-                  boxSizing: 'border-box',
-                }}
-              />
-              {errors.petName && (
-                <div style={{ color: '#ff4444', fontSize: '9px', marginTop: '2px' }}>
-                  {errors.petName}
-                </div>
-              )}
-            </div>
-
-            <div style={{
-              display: 'flex',
-              gap: '12px',
-              marginBottom: '20px',
-              alignItems: 'flex-start',
-            }}>
-              <div 
-                style={{
-                  flexShrink: 0,
-                  width: '80px',
-                  height: '80px',
-                  borderRadius: '50%',
-                  backgroundColor: uploadedImage ? 'transparent' : '#363636',
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  cursor: 'pointer',
-                  border: '2px dashed #8e8e8e',
-                  overflow: 'hidden',
-                  transition: 'background-color 0.2s ease, border-color 0.2s ease',
-                }}
-                onClick={handleUploadClick}
-              >
-                {uploadedImage ? (
-                  <img 
-                    src={uploadedImage} 
-                    alt="Uploaded Pet" 
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'cover',
-                      borderRadius: '50%',
-                    }}
-                  />
-                ) : (
-                  <span style={{ color: '#8e8e8e', fontSize: '10px', textAlign: 'center' }}>Upload pic</span>
-                )}
-                <input 
-                  type="file" 
-                  id="petAvatar" 
-                  accept="image/*" 
-                  style={{ display: 'none' }}
-                  ref={fileInputRef}
-                  onChange={handleImageUpload}
-                />
-              </div>
-
-              <div style={{ flexGrow: 1 }}>
-                <label htmlFor="aboutPet" style={{ display: 'block', color: '#e0e0e0', marginBottom: '4px', fontSize: '11px' }}>About pet</label>
-                <textarea 
-                  id="aboutPet" 
-                  name="aboutPet"
-                  placeholder="Tell us about your pet..." 
-                  rows={4}
-                  value={formData.aboutPet}
-                  onChange={handleInputChange}
-                  style={{
-                    width: '100%',
-                    padding: '8px',
-                    backgroundColor: '#1a1a1a',
-                    border: '1px solid #363636',
-                    borderRadius: '4px',
-                    color: '#fff',
-                    fontSize: '12px',
-                    outline: 'none',
-                    resize: 'vertical',
-                    boxSizing: 'border-box',
-                  }}
-                />
-              </div>
             </div>
 
             <button

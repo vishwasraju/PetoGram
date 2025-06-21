@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ArrowLeft, Stethoscope, Calendar, Clock, MapPin, User, Phone, Plus, Search, Filter } from 'lucide-react'
 import { designTokens } from '../design-system/tokens'
@@ -6,12 +6,19 @@ import Modal from '../components/ui/Modal'
 
 export default function AppointmentPage() {
   const [activeTab, setActiveTab] = useState('booknew')
-  const [showVetQuestion, setShowVetQuestion] = useState(true)
+  const [showVetQuestion, setShowVetQuestion] = useState(false)
   const [showContactModal, setShowContactModal] = useState(false)
   const [contactInfo, setContactInfo] = useState({ email: '', phone: '' })
   const [contactError, setContactError] = useState('')
   const [contactSuccess, setContactSuccess] = useState(false)
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
   const navigate = useNavigate()
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768)
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   const availableSlots = [
     { time: '9:00 AM', available: true },
@@ -266,25 +273,6 @@ export default function AppointmentPage() {
         
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <button style={{
-            padding: '8px',
-            backgroundColor: 'transparent',
-            border: 'none',
-            color: '#9CA3AF',
-            cursor: 'pointer',
-            borderRadius: '8px',
-            transition: 'all 0.2s ease',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = '#333'
-            e.currentTarget.style.color = '#fff'
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = 'transparent'
-            e.currentTarget.style.color = '#9CA3AF'
-          }}>
-            <Search size={20} />
-          </button>
-          <button style={{
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
@@ -310,7 +298,7 @@ export default function AppointmentPage() {
       <div style={{
         maxWidth: '1200px',
         margin: '0 auto',
-        padding: '24px',
+        padding: isMobile ? '24px 0' : '24px',
       }}>
         {/* Appointment Tabs */}
         <div style={{
@@ -318,6 +306,7 @@ export default function AppointmentPage() {
           gap: '16px',
           marginBottom: '32px',
           borderBottom: '1px solid #333',
+          padding: isMobile ? '0 16px' : '0',
         }}>
           {['Book New'].map((tab, index) => (
             <button
@@ -346,8 +335,8 @@ export default function AppointmentPage() {
             {/* Available Veterinarians */}
             <div style={{
               backgroundColor: '#111',
-              borderRadius: '16px',
-              padding: '24px',
+              borderRadius: isMobile ? 0 : '16px',
+              padding: isMobile ? '16px' : '24px',
               border: '1px solid #333',
             }}>
               <h2 style={{
@@ -361,7 +350,7 @@ export default function AppointmentPage() {
               
               <div style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+                gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(300px, 1fr))',
                 gap: '20px',
               }}>
                 {veterinarians.map((vet) => (
@@ -487,6 +476,78 @@ export default function AppointmentPage() {
                     </div>
                   </div>
                 ))}
+                {/* Vet-specific CTA card */}
+                <div style={{
+                  padding: '20px',
+                  backgroundColor: '#222',
+                  borderRadius: '12px',
+                  transition: 'all 0.2s ease',
+                  border: '1px solid #333',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  textAlign: 'center',
+                  minHeight: '260px',
+                  gap: '16px',
+                }}>
+                  <Stethoscope size={40} color="#10B981" />
+                  <h3 style={{
+                    margin: '0',
+                    fontSize: '20px',
+                    fontWeight: '600',
+                    color: '#fff',
+                  }}>Are you a vet?</h3>
+                  <p style={{
+                    margin: 0,
+                    color: '#9CA3AF',
+                    fontSize: '14px',
+                    lineHeight: 1.5,
+                  }}>
+                    If you're a veterinarian looking to join our platform, we'd love to hear from you!
+                  </p>
+                  <button
+                    onClick={handleVetCardClick}
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      backgroundColor: '#6366F1',
+                      border: 'none',
+                      borderRadius: '8px',
+                      color: '#fff',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      transition: 'background 0.2s ease',
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#4F46E5'}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#6366F1'}>
+                    Contact Us
+                  </button>
+                  <button
+                    onClick={() => { /* Handle pet owner action */ }}
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      backgroundColor: 'transparent',
+                      border: '1px solid #444',
+                      borderRadius: '8px',
+                      color: '#9CA3AF',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                    }}
+                     onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = '#333'
+                      e.currentTarget.style.color = '#fff'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'transparent'
+                      e.currentTarget.style.color = '#9CA3AF'
+                    }}
+                  >
+                    No, I'm a pet owner
+                  </button>
+                </div>
               </div>
             </div>
           </div>

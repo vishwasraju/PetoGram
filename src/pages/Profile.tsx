@@ -21,7 +21,8 @@ import {
   Image as ImageIcon,
   Video,
   Tag,
-  X
+  X,
+  Trash2
 } from 'lucide-react'
 import Avatar from '../components/ui/Avatar'
 import Button from '../components/ui/Button'
@@ -146,6 +147,13 @@ export default function Profile() {
   const [isFollowing, setIsFollowing] = useState(false)
   const isOwnProfile = currentUser && profile && currentUser.id === profile.user_id
   const [showProfileCard, setShowProfileCard] = useState(false)
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     if (profileId) {
@@ -367,6 +375,39 @@ export default function Profile() {
     fetchInitialCurrentUser();
   }, []);
 
+  const handleDeletePost = async (postId: string) => {
+    if (!window.confirm('Are you sure you want to delete this post? This action cannot be undone.')) {
+      return;
+    }
+    
+    try {
+      // 1. Delete associated comments
+      const { error: commentsError } = await supabase
+        .from('comments')
+        .delete()
+        .eq('post_id', postId);
+        
+      if (commentsError) throw new Error(`Failed to delete comments: ${commentsError.message}`);
+
+      // 2. Delete the post itself
+      const { error: postError } = await supabase
+        .from('posts')
+        .delete()
+        .eq('id', postId);
+
+      if (postError) throw new Error(`Failed to delete post: ${postError.message}`);
+
+      // 3. Update the local state to reflect the deletion
+      setPosts(currentPosts => currentPosts.filter(post => post.id !== postId));
+
+      console.log(`Post ${postId} and its associated data have been deleted.`);
+
+    } catch (error) {
+      console.error('Error deleting post:', error);
+      alert('Failed to delete the post. Please try again.');
+    }
+  };
+
   if (loading && !profile) {
     return (
       <div style={{ minHeight: '100vh', backgroundColor: '#2A2D3A', color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -408,6 +449,8 @@ export default function Profile() {
       minHeight: '100vh',
       backgroundColor: '#000',
       color: '#fff',
+      maxWidth: '100vw',
+      overflowX: 'hidden',
     }}>
       {/* Header */}
       <div style={{
@@ -418,7 +461,7 @@ export default function Profile() {
         zIndex: 100,
         padding: `${designTokens.spacing[4]} ${designTokens.spacing[6]}`,
         display: 'flex',
-        justifyContent: 'flex-start',
+        justifyContent: 'space-between',
         alignItems: 'center',
       }}>
         <Link 
@@ -438,27 +481,44 @@ export default function Profile() {
           <ArrowLeft size={24} />
           <span>Back</span>
         </Link>
+        {isMobile && isOwnProfile && (
+          <button
+            onClick={() => navigate('/settings')}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: '#9CA3AF',
+              cursor: 'pointer',
+              padding: '4px'
+            }}
+          >
+            <Settings size={24} />
+          </button>
+        )}
       </div>
 
       {/* Main Content */}
       <div style={{
         maxWidth: '1200px',
         margin: '0 auto',
-        padding: designTokens.spacing[6],
+        padding: isMobile ? designTokens.spacing[2] : designTokens.spacing[6],
+        boxSizing: 'border-box',
+        width: '100%',
       }}>
         {/* Profile Header Section */}
-        <Card style={{ marginBottom: designTokens.spacing[6], backgroundColor: '#111', border: '1px solid #333' }}>
+        <Card style={{ marginBottom: designTokens.spacing[6], backgroundColor: '#111', border: '1px solid #333', width: '100%', boxSizing: 'border-box' }}>
           <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'auto 1fr auto',
-            gap: designTokens.spacing[8],
-            alignItems: 'start',
+            display: isMobile ? 'flex' : 'grid',
+            flexDirection: 'column',
+            gridTemplateColumns: isMobile ? '1fr' : 'auto 1fr auto',
+            gap: isMobile ? designTokens.spacing[4] : designTokens.spacing[8],
+            alignItems: 'center',
           }}>
             {/* Profile Picture */}
             <div style={{ position: 'relative' }}>
               <div style={{
-                width: '150px',
-                height: '150px',
+                width: isMobile ? '120px' : '150px',
+                height: isMobile ? '120px' : '150px',
                 borderRadius: '50%',
                 background: `linear-gradient(45deg, ${designTokens.colors.primary[500]}, ${designTokens.colors.primary[600]})`,
                 padding: '4px',
@@ -466,12 +526,12 @@ export default function Profile() {
                 alignItems: 'center',
                 justifyContent: 'center',
               }}>
-                <img 
+                <img
                   src={profile?.profile_picture || 'https://images.pexels.com/photos/1036622/pexels-photo-1036622.jpeg?auto=compress&cs=tinysrgb&w=300&h=300&dpr=2'}
                   alt={profile?.username || 'Profile'}
                   style={{
-                    width: '142px',
-                    height: '142px',
+                    width: isMobile ? '112px' : '142px',
+                    height: isMobile ? '112px' : '142px',
                     borderRadius: '50%',
                     objectFit: 'cover',
                     border: `3px solid #000`,
@@ -499,7 +559,7 @@ export default function Profile() {
             </div>
 
             {/* Profile Info */}
-            <div style={{ flex: 1 }}>
+            <div style={{ flex: 1, width: '100%', textAlign: isMobile ? 'center' : 'left' }}>
               <div style={{
                 display: 'flex',
                 flexDirection: 'row',
@@ -510,7 +570,7 @@ export default function Profile() {
                 <div style={{ flex: 1 }}>
                   <h2 style={{
                     margin: 0,
-                    fontSize: designTokens.typography.fontSize['3xl'],
+                    fontSize: isMobile ? designTokens.typography.fontSize['2xl'] : designTokens.typography.fontSize['3xl'],
                     fontWeight: designTokens.typography.fontWeight.bold,
                     color: '#fff',
                     fontFamily: designTokens.typography.fontFamily.display.join(', '),
@@ -531,15 +591,12 @@ export default function Profile() {
               {/* Stats */}
               <div style={{
                 display: 'flex',
-                gap: designTokens.spacing[8],
-                marginBottom: designTokens.spacing[4],
+                gap: designTokens.spacing[6],
+                marginTop: designTokens.spacing[4],
+                justifyContent: isMobile ? 'center' : 'flex-start',
               }}>
                 <div style={{ textAlign: 'center' }}>
-                  <div style={{
-                    fontSize: designTokens.typography.fontSize['2xl'],
-                    fontWeight: designTokens.typography.fontWeight.bold,
-                    color: '#fff',
-                  }}>
+                  <div style={{ fontSize: designTokens.typography.fontSize.lg, fontWeight: designTokens.typography.fontWeight.bold, color: '#fff' }}>
                     {posts.length.toLocaleString()}
                   </div>
                   <div style={{
@@ -551,11 +608,7 @@ export default function Profile() {
                   </div>
                 </div>
                 <div style={{ textAlign: 'center' }}>
-                  <div style={{
-                    fontSize: designTokens.typography.fontSize['2xl'],
-                    fontWeight: designTokens.typography.fontWeight.bold,
-                    color: '#fff',
-                  }}>
+                  <div style={{ fontSize: designTokens.typography.fontSize.lg, fontWeight: designTokens.typography.fontWeight.bold, color: '#fff' }}>
                     {followersCount.toLocaleString()}
                   </div>
                   <div style={{
@@ -567,11 +620,7 @@ export default function Profile() {
                   </div>
                 </div>
                 <div style={{ textAlign: 'center' }}>
-                  <div style={{
-                    fontSize: designTokens.typography.fontSize['2xl'],
-                    fontWeight: designTokens.typography.fontWeight.bold,
-                    color: '#fff',
-                  }}>
+                  <div style={{ fontSize: designTokens.typography.fontSize.lg, fontWeight: designTokens.typography.fontWeight.bold, color: '#fff' }}>
                     {followingCount.toLocaleString()}
                   </div>
                   <div style={{
@@ -584,52 +633,41 @@ export default function Profile() {
                 </div>
               </div>
 
-              {/* Bio */}
-              <div style={{ marginBottom: designTokens.spacing[4] }}>
+              {/* Bio & Location/Joined Date */}
+              <div style={{ marginTop: designTokens.spacing[4] }}>
                 <p style={{
-                  margin: 0,
-                  fontSize: designTokens.typography.fontSize.base,
-                  color: '#E5E7EB',
-                  lineHeight: designTokens.typography.lineHeight.relaxed,
-                  marginBottom: designTokens.spacing[2],
+                  margin: '0 0 16px 0',
+                  fontSize: designTokens.typography.fontSize.sm,
+                  color: '#d1d5db',
+                  lineHeight: 1.6,
+                  fontFamily: designTokens.typography.fontFamily.sans.join(', '),
                 }}>
-                  {profile?.bio || 'Pet lover sharing amazing moments with my furry friends! 🐕🐱'}
+                  {profile?.bio || 'No bio yet.'}
                 </p>
-                
                 <div style={{
                   display: 'flex',
-                  alignItems: 'center',
                   gap: designTokens.spacing[4],
-                  fontSize: designTokens.typography.fontSize.sm,
                   color: '#9CA3AF',
+                  fontSize: designTokens.typography.fontSize.sm,
+                  justifyContent: isMobile ? 'center' : 'flex-start',
                 }}>
-                  {profile?.location && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: designTokens.spacing[1] }}>
-                      <MapPin size={16} />
-                      <span>{profile.location}</span>
-                    </div>
-                  )}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: designTokens.spacing[1] }}>
-                    <Calendar size={16} />
-                    <span>Joined {new Date(profile?.created_at || Date.now()).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</span>
-                  </div>
+                  {profile?.location && <span style={{ display: 'flex', alignItems: 'center', gap: designTokens.spacing[1] }}><MapPin size={16} />{profile.location}</span>}
+                  {profile?.created_at && <span style={{ display: 'flex', alignItems: 'center', gap: designTokens.spacing[1] }}><Calendar size={16} />Joined {new Date(profile.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</span>}
                 </div>
               </div>
             </div>
 
             {/* Action Buttons */}
-            <div style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: designTokens.spacing[3],
-              minWidth: '200px',
-            }}>
+            <div style={{ justifySelf: isMobile ? 'stretch' : 'end', width: isMobile ? '100%' : 'auto', display: 'flex', justifyContent: 'center', marginTop: isMobile ? '16px' : '0' }}>
               {isOwnProfile ? (
                 <Button 
                   variant="primary" 
                   size="lg" 
                   style={{ width: '100%' }}
-                  onClick={() => navigate('/edit-profile')}
+                  onClick={() => { 
+                    console.log('Edit Profile clicked'); 
+                    navigate('/edit-profile'); 
+                  }}
                 >
                   <Edit3 size={18} />
                   <span>Edit Profile</span>
@@ -734,6 +772,31 @@ export default function Profile() {
                       cursor: 'pointer',
                     }}
                   >
+                    {isOwnProfile && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation(); // Prevent the post click/navigation
+                          handleDeletePost(post.id);
+                        }}
+                        style={{
+                          position: 'absolute',
+                          top: '8px',
+                          right: '8px',
+                          backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                          border: 'none',
+                          borderRadius: '50%',
+                          padding: '6px',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: '#fff',
+                          zIndex: 10,
+                        }}
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    )}
                     {post.content_type === 'image' && (
                       <img
                         src={post.media_urls[0]}
@@ -775,10 +838,6 @@ export default function Profile() {
                     onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
                     onMouseLeave={(e) => e.currentTarget.style.opacity = '0'}
                     >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <Heart size={20} fill="currentColor" />
-                        <span>{post.likes_count}</span>
-                      </div>
                       <div style={{
                         display: 'flex',
                         alignItems: 'center',

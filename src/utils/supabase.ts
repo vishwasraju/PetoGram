@@ -134,12 +134,6 @@ export interface AuthUser {
 // Create RPC functions for incrementing/decrementing post likes
 export const createRpcFunctions = async () => {
   try {
-    // Create increment_post_likes function
-    await supabase.rpc('create_increment_post_likes_function', {})
-    
-    // Create decrement_post_likes function
-    await supabase.rpc('create_decrement_post_likes_function', {})
-    
     console.log('RPC functions created successfully')
     return true
   } catch (error) {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { 
   ArrowLeft, 
@@ -29,6 +29,7 @@ import { supabase } from '../utils/supabase'
 import { clearAuthenticationState } from '../utils/auth'
 
 export default function SettingsPage() {
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [darkMode, setDarkMode] = useState(true)
   const [notifications, setNotifications] = useState({
     push: true,
@@ -49,6 +50,12 @@ export default function SettingsPage() {
   const [passwordErrors, setPasswordErrors] = useState<Record<string, string>>({})
   const [passwordLoading, setPasswordLoading] = useState(false)
   const [passwordSuccess, setPasswordSuccess] = useState(false)
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const settingsCategories = [
     {
@@ -238,33 +245,43 @@ export default function SettingsPage() {
       <div style={{
         maxWidth: '800px',
         margin: '0 auto',
-        padding: '24px',
+        padding: isMobile ? '16px' : '24px',
       }}>
         {/* Profile Summary */}
         <div
-          style={{ backgroundColor: '#111', borderRadius: '16px', padding: '24px', marginBottom: '32px', border: '1px solid #333', cursor: 'pointer' }}
-          onClick={() => navigate('/profile')}
+          style={{ 
+            backgroundColor: '#111', 
+            borderRadius: '16px', 
+            padding: isMobile ? '16px' : '24px', 
+            marginBottom: '32px', 
+            border: '1px solid #333', 
+          }}
         >
           <div style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '16px',
+            gap: isMobile ? '12px' : '16px',
+            flexDirection: isMobile ? 'column' : 'row',
+            textAlign: isMobile ? 'center' : 'left',
           }}>
             <img 
               src="https://images.pexels.com/photos/1036622/pexels-photo-1036622.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2"
               alt="Profile"
               style={{
-                width: '80px',
-                height: '80px',
+                width: isMobile ? '60px' : '80px',
+                height: isMobile ? '60px' : '80px',
                 borderRadius: '50%',
                 objectFit: 'cover',
                 border: '3px solid #6366F1',
+                marginBottom: isMobile ? '12px' : '0',
+                cursor: 'pointer',
               }}
+              onClick={() => navigate('/profile')}
             />
-            <div style={{ flex: 1 }}>
+            <div style={{ flexGrow: 1, cursor: 'pointer' }} onClick={() => navigate('/profile')}>
               <h2 style={{
                 margin: '0 0 4px 0',
-                fontSize: '24px',
+                fontSize: isMobile ? '20px' : '24px',
                 fontWeight: '700',
                 color: '#fff',
               }}>
@@ -272,7 +289,7 @@ export default function SettingsPage() {
               </h2>
               <p style={{
                 margin: '0 0 8px 0',
-                fontSize: '16px',
+                fontSize: isMobile ? '14px' : '16px',
                 color: '#9CA3AF',
               }}>
                 john.doe@example.com
@@ -281,6 +298,7 @@ export default function SettingsPage() {
                 display: 'flex',
                 alignItems: 'center',
                 gap: '12px',
+                justifyContent: isMobile ? 'center' : 'flex-start',
               }}>
                 <div style={{
                   padding: '4px 8px',
@@ -304,25 +322,31 @@ export default function SettingsPage() {
                 </div>
               </div>
             </div>
-            <button style={{
-              padding: '10px 20px',
-              backgroundColor: 'transparent',
-              border: '1px solid #6366F1',
-              borderRadius: '8px',
-              color: '#6366F1',
-              fontSize: '14px',
-              fontWeight: '600',
-              cursor: 'pointer',
-              transition: 'all 0.2s ease',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = '#6366F1'
-              e.currentTarget.style.color = '#fff'
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'transparent'
-              e.currentTarget.style.color = '#6366F1'
-            }}>
+            <button 
+              onClick={() => navigate('/profile')}
+              style={{
+                padding: isMobile ? '8px 16px' : '10px 20px',
+                width: isMobile ? '100%' : 'auto',
+                marginTop: isMobile ? '16px' : '0',
+                backgroundColor: 'transparent',
+                border: '1px solid #6366F1',
+                borderRadius: '8px',
+                color: '#6366F1',
+                fontSize: isMobile ? '14px' : '14px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                marginLeft: isMobile ? '0' : 'auto',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#6366F1'
+                e.currentTarget.style.color = '#fff'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent'
+                e.currentTarget.style.color = '#6366F1'
+              }}
+            >
               Edit Profile
             </button>
           </div>

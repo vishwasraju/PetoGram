@@ -261,8 +261,9 @@ const EventCard = ({
   className?: React.CSSProperties;
   onClick?: () => void;
 }) => {
-  const shouldReduceMotion = useReducedMotion();
-  const containerVariants = {
+  const shouldReduceMotion = useReducedMotion()
+
+  const cardVariants = {
     hidden: { opacity: 0, y: 20, scale: 0.95 },
     visible: {
       opacity: 1, y: 0, scale: 1,
@@ -278,7 +279,7 @@ const EventCard = ({
   };
   return (
     <motion.div
-      variants={containerVariants}
+      variants={cardVariants}
       initial="hidden"
       animate="visible"
       onClick={onClick}
@@ -776,8 +777,6 @@ function EnhancedHome() {
         const userProfile = profilesMap.get(post.user_id);
         const userPets = petsMap.get(post.user_id);
 
-        console.log('User ID for post:', post.user_id);
-
         return {
           id: post.id,
           user_id: post.user_id,
@@ -1235,36 +1234,65 @@ function EnhancedHome() {
           flexDirection: 'column',
         }}>
           {/* Header */}
-          <header style={{
-            padding: '16px 24px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            backgroundColor: '#2A2D3A',
-            position: 'sticky',
-            top: 0,
-            zIndex: 100,
-          }}>
-            {/* Left: Search Bar */}
-            <div style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
-            </div>
-            {/* Center: Logo */}
-            <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
-              <span style={{
-                fontFamily: 'Comic Sans MS, Comic Sans, cursive',
-                fontSize: '2.2rem',
-                fontWeight: 400,
-                color: '#fff',
-                letterSpacing: '1px',
-                userSelect: 'none',
-              }}>
-                PetoGram
-              </span>
-            </div>
-            {/* Right: Create Post Button */}
-            <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
-            </div>
-          </header>
+          {isMobile ? (
+            <header style={{
+              padding: '5px 0 0',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              backgroundColor: '#2A2D3A',
+              position: 'sticky',
+              top: 0,
+              zIndex: 100,
+              borderBottom: '1px solid #23232a',
+            }}>
+              {/* Left: PetoGram name */}
+              <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-start', paddingLeft: 16 }}>
+                <span style={{ color: '#fff', fontWeight: 'bold', fontSize: 20 }}>PetoGram</span>
+              </div>
+              {/* Center: Bunny logo */}
+              <div style={{ flex: 1.3, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                <img src="/bunny-logo.png" alt="PetoGram Logo" style={{ height: 42, width: 52, objectFit: 'contain' }} />
+              </div>
+              {/* Right: Message Button */}
+              <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', paddingRight: 16 }}>
+                <button onClick={() => navigate('/chat')} style={{ background: 'none', border: 'none', color: '#fff' }}>
+                  <MessageCircle size={26} />
+                </button>
+              </div>
+            </header>
+          ) : (
+            <header style={{
+              padding: '16px 24px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              backgroundColor: '#2A2D3A',
+              position: 'sticky',
+              top: 0,
+              zIndex: 100,
+            }}>
+              {/* Left: Search Bar */}
+              <div style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
+              </div>
+              {/* Center: Logo */}
+              <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
+                <span style={{
+                  fontFamily: 'Comic Sans MS, Comic Sans, cursive',
+                  fontSize: '2.2rem',
+                  fontWeight: 400,
+                  color: '#fff',
+                  letterSpacing: '1px',
+                  userSelect: 'none',
+                }}>
+                  PetoGram
+                </span>
+              </div>
+              {/* Right: Create Post Button */}
+              <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
+              </div>
+            </header>
+          )}
 
           {/* Content */}
           <div style={{
@@ -1493,6 +1521,38 @@ function EnhancedHome() {
           }
         }
       `}</style>
+      {/* Bottom Navigation for Mobile */}
+      {isMobile && (
+        <nav style={{
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          width: '100%',
+          background: '#23232a',
+          borderTop: '1px solid #363636',
+          display: 'flex',
+          justifyContent: 'space-around',
+          alignItems: 'center',
+          height: 56,
+          zIndex: 200,
+        }}>
+          <button onClick={() => navigate('/home')} style={{ background: 'none', border: 'none', color: '#fff' }}>
+            <svg width="26" height="26" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12L12 3l9 9"/><path d="M9 21V9h6v12"/></svg>
+          </button>
+          <button onClick={() => navigate('/events-page')} style={{ background: 'none', border: 'none', color: '#fff' }}>
+            <Calendar size={26} />
+          </button>
+          <button onClick={() => navigate('/create-post')} style={{ background: 'none', border: 'none', color: '#fff' }}>
+            <svg width="26" height="26" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+          </button>
+          <button onClick={() => navigate('/appointment-page')} style={{ background: 'none', border: 'none', color: '#fff' }}>
+            <Stethoscope size={26} />
+          </button>
+          <button onClick={() => navigate('/profile')} style={{ background: 'none', border: 'none', color: '#fff' }}>
+            <svg width="26" height="26" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a4 4 0 0 1 4-4h0a4 4 0 0 1 4 4v2"/></svg>
+          </button>
+        </nav>
+      )}
     </>
   )
 }

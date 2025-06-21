@@ -307,44 +307,22 @@ export const createPost = async (postData: {
   }
 }
 
-export const likePost = async (postId: string, userId: string): Promise<boolean> => {
+export const getPostComments = async (postId: string) => {
+  if (!postId) return []
   try {
-    const { error } = await supabase
-      .from('post_likes')
-      .insert({
-        post_id: postId,
-        user_id: userId
-      })
-
-    if (error) throw error
-
-    // Update likes count
-    await supabase.rpc('increment_post_likes', { post_id: postId })
-    
-    return true
-  } catch (error) {
-    console.error('Like post error:', error)
-    return false
-  }
-}
-
-export const unlikePost = async (postId: string, userId: string): Promise<boolean> => {
-  try {
-    const { error } = await supabase
-      .from('post_likes')
-      .delete()
+    const { data: comments, error } = await supabase
+      .from('post_comments')
+      .select('*')
       .eq('post_id', postId)
-      .eq('user_id', userId)
 
-    if (error) throw error
+    if (error) {
+      throw new Error(error.message)
+    }
 
-    // Update likes count
-    await supabase.rpc('decrement_post_likes', { post_id: postId })
-    
-    return true
+    return comments || []
   } catch (error) {
-    console.error('Unlike post error:', error)
-    return false
+    console.error('Get post comments error:', error)
+    return []
   }
 }
 

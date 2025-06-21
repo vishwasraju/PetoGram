@@ -741,28 +741,7 @@ export default function UserProfilePage() {
               </>
             )}
             {currentUser && currentUser.id === userId && (
-              <button
-                onClick={() => navigate('/edit-profile')}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  padding: '12px 24px',
-                  backgroundColor: '#6366F1',
-                  border: 'none',
-                  borderRadius: '8px',
-                  color: '#fff',
-                  fontSize: '14px',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  transition: 'background 0.2s ease',
-                }}
-                onMouseEnter={e => e.currentTarget.style.backgroundColor = '#4F46E5'}
-                onMouseLeave={e => e.currentTarget.style.backgroundColor = '#6366F1'}
-              >
-                <Edit3 size={18} />
-                Edit Profile
-              </button>
+              <Link to="/edit-profile">Edit Profile</Link>
             )}
           </div>
         </div>

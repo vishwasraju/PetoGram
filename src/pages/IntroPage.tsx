@@ -161,7 +161,7 @@ export default function IntroPage({ onSignupStart, onSignupComplete }: IntroPage
         }}>
           {/* This will eventually be an image carousel/display */}
           <img 
-            src="/images/intro.png" 
+            src="/bunny-logo.png" 
             alt="PetoGram Intro Display" 
             style={{
               width: '100%',

@@ -54,7 +54,7 @@ function App() {
         const protectedRoutes = [
           '/home', '/feed', '/events-page', '/appointment-page', 
           '/settings', '/create-post', '/profile', '/events', '/appointment', 
-          '/chat', '/user-profile'
+          '/chat', '/user-profile', '/edit-profile'
         ]
         if (!protectedRoutes.some(route => window.location.pathname.startsWith(route))) {
           setTimeout(() => {
