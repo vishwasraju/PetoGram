@@ -957,7 +957,6 @@ function EnhancedHome() {
           transform: isMobile && !sidebarOpen ? 'translateX(-100%)' : 'translateX(0)',
           transition: `transform ${designTokens.animation.duration.normal} ${designTokens.animation.easing.ease}`,
           backgroundColor: '#2A2D3A',
-          borderRight: '1px solid rgba(255, 255, 255, 0.1)',
           padding: '24px',
           overflowY: 'auto',
           display: 'flex',
