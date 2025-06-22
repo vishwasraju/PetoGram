@@ -213,13 +213,14 @@ export default function ChatPage() {
 
   // 7. Render
   return (
-    <div style={{ display: 'flex', height: '100vh', background: '#18181b', color: '#e5e7eb' }}>
-      {/* Sidebar - Contacts List */}
+    <div style={{ width: '100%', minHeight: '100vh', background: '#18181b', color: '#e5e7eb' }}>
+      {/* Main chat content goes here, sidebar removed */}
       {(!isMobile || (isMobile && !selectedChat)) && (
         <div style={{
           width: isMobile ? '100%' : 320,
           background: '#212121',
           borderRight: isMobile ? 'none' : '1px solid #333',
+          height: '100vh',
           padding: 16,
           display: 'flex',
           flexDirection: 'column',

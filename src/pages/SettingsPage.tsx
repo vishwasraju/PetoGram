@@ -211,12 +211,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      backgroundColor: '#000',
-      color: '#fff',
-      fontFamily: designTokens.typography.fontFamily.sans.join(', '),
-    }}>
+    <div style={{ width: '100%', minHeight: '100vh', background: '#18181b', color: '#fff' }}>
       {/* Header */}
       <header style={{
         padding: '16px 24px',

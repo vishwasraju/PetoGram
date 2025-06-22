@@ -421,13 +421,7 @@ export default function Profile() {
   ]
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      backgroundColor: '#000',
-      color: '#fff',
-      maxWidth: '100vw',
-      overflowX: 'hidden',
-    }}>
+    <div style={{ width: '100%', minHeight: '100vh', background: '#000', color: '#fff', maxWidth: '100vw', overflowX: 'hidden' }}>
       {/* Header */}
       <div style={{
         backgroundColor: '#111',
