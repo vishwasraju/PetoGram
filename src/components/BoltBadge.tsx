@@ -13,8 +13,8 @@ const BoltBadge: React.FC = () => {
     };
   }, []);
 
-  const badgeSize = isMobile ? 60 : 120;
-  const topPosition = isMobile ? 40 : 16;
+  const badgeSize = isMobile ? 40 : 60;
+  const topPosition = isMobile ? 80 : 40;
 
   return (
     <a 
