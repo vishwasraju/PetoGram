@@ -72,19 +72,6 @@ a, button, input, textarea, select, [role="button"], [tabindex]:not([tabindex="-
   position: relative;
 }
 
-.sidebar-container {
-  width: 320px;
-  height: 100vh;
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 1000;
-  background-color: #18181b !important;
-  border-right: 1px solid var(--gray-200);
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-  color: #fff !important;
-}
-
 .main-content {
   flex: 1;
   margin-left: 320px;
@@ -117,15 +104,6 @@ a, button, input, textarea, select, [role="button"], [tabindex]:not([tabindex="-
 
 /* Mobile Layout */
 @media (max-width: 1024px) {
-  .sidebar-container {
-    transform: translateX(-100%);
-    transition: transform 0.3s ease;
-  }
-  
-  .sidebar-container.mobile-open {
-    transform: translateX(0);
-  }
-  
   .main-content {
     margin-left: 0;
     margin-right: 0;
@@ -469,7 +447,7 @@ img {
   color: #e5e7eb !important;
 }
 
-.card, .modal, .overlay, .sidebar-container, .main-content, .content-area {
+.card, .modal, .overlay, .main-content, .content-area {
   background-color: #18181b !important;
   color: #fff !important;
   border-color: #27272a !important;
@@ -487,7 +465,7 @@ html,
 .app-layout,
 .main-content,
 .content-area,
-.sidebar-container,
+.right-sidebar,
 .card,
 .modal,
 .overlay,
