@@ -61,7 +61,6 @@ src/
 
 - ✅ Responsive sidebar navigation
 - ✅ Social media feed with posts
-- ✅ Like/unlike functionality
 - ✅ Comment system
 - ✅ Video post support
 - ✅ User profiles and verification badges
@@ -81,7 +80,5 @@ This is a demo application with mock authentication and data storage using local
 - Real backend integration
 - Real-time messaging
 - Pet service booking
-- Advanced search and filters
-- Push notifications
 - Video upload and processing
 - Social features (following, followers)
